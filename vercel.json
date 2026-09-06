@@ -3,7 +3,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "public",
   "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }],
-  "outputFileTracingIncludes": {
-    "/api/index": ["dist/**/*", "public/**/*"]
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": ["dist/**", "public/index.html"]
+    }
   }
 }
