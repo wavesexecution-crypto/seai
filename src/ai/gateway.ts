@@ -192,6 +192,134 @@ async function doFetch(path: string, key: string, init: RequestInit, timeoutMs: 
   }
 }
 
+// ---- Experiential gateway (OpenAI Chat Completions compatible) ----
+// Routes the model claude-fable-5.1 through api.experientiallabs.ai instead of
+// calling the provider directly. This is a base-URL + key swap onto the OpenAI
+// protocol (/v1/chat/completions).
+
+const EXPER_MODEL = 'claude-fable-5.1';
+
+/** True when the given model should be routed through the Experiential gateway. */
+export function isExperModel(model: string): boolean {
+  return model === EXPER_MODEL;
+}
+
+function requireExperKey(): string {
+  const key = config.experKey;
+  if (!key) {
+    const e: any = new Error(
+      'SEAI_EXPLABS_KEY_MISSING: EXPLABS_API_KEY is not set. Create one under Settings -> API keys and export it (e.g. set EXPLABS_API_KEY=xpl_... ) before using model claude-fable-5.1.'
+    );
+    e.code = 'SEAI_EXPLABS_KEY_MISSING';
+    throw e;
+  }
+  return key;
+}
+
+async function doExperFetch(path: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const key = requireExperKey();
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(new Error('timeout')), timeoutMs);
+  try {
+    return await fetch(`${config.experBaseUrl}${path}`, {
+      ...init,
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', ...(init.headers || {}) },
+      signal: ctrl.signal,
+    });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+interface ExperResponse {
+  content: string;
+  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+}
+
+/**
+ * Non-streaming OpenAI Chat Completions call against the Experiential gateway.
+ * Preserves the existing streaming/tool-call behavior of the caller by returning
+ * the assistant text; tool args are passed as JSON-in-content and validated
+ * downstream exactly as before.
+ * Exported for the test/verification script, which needs the token usage.
+ */
+export async function experChat(
+  messages: ChatMessage[],
+  opts: { maxTokens?: number; temperature?: number; json?: boolean; timeoutMs?: number }
+): Promise<ExperResponse> {
+  const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
+  const body: Record<string, unknown> = {
+    model: EXPER_MODEL,
+    messages,
+    stream: false,
+    max_tokens: opts.maxTokens ?? 2000,
+  };
+  // The claude-fable-5.1 route only accepts temperature 1.0; omit it to use
+  // the route default rather than sending the Ollama-world default of 0.2.
+  if (opts.temperature !== undefined) body.temperature = opts.temperature;
+  if (opts.json) body.response_format = { type: 'json_object' };
+  const res = await doExperFetch('/chat/completions', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }, timeoutMs);
+  if (!res.ok) throw errWithStatus(`experiential chat failed: ${res.status} ${(await res.text()).slice(0, 300)}`, res.status);
+  const j = await parseJsonSafe(res);
+  const content: string = j?.choices?.[0]?.message?.content ?? j?.choices?.[0]?.text ?? '';
+  const usage = j?.usage;
+  return { content, usage };
+}
+
+/**
+ * Streaming OpenAI Chat Completions call against the Experiential gateway.
+ * Yields assistant text deltas as they arrive (SSE). Token usage is surfaced
+ * via the caller-provided `onUsage` callback when present.
+ */
+async function* experChatStream(
+  messages: ChatMessage[],
+  opts: { maxTokens?: number; temperature?: number; timeoutMs?: number; onUsage?: (u: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }) => void }
+): AsyncGenerator<string> {
+  const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
+  const body: Record<string, unknown> = {
+    model: EXPER_MODEL,
+    messages,
+    stream: true,
+    max_tokens: opts.maxTokens ?? 2000,
+  };
+  // The claude-fable-5.1 route only accepts temperature 1.0; omit it to use
+  // the route default rather than sending the Ollama-world default of 0.2.
+  if (opts.temperature !== undefined) body.temperature = opts.temperature;
+  const res = await doExperFetch('/chat/completions', { method: 'POST', body: JSON.stringify(body) }, timeoutMs);
+  if (!res.ok) throw errWithStatus(`experiential stream failed: ${res.status} ${(await res.text()).slice(0, 300)}`, res.status);
+  const reader = res.body?.getReader();
+  if (!reader) { yield ''; return; }
+  const dec = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += dec.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t || !t.startsWith('data:')) continue;
+      const payload = t.slice(5).trim();
+      if (payload === '[DONE]') return;
+      try {
+        const j = JSON.parse(payload);
+        const delta = j?.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string' && delta) yield delta;
+        if (j?.usage) opts.onUsage?.(j.usage);
+      } catch { /* partial SSE */ }
+    }
+  }
+}
+
 /** Core resilient executor: failover across all 6 keys with backoff. Keys never leave this module. */
 async function execWithFailover<T>(kind: string, model: string, storeId: string | null, timeoutMs: number, fn: (key: string, keyId: string, model: string) => Promise<T>): Promise<T> {
   const keys = await orderedKeys();
@@ -376,6 +504,11 @@ export const aiGateway = {
   async generate(prompt: string, opts: GenerateOpts = {}, storeId: string | null = null): Promise<string> {
     const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
     const model = opts.model ?? (await this.selectBestModel());
+    if (isExperModel(model)) {
+      // Single best-effort key for Experiential (the 6-key failover pool is Ollama-specific).
+      const out = await experChat([{ role: 'user', content: prompt }], { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, timeoutMs });
+      return out.content;
+    }
     return execWithFailover('generate', model, storeId, timeoutMs, async (key) => {
       const res = await doFetch('/api/generate', key, {
         method: 'POST',
@@ -390,6 +523,11 @@ export const aiGateway = {
   async chat(messages: { role: string; content: string }[], opts: GenerateOpts = {}, storeId: string | null = null): Promise<string> {
     const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
     const model = opts.model ?? (await this.selectBestModel());
+    if (isExperModel(model)) {
+      // Single best-effort key for Experiential (the 6-key failover pool is Ollama-specific).
+      const out = await experChat(messages, { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, json: opts.json, timeoutMs });
+      return out.content;
+    }
     return execWithFailover('chat', model, storeId, timeoutMs, async (key) => {
       const res = await doFetch('/api/chat', key, {
         method: 'POST',
@@ -419,6 +557,14 @@ export const aiGateway = {
   async *stream(prompt: string, opts: GenerateOpts = {}, storeId: string | null = null): AsyncGenerator<string> {
     const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
     const model = opts.model ?? (await this.selectBestModel());
+    if (isExperModel(model)) {
+      requireExperKey();
+      const gen = experChatStream([{ role: 'user', content: prompt }], { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, timeoutMs });
+      for await (const part of gen) {
+        yield part;
+      }
+      return;
+    }
     const keys = await orderedKeys();
     if (!keys.length) throw Object.assign(new Error('SEAI AI_PROVIDER_UNAVAILABLE'), { code: 'SEAI_AI_PROVIDER_UNAVAILABLE' });
     let lastErr: any = null;

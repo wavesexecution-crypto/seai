@@ -22,7 +22,9 @@ class Database {
         this.pool = new Pool({ connectionString: config.databaseUrl });
         await this.pool.query('SELECT 1');
         this.usePg = true;
-        await this.migrate();
+        // NOTE: migrations are NOT run here. Run `npm run db:migrate` explicitly
+        // (e.g. locally against the production DATABASE_URL) so schema changes
+        // are a deliberate deploy step, never an implicit runtime side effect.
         return;
       } catch (err) {
         console.warn('[db] Postgres unavailable, falling back to disk-backed store:', (err as Error).message);

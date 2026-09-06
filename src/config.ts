@@ -23,6 +23,12 @@ export const config = {
   ].filter(Boolean) as string[],
   // Masked identifiers only — never expose raw keys
   ollamaKeyIds: [1, 2, 3, 4, 5, 6].map((i) => `key_${i}`),
+  // Experiential gateway (OpenAI Chat Completions compatible). Used to route
+  // claude-fable-5.1 through api.experientiallabs.ai instead of calling the
+  // provider directly. Key comes from EXPLABS_API_KEY (Settings -> API keys).
+  experBaseUrl: need('EXPLABS_BASE_URL', 'https://api.experientiallabs.ai/v1'),
+  experKey: need('EXPLABS_API_KEY', ''),
+  experModel: 'claude-fable-5.1',
   databaseUrl: need('DATABASE_URL', ''),
   encryptionKey: need('SEAI_ENCRYPTION_KEY', ''),
   shopify: {

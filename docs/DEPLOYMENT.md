@@ -9,13 +9,16 @@ There is no Next.js layer. On Vercel it runs as a Node serverless function
 1. `npm install`
 2. Set every environment variable below in the Vercel dashboard.
 3. `npm run build` (Vercel `buildCommand`; static assets are served from `public/` by default).
-4. Deploy. `vercel.json` routes all dynamic traffic to the function.
+4. Deploy. `vercel.json` maps the SPA routes to `/index.html`; all API,
+   auth, and webhook traffic is served by the Express app itself.
 5. In the Shopify Partner dashboard, set the app URL to `https://seai.store`
    and the OAuth redirect to `https://seai.store/auth/callback`
    (see `shopify.app.toml`), then install the app into the store.
+6. Run database migrations explicitly against the production database
+   (the app never migrates at runtime):
+   `DATABASE_URL=postgresql://... npm run db:migrate`
 
 ## Required environment variables
-
 | Variable | Purpose |
 |---|---|
 | `OLLAMA_API_KEY_1` … `OLLAMA_API_KEY_6` | Six-key Ollama Cloud pool (server-side only, never exposed) |

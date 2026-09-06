@@ -7,6 +7,10 @@ process.env.SEAI_DATA_DIR = mkdtempSync(join(tmpdir(), 'seai-cr-test-'));
 process.env.SEAI_BRAIN_DIR = mkdtempSync(join(tmpdir(), 'seai-cr-brain-'));
 process.env.SEAI_SCHEDULER = 'off';
 process.env.SEAI_CREATION_MAX_PRODUCTS = '4';
+// Hermetic AI: these tests mock all AI traffic at https://ollama.com, so pin the
+// primary model to one served there instead of inheriting AI_PRIMARY_MODEL from
+// .env (which may route through another provider, e.g. the Experiential gateway).
+process.env.AI_PRIMARY_MODEL = 'test-model';
 
 const state = { products: [] as any[], collections: 0, collectionNames: [] as string[], pages: 0, policies: 0 };
 

@@ -93,3 +93,53 @@ describe('model discovery ordering', () => {
     }
   });
 });
+
+describe('experiential gateway routing (claude-fable-5.1)', () => {
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('isExperModel matches only claude-fable-5.1', async () => {
+    const { isExperModel } = await import('../src/ai/gateway.js');
+    expect(isExperModel('claude-fable-5.1')).toBe(true);
+    expect(isExperModel('claude-fable-5.1-extra')).toBe(false);
+    expect(isExperModel('qwen3:32b')).toBe(false);
+  });
+
+  it('chat routes to the Experiential base URL with Bearer key and returns content', async () => {
+    vi.stubEnv('EXPLABS_API_KEY', 'xpl_testsecret');
+    vi.stubEnv('AI_PRIMARY_MODEL', 'claude-fable-5.1');
+    vi.resetModules();
+    const g = await import('../src/ai/gateway.js');
+    const calls: { url: string; init: any }[] = [];
+    const origFetch = globalThis.fetch;
+    (globalThis as any).fetch = vi.fn(async (url: string, init: any) => {
+      calls.push({ url: String(url), init });
+      return new Response(JSON.stringify({
+        choices: [{ message: { role: 'assistant', content: 'hello from experiential' } }],
+        usage: { prompt_tokens: 9, completion_tokens: 5, total_tokens: 14 },
+      }), { status: 200 });
+    });
+    try {
+      const out = await g.aiGateway.chat([{ role: 'user', content: 'hi' }], { model: 'claude-fable-5.1' });
+      expect(out).toBe('hello from experiential');
+      expect(calls).toHaveLength(1);
+      expect(calls[0].url).toBe('https://api.experientiallabs.ai/v1/chat/completions');
+      const headers = calls[0].init.headers as Record<string, string>;
+      expect(headers.Authorization).toBe('Bearer xpl_testsecret');
+      const body = JSON.parse(calls[0].init.body);
+      expect(body.model).toBe('claude-fable-5.1');
+      expect(body.stream).toBe(false);
+      expect(body.temperature).toBeUndefined(); // route only accepts 1.0; omitted on purpose
+    } finally {
+      (globalThis as any).fetch = origFetch;
+    }
+  });
+
+  it('throws SEAI_EXPLABS_KEY_MISSING with Settings guidance when key is absent', async () => {
+    vi.stubEnv('EXPLABS_API_KEY', '');
+    vi.stubEnv('AI_PRIMARY_MODEL', 'claude-fable-5.1');
+    vi.resetModules();
+    const g = await import('../src/ai/gateway.js');
+    await expect(g.aiGateway.chat([{ role: 'user', content: 'hi' }], { model: 'claude-fable-5.1' }))
+      .rejects.toMatchObject({ code: 'SEAI_EXPLABS_KEY_MISSING' });
+  });
+});
