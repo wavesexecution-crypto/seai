@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
 import { join, dirname } from 'node:path';
+import { accessSync, constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { config, configuredKeyCount } from './config.js';
@@ -52,8 +53,16 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.static(join(here, '..', 'public')));
 
 // VX page routes — every route serves the app shell; the client router renders the view.
+// Prefers the build-bundled copy (dist/public, self-contained for serverless),
+// falling back to the source tree for local dev.
+function shellHtml(): string {
+  for (const p of [join(here, 'public', 'index.html'), join(here, '..', 'public', 'index.html')]) {
+    try { accessSync(p, constants.R_OK); return p; } catch { /* try next */ }
+  }
+  return join(here, '..', 'public', 'index.html');
+}
 for (const p of ['/overview', '/command', '/activity', '/provider', '/tools', '/system', '/portfolio', '/creation', '/start']) {
-  app.get(p, (_req, res) => { res.sendFile(join(here, '..', 'public', 'index.html')); });
+  app.get(p, (_req, res) => { res.sendFile(shellHtml()); });
 }
 
 const errSafe = (e: any) => ({ error: String(e?.message ?? e).slice(0, 500), code: e?.code });
