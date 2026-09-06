@@ -8,8 +8,8 @@ There is no Next.js layer. On Vercel it runs as a Node serverless function
 
 1. `npm install`
 2. Set every environment variable below in the Vercel dashboard.
-3. `npm run build` (Vercel `buildCommand`; output directory is `public/`).
-4. Deploy. `vercel.json` rewrites all non-static routes to the function.
+3. `npm run build` (Vercel `buildCommand`; static assets are served from `public/` by default).
+4. Deploy. `vercel.json` routes all dynamic traffic to the function.
 5. In the Shopify Partner dashboard, set the app URL to `https://seai.store`
    and the OAuth redirect to `https://seai.store/auth/callback`
    (see `shopify.app.toml`), then install the app into the store.
@@ -30,6 +30,17 @@ There is no Next.js layer. On Vercel it runs as a Node serverless function
 (default `EXECUTE_SAFE`), `AGENT_MAX_ITERATIONS`, `AGENT_REQUEST_TIMEOUT_MS`,
 `SEAI_SCHEDULER` (`on` forces the interval scheduler; default off on Vercel),
 `SEAI_DATA_DIR`, `SEAI_BRAIN_DIR`, `PORT`.
+
+## Experiential gateway (optional)
+
+Set `AI_PRIMARY_MODEL=claude-fable-5.1` to route that model through
+[Experiential Labs](https://api.experientiallabs.ai/v1) (OpenAI Chat
+Completions compatible) instead of calling the provider directly.
+
+| Variable | Purpose |
+|---|---|
+| `EXPLABS_API_KEY` | Experiential API key (Settings -> API keys; server-side only) |
+| `EXPLABS_BASE_URL` | Optional; defaults to `https://api.experientiallabs.ai/v1` |
 
 ## Shopify configuration still required (dashboard, not code)
 
