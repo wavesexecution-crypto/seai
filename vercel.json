@@ -1,15 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
-  "rewrites": [
-    { "source": "/overview", "destination": "/index.html" },
-    { "source": "/command", "destination": "/index.html" },
-    { "source": "/activity", "destination": "/index.html" },
-    { "source": "/provider", "destination": "/index.html" },
-    { "source": "/tools", "destination": "/index.html" },
-    { "source": "/system", "destination": "/index.html" },
-    { "source": "/portfolio", "destination": "/index.html" },
-    { "source": "/creation", "destination": "/index.html" },
-    { "source": "/start", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "dist/**"
+    }
+  }
 }
