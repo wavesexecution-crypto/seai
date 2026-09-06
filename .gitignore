@@ -1,7 +1,10 @@
 node_modules/
 dist/
-.seai-data/
-brain/
+/.seai-data/
+# Runtime Obsidian vault data (repo ROOT only). NOTE: src/brain/ is application
+# source code and MUST stay tracked — never ignore it.
+# (A bare `brain/` pattern would wrongly match src/brain/ at every level.)
+/brain/
 .env
 .env.*
 !.env.example
