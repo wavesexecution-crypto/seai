@@ -34,6 +34,23 @@ import { assertNoSecretsInResponse } from './security/validate.js';
 const app = express();
 const here = dirname(fileURLToPath(import.meta.url));
 
+// Lazy boot: the serverless preset imports this module without calling
+// createApp(), so the FIRST request in any instance initializes shared state
+// (db, vault, scheduler) exactly once, then proceeds. Local server.ts goes
+// through the same path via createApp(). Boot never fails a request.
+let boot: Promise<void> | null = null;
+function ensureBoot(): Promise<void> {
+  if (!boot) {
+    boot = (async () => {
+      try { await db.init(); } catch { /* memory fallback */ }
+      try { bootstrapVault(); } catch { /* read-only fs */ }
+      try { startScheduler(); } catch { /* never crash on schedule */ }
+    })();
+  }
+  return boot;
+}
+app.use((_req, _res, next) => { ensureBoot().then(() => next()).catch(next); });
+
 // Webhooks need raw body for HMAC — mount before json()
 app.post('/webhooks/:topic', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
   const hmac = req.header('X-Shopify-Hmac-Sha256') ?? '';
@@ -398,14 +415,7 @@ app.get('/api/brain/note', async (req, res) => {
 });
 
 export async function createApp(): Promise<Express> {
-  await db.init();
-  try {
-    bootstrapVault();
-  } catch (err) {
-    // Brain vault is best-effort at boot (e.g. read-only serverless fs without SEAI_BRAIN_DIR).
-    console.warn('[brain] bootstrap skipped:', (err as Error).message);
-  }
-  startScheduler();
+  await ensureBoot();
   return app;
 }
 
