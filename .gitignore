@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.seai-data/
+brain/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+coverage/
+.shopify/
+*.sqlite

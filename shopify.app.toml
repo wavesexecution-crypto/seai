@@ -1,0 +1,18 @@
+name = "seai"
+client_id = ""
+application_url = "https://seai.store"
+embedded = true
+
+[access_scopes]
+# See src/shopify/scopes.ts for the reason behind every scope.
+scopes = "read_products,write_products,read_orders,write_orders,read_customers,write_customers,read_inventory,write_inventory,read_locations,read_discounts,write_discounts,read_content,write_content,read_themes,write_themes,read_files,write_files,read_analytics,read_markets,read_fulfillments,write_fulfillments"
+
+[auth]
+redirect_urls = ["https://seai.store/auth/callback"]
+
+[webhooks]
+api_version = "2025-07"
+
+[[webhooks.subscriptions]]
+topics = ["orders/create", "orders/updated", "products/create", "products/update", "inventory_levels/update", "customers/create", "customers/update"]
+uri = "/webhooks/app"
