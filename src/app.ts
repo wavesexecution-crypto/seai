@@ -396,3 +396,7 @@ export async function createApp(): Promise<Express> {
   startScheduler();
   return app;
 }
+
+// Default export: Vercel's Express preset detects this file as the app
+// entrypoint (imports express + default-exports the application).
+export default app;
