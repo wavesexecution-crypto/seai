@@ -84,8 +84,12 @@ api_version = "2025-07"
 [[webhooks.subscriptions]]
 topics = [
   "app/uninstalled",
-  "app/update",
   "shop/update",
+]
+uri = "/webhooks/app"
+
+[[webhooks.subscriptions]]
+compliance_topics = [
   "customers/data_request",
   "customers/redact",
   "shop/redact",
