@@ -1,0 +1,96 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "60755f0a9ca2782bc89ad891c4a2011c"
+name = "Seai"
+application_url = "https://gateway.seai.store"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+# Scopes requested at install — the 14 core scopes from inspection + the 2 highest-value
+# optionals the initial embedded experience requires (full order visibility + overview).
+# Reference: implementation plan §19.
+scopes = "read_products,write_products,read_orders,read_customers,read_inventory,write_inventory,read_locations,read_discounts,write_discounts,read_content,write_content,read_themes,read_files,write_files,read_all_orders,read_analytics"
+# Scopes NOT requested at install — requested at runtime, per feature, when the matching
+# SEAI tool is first enabled (no app reinstall required). Grouped by SEAI capability.
+optional_scopes = [
+  # — Order lifecycle / autonomy loop —
+  "write_orders",
+  # — Fulfillment —
+  "read_fulfillments",
+  "write_fulfillments",
+  "read_assigned_fulfillment_orders",
+  "write_assigned_fulfillment_orders",
+  "read_fulfillment_constraint_rules",
+  # — Quotes / draft orders —
+  "read_draft_orders",
+  "write_draft_orders",
+  # — Customers & privacy —
+  "write_customers",
+  "read_customer_merge",
+  "read_customer_data_erasure",
+  "write_customer_data_erasure",
+  # — Reporting —
+  "read_reports",
+  "write_reports",
+  # — Storefront & themes —
+  "write_themes",
+  "write_theme_code",
+  "read_online_store_pages",
+  "write_online_store_pages",
+  "read_online_store_navigation",
+  "write_online_store_navigation",
+  "read_legal_policies",
+  "write_legal_policies",
+  # — Discounts / pricing (advanced) —
+  "read_price_rules",
+  "write_price_rules",
+  # — Gift cards —
+  "read_gift_cards",
+  "write_gift_cards",
+  "read_gift_card_transactions",
+  # — Marketing & pixels —
+  "read_marketing_events",
+  "write_marketing_events",
+  "read_pixels",
+  "write_pixels",
+  # — Returns / RMA —
+  "read_returns",
+  "write_returns",
+  # — Markets / international —
+  "read_markets",
+  "write_markets",
+  # — Listings / publications / feeds —
+  "read_publications",
+  "write_publications",
+  "read_product_feeds",
+  "write_product_feeds",
+  # — System audit —
+  "read_audit_events",
+]
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [
+  "https://gateway.seai.store/auth/callback",
+]
+
+[app_preferences]
+url = "https://www.seai.store"
+
+[webhooks]
+api_version = "2025-07"
+
+[[webhooks.subscriptions]]
+topics = [
+  "app/uninstalled",
+  "app/update",
+  "shop/update",
+  "customers/data_request",
+  "customers/redact",
+  "shop/redact",
+]
+uri = "/webhooks/app"
+
+[build]
+automatically_update_urls_on_dev = false
