@@ -227,3 +227,52 @@ async function main(): Promise<void> {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   void main();
 }
+
+// ---------------------------------------------------------------------------
+// Vercel serverless entrypoint
+// ---------------------------------------------------------------------------
+// Vercel's @vercel/express framework detects any file that imports `express`
+// and expects it to `export default` an Express app (or request handler).
+// The gateway's source entrypoint is `src/server.ts`; without a default
+// export the runtime crashes with:
+//
+//   Invalid export found in module "/var/task/gateway/src/server.js".
+//   The default export must be a function or server.
+//
+// This lazy singleton ensures the module can be imported on Vercel without
+// crashing at import time. `loadConfig()` is called on first import, but
+// missing optional feature secrets do NOT throw — the app still boots with
+// health endpoints and `unconfigured()` stubs (see buildDeps). Only a truly
+// malformed config (e.g., invalid PORT) falls back to a minimal 500 app
+// that surfaces the config error without FUNCTION_INVOCATION_FAILED.
+let cachedApp: Express | null = null;
+
+function getDefaultApp(): Express {
+  if (cachedApp) return cachedApp;
+  try {
+    const config = loadConfig();
+    const logger = createLogger(config.logLevel as LogLevel);
+    cachedApp = createApp({ config, logger });
+    return cachedApp;
+  } catch (err) {
+    const fallback = express();
+    fallback.get('/health', (_req, res) => {
+      res.status(500).json({
+        ok: false,
+        error: 'config_error',
+        message: err instanceof Error ? err.message : String(err),
+      });
+    });
+    fallback.get('/health/ready', (_req, res) => {
+      res.status(500).json({ ok: false, error: 'config_error', ready: false });
+    });
+    fallback.use((_req, res) => {
+      res.status(500).json({ ok: false, error: 'config_error' });
+    });
+    return fallback;
+  }
+}
+
+// Default export for Vercel (@vercel/express) and other serverless adapters.
+// Local `node dist/server.js` still uses `main()` above; tests import `createApp`.
+export default getDefaultApp();
