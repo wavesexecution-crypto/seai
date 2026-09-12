@@ -165,6 +165,32 @@ export function createApp(options: CreateAppOptions): Express {
     });
   });
 
+  // --- embedded app entry (Shopify loads `application_url`) ------------------
+  // Shopify's `application_url` is `https://gateway.seai.store`; post-OAuth
+  // callback redirects to `/embed?shop=…&host=…`. When a merchant later opens
+  // Seai from Admin, Shopify re-loads `https://gateway.seai.store/?shop=…&host=…`
+  // inside the iframe (not `/embed`). Without this alias the iframe hits the
+  // generic 404 and Admin shows `admin.shopify.com/.../apps/embed` as not-found.
+  // Keep `/embed` as canonical, but alias `/` → `/embed` (query-preserving) so
+  // both `/?shop=…` and `/embed?shop=…` bootstrap App Bridge correctly.
+  app.get('/', (req, res) => {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    // If SEAI-style `shop` param present, boot the embedded app; otherwise
+    // treat root as the embedded entry as well so the iframe never 404s.
+    if (typeof req.query.shop === 'string' && req.query.shop.length > 0) {
+      res.redirect(302, `/embed${qs}`);
+      return;
+    }
+    // No shop (direct navigation/crawler) — also bootstrap embed; the embed
+    // handler will return 400 with a helpful message if shop/apiKey missing.
+    // Using redirect keeps one canonical bootstrap implementation.
+    if (qs) {
+      res.redirect(302, `/embed${qs}`);
+      return;
+    }
+    res.redirect(302, '/embed');
+  });
+
   // --- route mounts --------------------------------------------------------
   app.use('/auth', createAuthRouter(deps));
   app.use('/embed', createEmbedRouter(deps));

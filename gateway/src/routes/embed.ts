@@ -65,7 +65,7 @@ export function createEmbedRouter(deps: AppDeps): Router {
         }).then(function (resp) {
           if (resp.redirected) { window.location.href = resp.url; }
           else if (resp.status === 401) { window.location.href = "/auth?shop=" + encodeURIComponent("${shopSafe}"); }
-          else { app.body.innerText = 'Unexpected response: ' + resp.status; }
+          else { document.body.innerText = 'Unexpected response: ' + resp.status; }
         });
       });
     })();
