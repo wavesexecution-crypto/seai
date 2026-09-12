@@ -1,12 +1,15 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import { join, dirname } from 'node:path';
 import { accessSync, constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { config, configuredKeyCount } from './config.js';
 import { db } from './db/db.js';
+import { authRouter } from './auth/routes.js';
+import { requireAuthRedirect, requireAuth } from './auth/middleware.js';
 import { aiGateway } from './ai/gateway.js';
 import { runAgent } from './agent/loop.js';
 import { listTools } from './agent/tools.js';
@@ -30,6 +33,7 @@ import { listNotes, readNote } from './brain/vault.js';
 import { validateImport, type SourcedRow } from './sourcing/providers.js';
 import { executeTool } from './agent/executor.js';
 import { assertNoSecretsInResponse } from './security/validate.js';
+import { embedRouter } from './routes/embed.js';
 
 const app = express();
 const here = dirname(fileURLToPath(import.meta.url));
@@ -64,21 +68,60 @@ app.post('/webhooks/:topic', express.raw({ type: '*/*', limit: '1mb' }), async (
 
 app.use(cors());
 app.use(morgan('tiny'));
-// First-party security headers (helmet defaults minus CSP, which the app
-// disables anyway). Inline to avoid a CJS-typings dependency entirely.
+// First-party security headers. Inline to avoid a CJS-typings dependency entirely.
+// CSP frame-ancestors replaces X-Frame-Options (which would block Shopify embedding).
+// 'self' allows same-origin framing; Shopify Admin origins are explicitly allowed.
+// default-src 'self' prevents loading scripts/styles from arbitrary origins.
 app.disable('x-powered-by');
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-DNS-Prefetch-Control', 'off');
   res.setHeader('X-Download-Options', 'noopen');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   res.setHeader('Origin-Agent-Cluster', '?1');
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "frame-ancestors 'self' https://*.myshopify.com https://admin.shopify.com",
+      "default-src 'self'",
+      // App Bridge + Shopify embed SDK are loaded from Shopify's CDN.
+      "script-src 'self' https://cdn.shopify.com https://shopify-embed.shopifycloud.com",
+      // App Bridge loads styles and makes XHR/fetch calls to the shop's admin.
+      "style-src 'self' 'unsafe-inline' https://cdn.shopify.com",
+      "img-src 'self' data: https://cdn.shopify.com",
+      "connect-src 'self' https://*.myshopify.com https://admin.shopify.com",
+    ].join('; ')
+  );
   next();
 });
 app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
+
+// Auth API routes (sign-in, sign-up, forgot-password, reset-password, etc.)
+app.use('/api/auth', authRouter);
+
+// Shopify embedded gateway entry point (Phase 6). Mounts before the SPA shell
+// so the ticket can be consumed and a session established on first load.
+app.use('/embed', embedRouter);
+
+// Protect all data API routes — require valid session (skip health + auth)
+app.use('/api', (req, res, next) => {
+  if (req.path === '/health' || req.path.startsWith('/auth/')) return next();
+  return requireAuth(req, res, next);
+});
+
+// Auth page routes — serve auth HTML pages
+function authHtml(filename: string): string {
+  for (const p of [join(here, 'public', filename), join(here, '..', 'public', filename)]) {
+    try { accessSync(p, constants.R_OK); return p; } catch { /* try next */ }
+  }
+  return join(here, '..', 'public', filename);
+}
+for (const p of ['/sign-in', '/create-account', '/forgot-password', '/reset-password', '/verify-email']) {
+  app.get(p, (_req, res) => { res.sendFile(authHtml(p.slice(1) + '.html')); });
+}
 app.use(express.static(join(here, '..', 'public')));
 
 // VX page routes — every route serves the app shell; the client router renders the view.
@@ -91,7 +134,7 @@ function shellHtml(): string {
   return join(here, '..', 'public', 'index.html');
 }
 for (const p of ['/overview', '/command', '/activity', '/provider', '/tools', '/system', '/portfolio', '/creation', '/start']) {
-  app.get(p, (_req, res) => { res.sendFile(shellHtml()); });
+  app.get(p, requireAuthRedirect, (_req, res) => { res.sendFile(shellHtml()); });
 }
 
 const errSafe = (e: any) => ({ error: String(e?.message ?? e).slice(0, 500), code: e?.code });

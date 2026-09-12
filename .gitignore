@@ -14,3 +14,6 @@ Thumbs.db
 coverage/
 .shopify/
 *.sqlite
+
+.vercel
+.env*

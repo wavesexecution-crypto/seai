@@ -17,9 +17,38 @@ const asText = (v) => (typeof v === 'string' ? v : JSON.stringify(v ?? ''));
 
 async function j(url, opts) {
   const r = await fetch(url, opts);
+  if (r.status === 401) {
+    // Session expired or not authenticated — redirect to sign-in
+    localStorage.removeItem('seai-active-shop');
+    location.href = '/sign-in';
+    throw new Error('Not authenticated');
+  }
   if (!r.ok) throw new Error('Request failed (' + r.status + ')');
   return r.json();
 }
+
+/* ---------- authentication ---------- */
+const Auth = {
+  user: null,
+  async check() {
+    try {
+      const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
+      if (!r.ok) throw new Error('not authenticated');
+      const data = await r.json();
+      this.user = data.user;
+      return true;
+    } catch {
+      this.user = null;
+      return false;
+    }
+  },
+  async signOut() {
+    try { await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'same-origin' }); } catch { /* ignore */ }
+    this.user = null;
+    localStorage.removeItem('seai-active-shop');
+    location.href = '/sign-in';
+  },
+};
 
 /* ---------- store state: ONE source of truth ----------
  * storeSlot  — portfolio slot (Store 01..06), not a store until bound+connected
@@ -788,12 +817,43 @@ document.addEventListener('keydown', (e) => {
   }
 });
 (async function init() {
+  // Auth gate — must be authenticated to access dashboard
+  const authed = await Auth.check();
+  if (!authed) {
+    location.href = '/sign-in';
+    return;
+  }
   await Store.load();
+
+  // Embedded Shopify bootstrap (Phase 6). When ?shop= is present (set by the
+  // /embed/activity redirect after ticket verification), initialize App Bridge
+  // and select the authenticated shop. The shop value is trusted because it
+  // comes from the server-side ticket verification, not user input.
+  const params = new URLSearchParams(location.search);
+  const shopParam = params.get('shop');
+  const isEmbedded = window.top !== window.self;
+  if (shopParam && isEmbedded && typeof Shopify !== 'undefined') {
+    try {
+      const cfgResp = await fetch('/embed/config', { credentials: 'same-origin' });
+      const cfg = cfgResp.ok ? await cfgResp.json() : {};
+      Shopify.init({
+        apiKey: cfg.apiKey || '',
+        shopOrigin: `https://${shopParam}`,
+        forceRedirect: true,
+      });
+    } catch (e) {
+      // Non-fatal: App Bridge is enhancement-only; the dashboard still works.
+      console.warn('[seai] App Bridge init failed:', e?.message ?? e);
+    }
+  }
+  if (shopParam && Store.connections.some((c) => c.shop === shopParam)) {
+    localStorage['seai-active-shop'] = shopParam;
+  }
+
   if (location.pathname === '/') {
-    // Zero-config onboarding is the front door when nothing is connected yet
     history.replaceState(null, '', Store.connections.length ? '/portfolio' : '/start');
   }
   loadSwitcher();
   render();
-  if (new URLSearchParams(location.search).get('connected') && Store.active) toast('Store connected.');
+  if (params.get('connected') && Store.active) toast('Store connected.');
 })();

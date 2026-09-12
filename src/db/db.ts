@@ -70,7 +70,7 @@ class Database {
   async migrate(): Promise<void> {
     if (!this.usePg) return;
     const here = dirname(fileURLToPath(import.meta.url));
-    for (const f of ['schema.sql', 'schema-multistore.sql', 'schema-creation.sql', 'schema-blueprint.sql']) {
+    for (const f of ['schema.sql', 'schema-multistore.sql', 'schema-creation.sql', 'schema-blueprint.sql', 'schema-auth.sql', 'schema-embed.sql']) {
       try {
         await this.pool.query(readFileSync(join(here, f), 'utf8'));
       } catch (e: any) {
