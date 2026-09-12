@@ -45,6 +45,10 @@ export const config = {
       .filter(Boolean),
   },
   aiPrimaryModel: need('AI_PRIMARY_MODEL', ''),
+  // Shared HMAC secret for verifying one-time gateway tickets (Phase 6).
+  // Must match the gateway's GATEWAY_TOKEN_SIGNING_KEY. Generate with:
+  //   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+  gatewaySecret: need('SEAI_GATEWAY_SECRET', ''),
 };
 
 export function maskKeyId(index: number): string {
