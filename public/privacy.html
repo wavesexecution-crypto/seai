@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy Policy — SEAI</title><style>body{font-family:Inter,system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.6;color:#111}h1{font-size:28px}h2{font-size:18px;margin-top:32px}a{color:#111}</style></head><body>
+<h1>Privacy Policy — SEAI</h1><p>Last updated: September 12, 2026</p>
+<p>SEAI (“we”, “us”) operates the SEAI platform at <a href="https://www.seai.store">https://www.seai.store</a> and the Shopify gateway at <a href="https://gateway.seai.store">https://gateway.seai.store</a>.</p>
+<h2>Data we collect</h2><ul>
+<li>Shopify shop domain, shop name and primary domain (to identify your store)</li>
+<li>Shopify Admin API access token (encrypted at rest with AES-256-GCM, never logged or sent to the browser)</li>
+<li>SEAI account email and authentication session (for dashboard access)</li>
+<li>Shopify webhooks (app/uninstalled, shop/update) and GDPR compliance webhooks (customers/data_request, customers/redact, shop/redact)</li>
+<li>Agent runs, tool calls, decisions and observations you create explicitly in SEAI</li>
+</ul>
+<h2>How we use data</h2><p>To operate your store via Shopify Admin API on your behalf (products, orders, inventory, themes, etc.) only after your explicit command and policy check. No store data is sold. No data is used to train third-party models.</p>
+<h2>GDPR</h2><p>On <code>customers/data_request</code> we return the shop’s data within 30 days. On <code>customers/redact</code> and <code>shop/redact</code> we delete the shop’s tokens, store record, machine tokens, events and nonces within 48 hours and return 200.</p>
+<h2>Retention & deletion</h2><p>Uninstalling SEAI via Shopify Admin triggers <code>app/uninstalled</code> → immediate revocation of the access token and link. Request deletion via <a href="mailto:support@seai.store">support@seai.store</a>.</p>
+<h2>Sharing</h2><p>We share data only with Shopify (to call Admin API) and Neon (Postgres hosting, US). No other sharing.</p>
+<h2>Contact</h2><p>Email: <a href="mailto:support@seai.store">support@seai.store</a><br>SEAI — support at https://www.seai.store/support</p>
+</body></html>

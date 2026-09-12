@@ -59,10 +59,33 @@ app.use((_req, _res, next) => { ensureBoot().then(() => next()).catch(next); });
 app.post('/webhooks/:topic', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
   const hmac = req.header('X-Shopify-Hmac-Sha256') ?? '';
   const shop = req.header('X-Shopify-Shop-Domain') ?? '';
+  const topic = req.params.topic;
   if (!verifyWebhook(req.body as Buffer, hmac)) { res.status(401).send('bad hmac'); return; }
   let payload: any = {};
   try { payload = JSON.parse((req.body as Buffer).toString('utf8')); } catch { /* ignore */ }
-  const id = await enqueueEvent(shop, req.params.topic, payload);
+  const id = await enqueueEvent(shop, topic, payload);
+  // GDPR compliance: immediate deletion for redact topics (gateway owns token deletion,
+  // SEAI deletes its own events/sessions for that shop). Return 200 quickly but
+  // ensure data is purged for App Store review.
+  if (topic === 'shop/redact' || topic === 'customers/redact' || topic === 'customers/data_request') {
+    // fire-and-forget purge, do not block webhook response
+    (async () => {
+      try {
+        if (topic === 'shop/redact') {
+          try { await db.query('DELETE FROM shopify_sessions WHERE shop = $1', [shop]); } catch {}
+          try { await db.query('DELETE FROM stores WHERE shop_domain = $1', [shop]); } catch {}
+          try { await db.query('DELETE FROM events WHERE shop = $1', [shop]); } catch {}
+          try { await db.query('DELETE FROM agent_runs WHERE store_id = $1', [shop]); } catch {}
+        } else if (topic === 'customers/redact') {
+          const custId = payload?.customer?.id || payload?.id;
+          if (custId) {
+            try { await db.query('DELETE FROM events WHERE payload::text LIKE $1', [`%${custId}%`]); } catch {}
+          }
+        }
+        // customers/data_request is read-only — just log, no deletion
+      } catch (e) { console.warn('[gdpr] purge failed', String((e as Error).message).slice(0,120)); }
+    })();
+  }
   res.status(202).json({ ok: true, eventId: id });
 });
 
@@ -120,6 +143,10 @@ function authHtml(filename: string): string {
   return join(here, '..', 'public', filename);
 }
 for (const p of ['/sign-in', '/create-account', '/forgot-password', '/reset-password', '/verify-email']) {
+  app.get(p, (_req, res) => { res.sendFile(authHtml(p.slice(1) + '.html')); });
+}
+// App Store required legal pages — serve at clean URLs without .html
+for (const p of ['/privacy', '/terms', '/support']) {
   app.get(p, (_req, res) => { res.sendFile(authHtml(p.slice(1) + '.html')); });
 }
 app.use(express.static(join(here, '..', 'public')));

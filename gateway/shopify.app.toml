@@ -2,7 +2,7 @@
 
 client_id = "60755f0a9ca2782bc89ad891c4a2011c"
 name = "Seai"
-application_url = "https://gateway.seai.store"
+application_url = "https://gateway.seai.store/embed"
 embedded = true
 
 [access_scopes]
