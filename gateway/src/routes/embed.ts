@@ -43,6 +43,7 @@ export function createEmbedRouter(deps: AppDeps): Router {
     const apiKeySafe = escapeHtml(apiKey);
     const entrySafe = escapeHtml(entry);
 
+    const hostSafe = host ? escapeHtml(host) : '';
     res.type('html').send(`<!doctype html>
 <html>
 <head>
@@ -55,11 +56,11 @@ export function createEmbedRouter(deps: AppDeps): Router {
   <script>
     (function () {
       const app = window['app-bridge']
-        ? window['app-bridge'].createApp({ apiKey: "${apiKeySafe}", shopOrigin: "${shopSafe}", forceRedirect: true })
+        ? window['app-bridge'].createApp({ apiKey: "${apiKeySafe}", ${hostSafe ? 'host: "' + hostSafe + '"' : 'shopOrigin: "' + shopSafe + '"'}, forceRedirect: true })
         : null;
       if (!app) { document.body.innerText = 'App Bridge failed to initialise.'; return; }
       app.idToken().then(function (token) {
-        fetch("${entrySafe}?shop=${shopSafe}&host=${host ? escapeHtml(host) : ''}", {
+        fetch("${entrySafe}?shop=${shopSafe}&host=${hostSafe}", {
           headers: { Authorization: 'Bearer ' + token, 'x-shopify-shop-domain': "${shopSafe}" },
           redirect: 'follow'
         }).then(function (resp) {

@@ -205,12 +205,13 @@ export function createApp(options: CreateAppOptions): Express {
   <p>Connecting to SEAI…</p>
   <script>
     (function () {
+      const hostVal = "${hostSafe}";
       const app = window['app-bridge']
-        ? window['app-bridge'].createApp({ apiKey: "${apiKeySafe}", shopOrigin: "${shopSafe}", forceRedirect: true })
+        ? window['app-bridge'].createApp(hostVal ? { apiKey: "${apiKeySafe}", host: hostVal, forceRedirect: true } : { apiKey: "${apiKeySafe}", shopOrigin: "${shopSafe}", forceRedirect: true })
         : null;
       if (!app) { document.body.innerText = 'App Bridge failed to initialise.'; return; }
       app.idToken().then(function (token) {
-        fetch("${entrySafe}?shop=${shopSafe}&host=${hostSafe}", {
+        fetch("${entrySafe}?shop=${shopSafe}" + (hostVal ? "&host=" + encodeURIComponent(hostVal) : ""), {
           headers: { Authorization: 'Bearer ' + token, 'x-shopify-shop-domain': "${shopSafe}" },
           redirect: 'follow'
         }).then(function (resp) {

@@ -78,7 +78,8 @@ export function createTicketService(
       exp: now + ttlSeconds,
     };
     const encoded = encodeBase64(JSON.stringify(payload));
-    const signature = box.signHmac(signingKey, encoded);
+    const rawSig = box.signHmac(signingKey, encoded);
+    const signature = Buffer.from(rawSig, 'base64').toString('base64url').replaceAll('=', '');
     return `${encoded}.${signature}`;
   }
 
@@ -91,7 +92,9 @@ export function createTicketService(
       throw new TicketError('malformed', 'Ticket is not in the expected format.');
     }
     const [encoded, signature] = parts as [string, string];
-    if (!box.verifyHmac(signingKey, encoded, signature)) {
+    // Accept both base64 and base64url signatures for backwards compat
+    const sigBase64 = signature.includes('-') || signature.includes('_') || !signature.includes('=') ? Buffer.from(signature, 'base64url').toString('base64') : signature;
+    if (!box.verifyHmac(signingKey, encoded, sigBase64)) {
       throw new TicketError('invalid_signature', 'Ticket signature verification failed.');
     }
 
@@ -147,5 +150,7 @@ function decodeBase64(input: string): string {
  */
 export function signTicketHMAC(box: CryptoBox, key: string, payload: object): string {
   const encoded = encodeBase64(JSON.stringify(payload));
-  return `${encoded}.${box.signHmac(key, encoded)}`;
+  const raw = box.signHmac(key, encoded);
+  const sig = Buffer.from(raw, 'base64').toString('base64url').replaceAll('=', '');
+  return `${encoded}.${sig}`;
 }
