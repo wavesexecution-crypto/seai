@@ -166,24 +166,67 @@ export function createApp(options: CreateAppOptions): Express {
   });
 
   // --- embedded app entry (Shopify loads `application_url`) ------------------
-  // Shopify's `application_url` is `https://gateway.seai.store`; post-OAuth
-  // callback redirects to `/embed?shop=…&host=…`. When a merchant later opens
-  // Seai from Admin, Shopify re-loads `https://gateway.seai.store/?shop=…&host=…`
-  // inside the iframe (not `/embed`). Without this alias the iframe hits the
-  // generic 404 and Admin shows `admin.shopify.com/.../apps/embed` as not-found.
-  // Keep `/embed` as canonical, but alias `/` → `/embed` (query-preserving) so
-  // both `/?shop=…` and `/embed?shop=…` bootstrap App Bridge correctly.
+  // Shopify's `application_url` is `https://gateway.seai.store/embed` (seai-4).
+  // Older installs and direct `https://gateway.seai.store/?shop=…&host=…` (Admin
+  // iframe) must not 404. Serve the same App Bridge bootstrap at `/` as at
+  // `/embed` — do NOT redirect, because Shopify's iframe loader may not follow
+  // a 302 as the top-level embedded document. Direct render keeps one request
+  // and preserves both `shop` and `host` exactly.
   app.get('/', (req, res) => {
-    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-    // If SEAI-style `shop` param present, boot the embedded app; otherwise
-    // treat root as the embedded entry as well so the iframe never 404s.
     if (typeof req.query.shop === 'string' && req.query.shop.length > 0) {
-      res.redirect(302, `/embed${qs}`);
+      // Re-use the /embed handler logic without a redirect
+      req.url = '/embed' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
+      // Fall through to the /embed router via next()
+      // Temporarily mount: call the embed router directly
+      // Simpler: delegate to the embed router by re-invoking its logic inline
+      // We inline the minimal bootstrap to avoid double-router complexity.
+      const shop = req.query.shop as string;
+      const host = typeof req.query.host === 'string' ? req.query.host : undefined;
+      const apiKey = config.shopifyApiKey;
+      const appUrl = config.shopifyAppUrl;
+      if (!shop || !apiKey || !appUrl) {
+        res.status(400).send('Missing shop / apiKey / appUrl.');
+        return;
+      }
+      const entry = `${appUrl.replace(/\/+$/, '')}/embed/activity`;
+      const esc = (v: string) => v.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+      const shopSafe = esc(shop);
+      const apiKeySafe = esc(apiKey);
+      const entrySafe = esc(entry);
+      const hostSafe = host ? esc(host) : '';
+      res.type('html').send(`<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>SEAI</title>
+  <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+</head>
+<body>
+  <p>Connecting to SEAI…</p>
+  <script>
+    (function () {
+      const app = window['app-bridge']
+        ? window['app-bridge'].createApp({ apiKey: "${apiKeySafe}", shopOrigin: "${shopSafe}", forceRedirect: true })
+        : null;
+      if (!app) { document.body.innerText = 'App Bridge failed to initialise.'; return; }
+      app.idToken().then(function (token) {
+        fetch("${entrySafe}?shop=${shopSafe}&host=${hostSafe}", {
+          headers: { Authorization: 'Bearer ' + token, 'x-shopify-shop-domain': "${shopSafe}" },
+          redirect: 'follow'
+        }).then(function (resp) {
+          if (resp.redirected) { window.location.href = resp.url; }
+          else if (resp.status === 401) { window.location.href = "/auth?shop=" + encodeURIComponent("${shopSafe}"); }
+          else { document.body.innerText = 'Unexpected response: ' + resp.status; }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>`);
       return;
     }
-    // No shop (direct navigation/crawler) — also bootstrap embed; the embed
-    // handler will return 400 with a helpful message if shop/apiKey missing.
-    // Using redirect keeps one canonical bootstrap implementation.
+    // No shop param: redirect to /embed so crawler/direct visit still boots
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     if (qs) {
       res.redirect(302, `/embed${qs}`);
       return;
