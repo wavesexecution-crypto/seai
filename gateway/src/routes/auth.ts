@@ -44,7 +44,9 @@ export function createAuthRouter(deps: AppDeps): Router {
     const cleanShop = shopify.sanitizeShop(shopValue, true) ?? shopValue;
     const scopes = (config.shopifyApiScopes ?? []).join(',');
     const state = randomToken(32);
-    await store.setNonceIfAbsent(`oauth:${state}`, new Date(Date.now() + OAUTH_NONCE_TTL_MS));
+    // Bind state to shop for CSRF: state generated for shop A cannot be
+    // replayed for shop B. Key is `oauth:<shop>:<state>`.
+    await store.setNonceIfAbsent(`oauth:${cleanShop}:${state}`, new Date(Date.now() + OAUTH_NONCE_TTL_MS));
 
     const params = new URLSearchParams({
       client_id: apiKey,
@@ -77,22 +79,24 @@ export function createAuthRouter(deps: AppDeps): Router {
       return;
     }
 
-    // 1) One-time state: consume before any exchange (replay prevention).
-    if (!(await store.consumeNonce(`oauth:${state}`))) {
-      sendError(res, 400, 'invalid_state', 'OAuth state could not be verified.');
+    // 1) OAuth callback HMAC — must be verified over the *full* callback
+    // query string as Shopify sent it (excluding hmac/signature, sorted,
+    // with host/timestamp etc. included). This is checked *before* consuming
+    // the one-time state so a failed HMAC does not burn the nonce and mask
+    // the real error with a subsequent `invalid_state`.
+    if (!(await shopify.validateOauthHmac(req.query as Record<string, unknown>))) {
+      sendError(res, 400, 'invalid_hmac', 'OAuth callback HMAC is invalid.');
       return;
     }
 
-    // 2) OAuth callback HMAC — must be verified over the *full* callback
-    // query string as Shopify sent it (excluding hmac/signature, sorted,
-    // with host/timestamp etc. included). The previous implementation passed
-    // only {shop,code,state,timestamp}, omitting `host` and `hmac` itself,
-    // so `shopify.utils.validateHmac` always failed (missing hmac) or
-    // produced a mismatched local HMAC. Pass the entire req.query bag;
-    // `shopify.validateOauthHmac` filters to string values and lets the
-    // library handle canonicalization (ProcessedQuery + timing-safe compare).
-    if (!(await shopify.validateOauthHmac(req.query as Record<string, unknown>))) {
-      sendError(res, 400, 'invalid_hmac', 'OAuth callback HMAC is invalid.');
+    // 2) One-time state: atomically consume the shop-bound nonce. This is
+    // bound to `cleanShop` so a state issued for shop A cannot be replayed
+    // for shop B, and it is one-time (consume deletes it) with TTL enforced
+    // by the store. The previous bug consumed state *before* HMAC, so a
+    // transient HMAC failure would burn the nonce and surface as
+    // `invalid_state` on retry. Now HMAC is validated first.
+    if (!(await store.consumeNonce(`oauth:${cleanShop}:${state}`))) {
+      sendError(res, 400, 'invalid_state', 'OAuth state could not be verified.');
       return;
     }
 
