@@ -83,8 +83,15 @@ export function createAuthRouter(deps: AppDeps): Router {
       return;
     }
 
-    // 2) Legacy query HMAC (shop + code + state + timestamp).
-    if (!(await shopify.validateOauthHmac({ shop: cleanShop, code, state, timestamp: req.query.timestamp }))) {
+    // 2) OAuth callback HMAC — must be verified over the *full* callback
+    // query string as Shopify sent it (excluding hmac/signature, sorted,
+    // with host/timestamp etc. included). The previous implementation passed
+    // only {shop,code,state,timestamp}, omitting `host` and `hmac` itself,
+    // so `shopify.utils.validateHmac` always failed (missing hmac) or
+    // produced a mismatched local HMAC. Pass the entire req.query bag;
+    // `shopify.validateOauthHmac` filters to string values and lets the
+    // library handle canonicalization (ProcessedQuery + timing-safe compare).
+    if (!(await shopify.validateOauthHmac(req.query as Record<string, unknown>))) {
       sendError(res, 400, 'invalid_hmac', 'OAuth callback HMAC is invalid.');
       return;
     }
