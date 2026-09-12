@@ -84,7 +84,55 @@ export function createAuthRouter(deps: AppDeps): Router {
     // with host/timestamp etc. included). This is checked *before* consuming
     // the one-time state so a failed HMAC does not burn the nonce and mask
     // the real error with a subsequent `invalid_state`.
-    if (!(await shopify.validateOauthHmac(req.query as Record<string, unknown>))) {
+    // SAFE diagnostic: log only metadata (never code/hmac/state values) to
+    // diagnose real Shopify vs synthetic HMAC discrepancies.
+    {
+      const q = req.query as Record<string, unknown>;
+      const paramNames = Object.keys(q).sort();
+      const hmacVal = typeof q.hmac === 'string' ? (q.hmac as string) : '';
+      const stateVal = typeof q.state === 'string' ? (q.state as string) : '';
+      const codeVal = typeof q.code === 'string' ? (q.code as string) : '';
+      const hostVal = typeof q.host === 'string' ? (q.host as string) : '';
+      const tsVal = q.timestamp;
+      logger.info(
+        {
+          shop: cleanShop,
+          requestId: (req as unknown as { requestId?: string }).requestId,
+          paramNames,
+          hasCode: !!codeVal,
+          codeLen: codeVal.length,
+          hasHmac: !!hmacVal,
+          hmacLen: hmacVal.length,
+          hasState: !!stateVal,
+          stateLen: stateVal.length,
+          hasHost: !!hostVal,
+          hostLen: hostVal.length,
+          hasShop: !!shopValue,
+          timestamp: typeof tsVal === 'string' || typeof tsVal === 'number' ? String(tsVal) : typeof tsVal,
+          timestampLen: String(tsVal ?? '').length,
+          // Also log whether raw query contains duplicate keys (array values)
+          hasArrayParams: Object.values(q).some((v) => Array.isArray(v)),
+        },
+        'OAuth callback received (metadata only)',
+      );
+    }
+    const hmacValid = await shopify.validateOauthHmac(req.query as Record<string, unknown>);
+    // Second diagnostic: result and HMAC metadata (no values)
+    {
+      const q = req.query as Record<string, unknown>;
+      const hmacLen = typeof q.hmac === 'string' ? (q.hmac as string).length : 0;
+      logger.info(
+        {
+          shop: cleanShop,
+          hmacValid,
+          hmacLen,
+          paramCount: Object.keys(q).length,
+          requestId: (req as unknown as { requestId?: string }).requestId,
+        },
+        hmacValid ? 'OAuth HMAC PASSED' : 'OAuth HMAC FAILED',
+      );
+    }
+    if (!hmacValid) {
       sendError(res, 400, 'invalid_hmac', 'OAuth callback HMAC is invalid.');
       return;
     }
