@@ -84,8 +84,10 @@ export function createAuthRouter(deps: AppDeps): Router {
     // with host/timestamp etc. included). This is checked *before* consuming
     // the one-time state so a failed HMAC does not burn the nonce and mask
     // the real error with a subsequent `invalid_state`.
-    // SAFE diagnostic: log only metadata (never code/hmac/state values) to
-    // diagnose real Shopify vs synthetic HMAC discrepancies.
+    // SAFE diagnostics: metadata only (never code/hmac/state values) to
+    // diagnose real Shopify vs synthetic HMAC discrepancies. Includes
+    // timestamp freshness, raw URL, and whether extra params (id_token, etc.)
+    // are present that could affect HMAC canonicalization. Never log secrets.
     {
       const q = req.query as Record<string, unknown>;
       const paramNames = Object.keys(q).sort();
@@ -94,11 +96,28 @@ export function createAuthRouter(deps: AppDeps): Router {
       const codeVal = typeof q.code === 'string' ? (q.code as string) : '';
       const hostVal = typeof q.host === 'string' ? (q.host as string) : '';
       const tsVal = q.timestamp;
+      const tsNum = Number(tsVal);
+      const nowSec = Math.trunc(Date.now() / 1000);
+      const tsDiffSec = Number.isFinite(tsNum) ? nowSec - tsNum : null;
+      const tsWithinTolerance = tsDiffSec !== null ? Math.abs(tsDiffSec) <= 90 : null;
+      // raw URL without values: keep only keys + lengths, not values, for privacy
+      const rawUrl = req.originalUrl || req.url || '';
+      const rawQuery = rawUrl.includes('?') ? rawUrl.slice(rawUrl.indexOf('?') + 1) : '';
+      const rawParamKeys = rawQuery
+        ? rawQuery
+            .split('&')
+            .map((p) => p.split('=')[0])
+            .filter(Boolean)
+            .sort()
+        : [];
+      const hasIdToken = 'id_token' in q;
+      const hasSession = 'session' in q;
       logger.info(
         {
           shop: cleanShop,
           requestId: (req as unknown as { requestId?: string }).requestId,
           paramNames,
+          rawParamKeys,
           hasCode: !!codeVal,
           codeLen: codeVal.length,
           hasHmac: !!hmacVal,
@@ -108,31 +127,46 @@ export function createAuthRouter(deps: AppDeps): Router {
           hasHost: !!hostVal,
           hostLen: hostVal.length,
           hasShop: !!shopValue,
+          hasIdToken,
+          hasSession,
+          idTokenLen: hasIdToken && typeof q.id_token === 'string' ? (q.id_token as string).length : 0,
           timestamp: typeof tsVal === 'string' || typeof tsVal === 'number' ? String(tsVal) : typeof tsVal,
           timestampLen: String(tsVal ?? '').length,
-          // Also log whether raw query contains duplicate keys (array values)
+          timestampDiffSec: tsDiffSec,
+          timestampWithinTolerance: tsWithinTolerance,
+          serverNowSec: nowSec,
           hasArrayParams: Object.values(q).some((v) => Array.isArray(v)),
+          // Log param types (not values) to detect number vs string vs array mismatches
+          paramTypes: Object.fromEntries(paramNames.map((k) => [k, Array.isArray(q[k]) ? 'array' : typeof q[k]])),
         },
         'OAuth callback received (metadata only)',
       );
     }
     const hmacValid = await shopify.validateOauthHmac(req.query as Record<string, unknown>);
-    // Second diagnostic: result and HMAC metadata (no values)
+    // Second diagnostic: result + whether failure is timestamp-related
     {
       const q = req.query as Record<string, unknown>;
       const hmacLen = typeof q.hmac === 'string' ? (q.hmac as string).length : 0;
+      const tsNum = Number(q.timestamp);
+      const nowSec = Math.trunc(Date.now() / 1000);
+      const tsDiffSec = Number.isFinite(tsNum) ? nowSec - tsNum : null;
       logger.info(
         {
           shop: cleanShop,
           hmacValid,
           hmacLen,
           paramCount: Object.keys(q).length,
+          timestampDiffSec: tsDiffSec,
+          timestampStale: tsDiffSec !== null ? Math.abs(tsDiffSec) > 90 : null,
           requestId: (req as unknown as { requestId?: string }).requestId,
         },
         hmacValid ? 'OAuth HMAC PASSED' : 'OAuth HMAC FAILED',
       );
     }
     if (!hmacValid) {
+      // For stale timestamps, the HMAC library throws InvalidHmacError before
+      // comparing digests. Surface the generic invalid_hmac but the log above
+      // already shows timestampStale=true so we can distinguish stale vs mismatch.
       sendError(res, 400, 'invalid_hmac', 'OAuth callback HMAC is invalid.');
       return;
     }
