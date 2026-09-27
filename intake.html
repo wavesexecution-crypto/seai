@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Build your website — SEAI</title>
+<meta name="description" content="Tell us about your business. SEAI builds the website. You approve it. We put it live." />
+<meta name="theme-color" content="#0a0a0b" />
+<link rel="canonical" href="https://seai.store/intake.html" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="SEAI" />
+<meta property="og:title" content="Build your website — SEAI" />
+<meta property="og:description" content="Tell us about your business. SEAI builds the website. You approve it. We put it live." />
+<meta property="og:image" content="/og-cover.svg" />
+<meta property="og:url" content="https://seai.store/intake.html" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Build your website — SEAI" />
+<meta name="twitter:description" content="Tell us about your business. SEAI builds the website. You approve it. We put it live." />
+<meta name="twitter:image" content="/og-cover.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<script type="module" src="/src/main.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-in">
+    <a class="brand" href="/" aria-label="SEAI — home">
+      <img src="/logo.svg" width="26" height="26" alt="" />
+      <span>SEAI</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/index.html#how">How it works</a>
+      <a href="/index.html#examples">Examples</a>
+      <a href="/index.html#pricing">Pricing</a>
+      <a href="/index.html#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-dark" href="/intake.html">Build my website <span class="arr" aria-hidden="true">→</span></a>
+    </div>
+    <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <span></span><span></span>
+    </button>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
+    <a href="/index.html#how">How it works</a>
+    <a href="/index.html#examples">Examples</a>
+    <a href="/index.html#pricing">Pricing</a>
+    <a href="/index.html#faq">FAQ</a>
+    <span class="m-sep" aria-hidden="true"></span>
+    <a class="btn btn-dark m-cta" href="/intake.html">Build my website <span class="arr" aria-hidden="true">→</span></a>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- INTAKE HERO -->
+  <section class="intake-hero" aria-labelledby="intake-title">
+    <div class="container">
+      <p class="eyebrow reveal">Start your project</p>
+      <h1 id="intake-title" class="intake-title reveal">Tell us about your business.</h1>
+      <p class="intake-sub reveal">This takes about 5 minutes. The more detail you give, the better the result.</p>
+      <div class="intake-progress reveal" aria-label="Progress: Step 1 of 4">
+        <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-fill" style="width: 25%"></div>
+        </div>
+        <div class="progress-steps">
+          <span class="step active" data-step="1"><i>1</i> Basics</span>
+          <span class="step" data-step="2"><i>2</i> Details</span>
+          <span class="step" data-step="3"><i>3</i> Style</span>
+          <span class="step" data-step="4"><i>4</i> Review</span>
+        </div>
+        <p class="progress-label">Basics → Details → Style → Review</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTAKE FORM -->
+  <section class="intake-form-section">
+    <div class="container">
+      <form id="intake-form" class="intake-form" novalidate>
+        <!-- STEP 1: BASICS -->
+        <fieldset class="form-step" data-step="1" aria-labelledby="step1-title">
+          <legend id="step1-title" class="step-title"><span class="step-num">01</span> Basics</legend>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="business-name">Business name *</label>
+              <input type="text" id="business-name" name="businessName" required autocomplete="organization" placeholder="e.g., Basil & Thyme" />
+            </div>
+            <div class="form-field">
+              <label for="business-type">Business type *</label>
+              <select id="business-type" name="businessType" required>
+                <option value="">Select type</option>
+                <option value="restaurant">Restaurant / Cafe / Bar</option>
+                <option value="gym">Gym / Fitness Studio / Yoga</option>
+                <option value="salon">Salon / Spa / Beauty / Barber</option>
+                <option value="clinic">Clinic / Medical / Dental / Wellness</option>
+                <option value="consultant">Consultant / Coach / Professional Services</option>
+                <option value="agency">Agency / Creative / Marketing / Design</option>
+                <option value="realestate">Real Estate / Property</option>
+                <option value="localservice">Local Service (Plumbing, Electrical, HVAC, etc.)</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-field full-width">
+              <label for="what-you-do">What does your business do? *</label>
+              <textarea id="what-you-do" name="whatYouDo" required rows="4" placeholder="Describe your business in a few sentences. What do you offer? Who is it for? What makes you different?"></textarea>
+              <p class="field-hint">This helps us write your copy and structure the site.</p>
+            </div>
+            <div class="form-field">
+              <label for="location">Location (city, area) *</label>
+              <input type="text" id="location" name="location" required autocomplete="address-level2" placeholder="e.g., Bandra West, Mumbai" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- STEP 2: CONTACT & DETAILS -->
+        <fieldset class="form-step" data-step="2" aria-labelledby="step2-title" hidden>
+          <legend id="step2-title" class="step-title"><span class="step-num">02</span> Details</legend>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="phone">Phone *</label>
+              <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="+91 98765 43210" />
+            </div>
+            <div class="form-field">
+              <label for="whatsapp">WhatsApp number</label>
+              <input type="tel" id="whatsapp" name="whatsapp" autocomplete="tel" placeholder="+91 98765 43210 (if different)" />
+              <p class="field-hint">Optional. Enables click-to-WhatsApp button on your site.</p>
+            </div>
+            <div class="form-field">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required autocomplete="email" placeholder="hello@yourbusiness.com" />
+            </div>
+            <div class="form-field">
+              <label for="instagram">Instagram</label>
+              <input type="text" id="instagram" name="instagram" placeholder="@yourhandle" />
+              <p class="field-hint">Optional. We'll add an Instagram link in the footer.</p>
+            </div>
+            <div class="form-field full-width">
+              <label for="existing-site">Existing website</label>
+              <input type="url" id="existing-site" name="existingSite" placeholder="https://yourcurrentwebsite.com" />
+              <p class="field-hint">Optional. Helps us understand what you have today.</p>
+            </div>
+            <div class="form-field full-width">
+              <label for="primary-goal">Primary website goal *</label>
+              <select id="primary-goal" name="primaryGoal" required>
+                <option value="">Select primary goal</option>
+                <option value="leads">Get more leads / inquiries</option>
+                <option value="bookings">Get bookings / appointments</option>
+                <option value="phone">Get phone calls / WhatsApp messages</option>
+                <option value="credibility">Establish credibility / professional presence</option>
+                <option value="sales">Sell products / services online</option>
+                <option value="other">Other</option>
+              </select>
+              <p class="field-hint">This decides what every page is designed to make the visitor do.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- STEP 3: STYLE & PREFERENCES -->
+        <fieldset class="form-step" data-step="3" aria-labelledby="step3-title" hidden>
+          <legend id="step3-title" class="step-title"><span class="step-num">03</span> Style</legend>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="logo">Logo</label>
+              <div class="file-upload" id="logo-upload">
+                <input type="file" id="logo" name="logo" accept="image/*" hidden />
+                <button type="button" class="btn btn-ghost btn-sm file-btn" aria-label="Upload logo">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Upload logo</span>
+                </button>
+                <p class="file-name" aria-live="polite">No file chosen</p>
+                <p class="field-hint">Optional. SVG, PNG, or JPG. Max 2MB.</p>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="photos">Photos</label>
+              <div class="file-upload" id="photos-upload">
+                <input type="file" id="photos" name="photos" accept="image/*" multiple hidden />
+                <button type="button" class="btn btn-ghost btn-sm file-btn" aria-label="Upload photos">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Upload photos</span>
+                </button>
+                <p class="file-name" aria-live="polite">No files chosen</p>
+                <p class="field-hint">Optional. Up to 10 images. Max 5MB each.</p>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label>Preferred style</label>
+              <div class="style-options" role="radiogroup" aria-label="Preferred visual style">
+                <label class="style-option">
+                  <input type="radio" name="preferredStyle" value="modern" />
+                  <div class="style-card">
+                    <div class="style-preview modern"></div>
+                    <span>Modern</span>
+                    <small>Clean, minimal, lots of whitespace</small>
+                  </div>
+                </label>
+                <label class="style-option">
+                  <input type="radio" name="preferredStyle" value="classic" />
+                  <div class="style-card">
+                    <div class="style-preview classic"></div>
+                    <span>Classic</span>
+                    <small>Timeless, editorial, serif headlines</small>
+                  </div>
+                </label>
+                <label class="style-option">
+                  <input type="radio" name="preferredStyle" value="bold" />
+                  <div class="style-card">
+                    <div class="style-preview bold"></div>
+                    <span>Bold</span>
+                    <small>High contrast, strong typography</small>
+                  </div>
+                </label>
+                <label class="style-option">
+                  <input type="radio" name="preferredStyle" value="warm" />
+                  <div class="style-card">
+                    <div class="style-preview warm"></div>
+                    <span>Warm</span>
+                    <small>Inviting, organic, earth tones</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label for="required-pages">Required pages / sections</label>
+              <div class="checkbox-group" role="group" aria-label="Required pages">
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="home" checked /> Home / Hero</label>
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="about" /> About Us</label>
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="services" /> Services / Menu</label>
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="gallery" /> Gallery / Portfolio</label>
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="team" /> Team / Providers</label>
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="testimonials" /> Testimonials / Reviews</label>
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="blog" /> Blog / News</label>
+                <label class="checkbox-label"><input type="checkbox" name="pages" value="contact" checked /> Contact / Book</label>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label for="anything-else">Additional requirements</label>
+              <textarea id="anything-else" name="anythingElse" rows="3" placeholder="Integrations you need, competitors you like, things to avoid, pages you already have copy for..."></textarea>
+              <p class="field-hint">Optional. Anything specific we should know before we start.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- STEP 4: REVIEW & SUBMIT -->
+        <fieldset class="form-step" data-step="4" aria-labelledby="step4-title" hidden>
+          <legend id="step4-title" class="step-title"><span class="step-num">04</span> Review</legend>
+          <div class="review-summary" id="review-summary">
+            <p class="review-note">Review your information below. You can go back to edit any section.</p>
+          </div>
+          <div class="plan-selection">
+            <p class="plan-label">Your selected plan</p>
+            <div class="plan-cards" role="radiogroup" aria-label="Select plan" id="plan-cards">
+              <label class="plan-card" data-plan="starter">
+                <input type="radio" name="plan" value="starter" />
+                <div class="plan-info">
+                  <strong>STARTER</strong>
+                  <span>₹2,999</span>
+                  <small>One-page website · 2 revisions</small>
+                </div>
+              </label>
+              <label class="plan-card selected" data-plan="business">
+                <input type="radio" name="plan" value="business" checked />
+                <div class="plan-info">
+                  <strong>BUSINESS</strong>
+                  <span>₹4,999</span>
+                  <small>Multi-section · 4 revisions · Blog · Maps</small>
+                </div>
+                <span class="plan-badge">Popular</span>
+              </label>
+              <label class="plan-card" data-plan="complete">
+                <input type="radio" name="plan" value="complete" />
+                <div class="plan-info">
+                  <strong>COMPLETE</strong>
+                  <span>₹7,999</span>
+                  <small>Custom copy · Full SEO · Integrations · Domain · 90 days support</small>
+                </div>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- NAVIGATION (single row for all steps) -->
+        <div class="step-nav" aria-label="Form navigation">
+          <button type="button" class="btn btn-ghost btn-lg" id="nav-prev" hidden>← Back</button>
+          <button type="button" class="btn btn-dark btn-lg" id="nav-next">Continue <span class="arr" aria-hidden="true">→</span></button>
+          <button type="submit" class="btn btn-dark btn-lg" id="submit-btn" hidden>Start building <span class="arr" aria-hidden="true">→</span></button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- SUCCESS STATE (shown after submit) -->
+  <section class="intake-success" id="intake-success" hidden aria-labelledby="success-title">
+    <div class="container">
+      <div class="success-card reveal">
+        <div class="success-icon" aria-hidden="true">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+        </div>
+        <h2 id="success-title">Your website is in motion.</h2>
+        <p class="success-message">We've received your brief. Our team will review it and start building.</p>
+        <div class="success-details">
+          <p><strong>Business:</strong> <span id="success-business"></span></p>
+          <p><strong>Plan:</strong> <span id="success-plan"></span></p>
+          <p><strong>Next:</strong> Complete your payment to place your project in the build queue. A confirmation and payment receipt will be sent to <span id="success-email"></span>.</p>
+        </div>
+        <p class="success-ref" id="success-ref"></p>
+        <div class="success-actions">
+          <a class="btn btn-dark btn-lg" href="/intake.html">Continue to payment <span class="arr" aria-hidden="true">→</span></a>
+          <a class="btn btn-ghost btn-lg" href="/">Back to home</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-left">
+      <p class="footer-brand"><img src="/logo.svg" width="22" height="22" alt="" /><span>SEAI</span></p>
+      <p class="footer-tag">Website building, simplified.</p>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="/index.html#examples">Examples</a>
+      <a href="/index.html#pricing">Pricing</a>
+      <a href="/index.html#faq">FAQ</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="mailto:hello@seai.store">Contact</a>
+    </nav>
+  </div>
+  <div class="container fit-bottom">
+    <p class="copyright">© <span class="year">2026</span> SEAI. All rights reserved.</p>
+  </div>
+</footer>
+</body>
+</html>

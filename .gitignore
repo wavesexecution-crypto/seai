@@ -1,0 +1,18 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+
+# downloaded demo photography cache: ~1000 Pexels search thumbnails.
+# Regenerate with `npm run fetch:demo-images`; the curated, optimised images
+# that the site actually serves live in public/assets/demos/ and ARE committed.
+.imgcache/
+
+# local QA / tooling artefacts
+.playwright-mcp/
+qa-tmp/

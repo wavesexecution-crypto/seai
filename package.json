@@ -1,0 +1,32 @@
+{
+    "name":  "seai-public",
+    "private":  true,
+    "version":  "2.0.0",
+    "description":  "SEAI — AI-built websites for real businesses. Premium website delivery service.",
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "vite",
+    "build": "vite build && node scripts/inline-page-css.mjs",
+                    "preview":  "vite preview",
+                    "typecheck":  "tsc --noEmit",
+                    "sync:demo-css":  "node scripts/inline-demo-css.mjs",
+                    "fetch:demo-images":  "node scripts/fetch-demo-images.mjs",
+                    "optimize:demo-images":  "python scripts/optimize-demo-images.py"
+                },
+    "devDependencies":  {
+                            "@types/react":  "^19.3.0",
+                            "@types/react-dom":  "^19.3.0",
+                            "@vitejs/plugin-react":  "^5.2.0",
+                            "autoprefixer":  "^10.6.1",
+                            "playwright-core":  "^1.63.0",
+                            "postcss":  "^8.5.28",
+                            "tailwindcss":  "^3.4.19",
+                            "typescript":  "^7.0.2",
+                            "vite":  "^6.3.5"
+                        },
+    "dependencies":  {
+                         "gsap":  "^3.15.0",
+                         "react":  "^19.3.0",
+                         "react-dom":  "^19.3.0"
+                     }
+}

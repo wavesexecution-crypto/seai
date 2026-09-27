@@ -1,0 +1,106 @@
+/* ============================================================
+   SEAI — legal + utility pages
+   ============================================================ */
+
+.legal-main {
+  background: var(--bg);
+  padding: clamp(64px, 9vw, 120px) 0 clamp(96px, 12vw, 160px);
+}
+.legal-article {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.legal-eyebrow {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.legal-title {
+  font-size: clamp(30px, 4vw, 48px);
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 30px;
+}
+.legal-meta {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+  margin-top: 22px;
+}
+.legal-article h2 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.004em;
+  color: var(--ink);
+  margin-top: 40px;
+}
+.legal-article p {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--sub);
+  margin-top: 14px;
+}
+.legal-article ul {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+.legal-article li {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--sub);
+  padding: 4px 0 4px 24px;
+  position: relative;
+}
+.legal-article li::before {
+  content: "\2014";
+  position: absolute;
+  left: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--faint);
+}
+.legal-article a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+@media (max-width: 980px) {
+  .legal-header .header-actions { display: flex; }
+}
+
+/* ---------- 404 ---------- */
+.err {
+  min-height: 72vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: var(--bg);
+  padding: 0 var(--pad-x);
+}
+.err-code {
+  font-family: var(--mono);
+  font-size: clamp(72px, 12vw, 128px);
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.err-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  color: var(--ink);
+  margin-top: 20px;
+}
+.err-copy {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--sub);
+  max-width: 42ch;
+  margin-top: 14px;
+}
+.err .btn { margin-top: 30px; }

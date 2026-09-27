@@ -1,0 +1,1634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Real Estate Demo</title>
+<meta name="description" content="Real estate demo website with property listings, agents, and valuation." />
+<meta name="theme-color" content="#0f172a" />
+<link rel="canonical" href="https://seai.store/examples/real-estate" />
+<link rel="preload" href="/fonts/inter-latin-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/instrument-serif-latin-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/jetbrains-mono-latin-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<!--DEMO-CSS:START-->
+<style>/* SEAI demo styles — inlined from public/demo.css. Do not edit here; edit public/demo.css and run: npm run sync:demo-css */
+/* ============================================================================
+   SEAI — Demo Showroom · shared design system
+   ----------------------------------------------------------------------------
+   ONE source of truth for the six standalone demo sites:
+   Restaurant · Gym · Salon · Clinic · Real Estate · Business
+
+   Principles
+   - Editorial composition, obsessive clarity, information density without noise
+   - Expensive through type, scale, spacing, material and precision — never
+     through gradients, glow, glassmorphism, heavy radii or decorative motion
+   - Information is part of the composition, not an afterthought
+   - Motion is restrained: opacity + translate only, single easing curve
+
+   Per-demo art direction is expressed through the --d-* custom properties on
+   .demo-body, so one system yields six distinct visual worlds.
+   ========================================================================== */
+
+/* ----------------------------------------------------------------- fonts -- */
+/* Self-hosted so the demos make no third-party request, can be preloaded,
+   and actually render the families the tokens ask for. Previously the
+   pages loaded Cormorant Garamond (never used) while --f-serif and
+   --f-mono silently fell back to system faces. */
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: optional;
+  src: url("/fonts/instrument-serif-latin-italic.woff2") format("woff2");
+  unicode-range: U+20B9, U+2190, U+2191, U+2192, U+2193, U+2212, U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url("/fonts/instrument-serif-latin-normal.woff2") format("woff2");
+  unicode-range: U+20B9, U+2190, U+2191, U+2192, U+2193, U+2212, U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: optional;
+  src: url("/fonts/inter-latin-normal.woff2") format("woff2");
+  unicode-range: U+20B9, U+2190, U+2191, U+2192, U+2193, U+2212, U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: optional;
+  src: url("/fonts/jetbrains-mono-latin-normal.woff2") format("woff2");
+  unicode-range: U+20B9, U+2190, U+2191, U+2192, U+2193, U+2212, U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ---------------------------------------------------------------- tokens -- */
+:root {
+  /* type */
+  --f-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --f-serif: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* geometry */
+  --pad-x: clamp(20px, 5vw, 72px);
+  --sec-y: clamp(88px, 11vw, 200px);
+  --maxw: 1440px;
+  --maxw-text: 68ch;
+  --hair: 1px;
+
+  /* motion — one curve, used everywhere */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --t-fast: 160ms;
+  --t-med: 380ms;
+  --t-slow: 720ms;
+
+  /* per-demo overrides (set on .demo-body) */
+  --d-bg: #fbfbfa;
+  --d-ink: #0b0b0c;
+  --d-sub: #56565e;
+  --d-faint: #8e8e96;
+  --d-line: rgba(11, 11, 12, 0.1);
+  --d-line-soft: rgba(11, 11, 12, 0.055);
+  --d-fill: rgba(11, 11, 12, 0.028);
+  --d-fill-2: rgba(11, 11, 12, 0.055);
+  --d-accent: #0b0b0c;
+  --d-on-accent: #ffffff;
+  --d-radius: 3px;
+  --d-radius-lg: 4px;
+  --d-display: var(--f-sans);
+  --d-display-weight: 500;
+  --d-display-tracking: -0.035em;
+  --d-shadow: 0 1px 2px rgba(11, 11, 12, 0.04);
+  --d-hero-media: 62vh;
+}
+
+/* --------------------------------------------------------------- reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* keep anchored sections clear of the sticky header */
+  scroll-padding-top: 92px;
+}
+body {
+  background: var(--d-bg);
+  color: var(--d-ink);
+  font-family: var(--f-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-feature-settings: "cv11" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+img, svg, video { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; }
+ul, ol { list-style: none; }
+table { border-collapse: collapse; width: 100%; }
+::selection { background: var(--d-ink); color: var(--d-bg); }
+:focus-visible { outline: 2px solid var(--d-ink); outline-offset: 3px; border-radius: 2px; }
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 400;
+  background: var(--d-ink); color: var(--d-bg);
+  padding: 12px 20px; font-size: 13px; font-weight: 500;
+}
+.skip:focus { left: 0; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+/* components below set explicit display; without this, [hidden] loses */
+[hidden] { display: none !important; }
+
+/* A hero sitting on a dark photograph cannot inherit a light theme's ink, or
+   its numbers vanish against the image. Page-local blocks pin the colour. */
+.hero--dark .metrics__n,
+.hero--dark .metrics__k { color: #fdfaf5; }
+
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+.container--narrow { max-width: 1080px; }
+.container--text { max-width: 820px; }
+
+/* ----------------------------------------------------------- typography --- */
+.eyebrow, .section-tag, .hero-tag {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--d-faint);
+  font-weight: 500;
+}
+.display {
+  font-family: var(--d-display);
+  font-weight: var(--d-display-weight);
+  letter-spacing: var(--d-display-tracking);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.display--xl { font-size: clamp(2.75rem, 8.2vw, 7.5rem); }
+.display--l  { font-size: clamp(2.1rem, 5.2vw, 4.25rem); line-height: 1.02; }
+.display--m  { font-size: clamp(1.6rem, 3.2vw, 2.6rem); line-height: 1.08; }
+.display--serif {
+  font-family: var(--f-serif);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.02;
+}
+.lede {
+  font-size: clamp(1.0625rem, 1.35vw, 1.3125rem);
+  line-height: 1.5;
+  color: var(--d-sub);
+  max-width: 54ch;
+  text-wrap: pretty;
+}
+.prose { color: var(--d-sub); line-height: 1.7; max-width: var(--maxw-text); }
+.prose p + p { margin-top: 1.1em; }
+.meta {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--d-faint);
+}
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* --------------------------------------------------------------- layout --- */
+.section { padding-block: var(--sec-y); position: relative; }
+.section--tight { padding-block: clamp(56px, 7vw, 110px); }
+.section--flush-top { padding-top: 0; }
+.section--alt { background: var(--d-fill); }
+.section--ink { background: var(--d-ink); color: var(--d-bg); }
+.section--ink .lede, .section--ink .prose { color: rgba(255, 255, 255, 0.62); }
+.section--ink .section-tag { color: rgba(255, 255, 255, 0.42); }
+.section--ink .display { color: var(--d-bg); }
+.section--hair { border-top: var(--hair) solid var(--d-line); }
+
+.section-head { margin-bottom: clamp(40px, 5.5vw, 80px); }
+.section-head .section-tag { display: block; margin-bottom: 22px; }
+.section-head .lede { margin-top: 22px; }
+.section-head--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  align-items: end;
+}
+@media (min-width: 900px) {
+  .section-head--split { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 56px; }
+  .section-head--split .lede { margin-top: 0; padding-bottom: 6px; }
+}
+
+.grid { display: grid; gap: clamp(28px, 3.4vw, 60px); }
+.grid--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); }
+.grid--3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.grid--4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+/* Feature grid: two generous columns on desktop. Cards this size can hold an
+   image and a paragraph without either feeling squeezed. */
+.grid--feature { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+/* Three-up, but with a real minimum so cards never collapse to ~280px */
+.grid--people { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+
+/* --------------------------------------------------------------- header --- */
+.site-header {
+  position: sticky; top: 0; z-index: 200;
+  background: color-mix(in srgb, var(--d-bg) 88%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  backdrop-filter: saturate(180%) blur(18px);
+  border-bottom: var(--hair) solid transparent;
+  transition: border-color var(--t-med) var(--ease), background-color var(--t-med) var(--ease);
+}
+.site-header.is-stuck { border-bottom-color: var(--d-line); }
+.header-in {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  height: 68px;
+}
+.brand { display: inline-flex; align-items: center; gap: 11px; justify-self: start; }
+.brand img { width: 24px; height: 24px; border-radius: 6px; }
+.brand__word {
+  font-size: 15px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.site-nav { display: none; justify-self: center; gap: 34px; }
+@media (min-width: 981px) { .site-nav { display: flex; } }
+.site-nav a {
+  position: relative; font-size: 14px; font-weight: 450; color: var(--d-sub);
+  padding: 8px 0; transition: color var(--t-fast) var(--ease-out);
+}
+.site-nav a::after {
+  content: ""; position: absolute; left: 0; right: 100%; bottom: 2px;
+  height: 1px; background: var(--d-ink);
+  transition: right var(--t-med) var(--ease);
+}
+.site-nav a:hover { color: var(--d-ink); }
+.site-nav a:hover::after, .site-nav a[aria-current="page"]::after { right: 0; }
+.header-actions { display: none; justify-self: end; gap: 12px; align-items: center; }
+@media (min-width: 981px) { .header-actions { display: flex; } }
+
+/* -------------------------------------------------------------- buttons --- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 46px; padding: 0 24px;
+  border: var(--hair) solid transparent; border-radius: 999px;
+  font-size: 14.5px; font-weight: 500; letter-spacing: -0.005em;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color var(--t-med) var(--ease),
+              color var(--t-med) var(--ease),
+              border-color var(--t-med) var(--ease),
+              transform var(--t-med) var(--ease);
+}
+.btn--sm { height: 38px; padding: 0 18px; font-size: 13.5px; }
+.btn--lg { height: 54px; padding: 0 32px; font-size: 15.5px; }
+.btn--block { width: 100%; }
+.btn .arr { display: inline-block; transition: transform var(--t-med) var(--ease); }
+.btn:hover .arr { transform: translateX(3px); }
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: var(--d-accent); color: var(--d-on-accent); border-color: var(--d-accent); }
+.btn--primary:hover { background: var(--d-ink); border-color: var(--d-ink); }
+.btn--ghost { background: transparent; color: var(--d-ink); border-color: var(--d-line); }
+.btn--ghost:hover { border-color: var(--d-ink); }
+.btn--quiet { background: transparent; color: var(--d-sub); padding-inline: 4px; }
+.btn--quiet:hover { color: var(--d-ink); }
+.section--ink .btn--ghost { color: var(--d-bg); border-color: rgba(255, 255, 255, 0.2); }
+.section--ink .btn--ghost:hover { border-color: rgba(255, 255, 255, 0.55); }
+
+/* text link with a wiping underline — the workhorse of editorial layouts */
+.tlink {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 500; color: var(--d-ink);
+  padding-bottom: 3px; position: relative;
+}
+.tlink::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: currentColor; opacity: 0.28;
+  transform-origin: left; transform: scaleX(1);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+}
+.tlink:hover::after { opacity: 1; transform: scaleX(0.999); }
+.tlink .arr { transition: transform var(--t-med) var(--ease); }
+.tlink:hover .arr { transform: translateX(3px); }
+
+/* ------------------------------------------------------------ back link --- */
+.demo-back {
+  position: fixed; top: 18px; left: 18px; z-index: 300;
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 15px 0 11px;
+  background: color-mix(in srgb, var(--d-bg) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: var(--hair) solid var(--d-line); border-radius: 999px;
+  font-size: 12.5px; font-weight: 500; color: var(--d-sub);
+  transition: color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+}
+.demo-back:hover { color: var(--d-ink); border-color: var(--d-ink); }
+.demo-back svg { transition: transform var(--t-fast) var(--ease); }
+.demo-back:hover svg { transform: translateX(-3px); }
+@media (max-width: 720px) { .demo-back { font-size: 0; gap: 0; padding: 0 11px; } }
+
+/* ----------------------------------------------------------------- hero --- */
+.hero { position: relative; padding-top: clamp(56px, 8vw, 130px); }
+.hero__grid { display: grid; gap: clamp(36px, 5vw, 72px); align-items: end; }
+@media (min-width: 1000px) {
+  .hero__grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); align-items: end; }
+}
+.hero__title { margin-top: 26px; }
+.hero__sub { margin-top: 28px; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
+.hero__media {
+  position: relative; overflow: hidden;
+  border-radius: var(--d-radius-lg);
+  background: var(--d-fill-2);
+  aspect-ratio: 4 / 5;
+}
+@media (min-width: 1000px) { .hero__media { aspect-ratio: 3 / 4; } }
+.hero__media img {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scale(1.02);
+  transition: transform 1.2s var(--ease);
+}
+.hero__media:hover img { transform: scale(1.045); }
+
+.hero--full { padding-top: 0; }
+.hero--full .hero__media {
+  aspect-ratio: auto; height: var(--d-hero-media);
+  border-radius: 0; margin-inline: calc(var(--pad-x) * -1);
+  max-width: none; width: 100vw; margin-left: 50%; transform: translateX(-50%);
+}
+@media (max-width: 720px) { .hero--full .hero__media { height: 62vh; } }
+
+/* stat strip — Palantir-style structured data, quietly presented */
+.statstrip {
+  display: grid; gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  background: var(--d-line);
+  border-block: var(--hair) solid var(--d-line);
+}
+.statstrip__cell { background: var(--d-bg); padding: clamp(22px, 2.6vw, 34px) clamp(16px, 2vw, 28px); }
+.statstrip__n {
+  display: block; font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem); font-weight: 500; letter-spacing: -0.02em;
+  line-height: 1;
+}
+.statstrip__k {
+  display: block; margin-top: 10px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--d-faint);
+}
+
+/* ---------------------------------------------------------------- media --- */
+.frame { position: relative; overflow: hidden; background: var(--d-fill-2); }
+.frame img { width: 100%; height: 100%; object-fit: cover; }
+.frame--4x5 { aspect-ratio: 4 / 5; }
+.frame--3x4 { aspect-ratio: 3 / 4; }
+.frame--1x1 { aspect-ratio: 1 / 1; }
+.frame--16x9 { aspect-ratio: 16 / 9; }
+.frame--21x9 { aspect-ratio: 21 / 9; }
+/* image reveal — a wipe, not a bounce */
+.frame img {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1s var(--ease), transform 1.1s var(--ease);
+}
+.frame--reveal img { clip-path: inset(0 0 100% 0); }
+.frame--reveal.in img { clip-path: inset(0 0 0 0); }
+.frame--zoom:hover img { transform: scale(1.04); }
+.frame__cap {
+  margin-top: 12px; font-family: var(--f-mono); font-size: 11px;
+  letter-spacing: 0.08em; color: var(--d-faint);
+}
+
+/* ---------------------------------------------------------------- cards ---
+   Cards carry information, so they are given room to breathe: a real image
+   ratio, generous internal padding, a title that can breathe, and a hover
+   that moves as one object rather than several parts moving independently. */
+.card {
+  position: relative; background: var(--d-surface, var(--d-bg));
+  border: var(--hair) solid var(--d-line); border-radius: var(--d-radius);
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: border-color var(--t-med) var(--ease),
+              transform 520ms var(--ease),
+              box-shadow 520ms var(--ease);
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--d-ink) 22%, transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 48px -28px rgba(11, 11, 12, 0.4);
+}
+.card__media { position: relative; overflow: hidden; background: var(--d-fill-2); flex: 0 0 auto; }
+.card__media img {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scale(1.001);
+  transition: transform 900ms var(--ease), filter var(--t-slow) var(--ease);
+}
+.card:hover .card__media img { transform: scale(1.045); }
+.card__body {
+  padding: clamp(24px, 2.4vw, 38px);
+  display: flex; flex-direction: column; flex: 1 1 auto;
+}
+.card__kicker {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--d-faint); margin-bottom: 14px;
+}
+.card__title {
+  font-size: clamp(19px, 1.5vw, 22px); font-weight: 500;
+  letter-spacing: -0.016em; line-height: 1.24; text-wrap: balance;
+}
+.card__desc {
+  margin-top: 14px; font-size: 15.5px; line-height: 1.66; color: var(--d-sub);
+  text-wrap: pretty; flex: 1 1 auto;
+}
+.card__meta {
+  margin-top: 26px; padding-top: 20px; border-top: var(--hair) solid var(--d-line-soft);
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  font-family: var(--f-mono); font-size: 11.5px; letter-spacing: 0.06em;
+  color: var(--d-faint);
+}
+.card__meta b { font-weight: 500; color: var(--d-ink); font-size: 13.5px; }
+.card__price { font-family: var(--f-mono); font-size: 16px; font-weight: 500; color: var(--d-ink); }
+
+/* price/spec strip inside a card */
+.card__specs {
+  display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 22px;
+  padding-top: 20px; border-top: var(--hair) solid var(--d-line-soft);
+}
+.card__specs div { min-width: 0; }
+.card__specs dt,
+.card__specs .k {
+  display: block; font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--d-faint);
+}
+.card__specs dd,
+.card__specs .v { margin: 5px 0 0; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+
+/* an entire card is one link — keep the hit area honest */
+.card__link::after { content: ""; position: absolute; inset: 0; }
+
+/* data list — the workhorse for "information is part of the design" */
+.datalist { border-top: var(--hair) solid var(--d-line); }
+.datalist__row {
+  display: grid; gap: 6px 24px; align-items: baseline;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 16px 0; border-bottom: var(--hair) solid var(--d-line-soft);
+  transition: background-color var(--t-fast) var(--ease);
+}
+@media (min-width: 720px) {
+  .datalist__row { grid-template-columns: minmax(120px, 0.4fr) minmax(0, 1fr) auto; }
+}
+.datalist__k {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--d-faint);
+}
+.datalist__v { font-size: 15.5px; }
+.datalist__x {
+  font-family: var(--f-mono); font-size: 13.5px; color: var(--d-sub);
+  font-variant-numeric: tabular-nums;
+}
+.datalist--hover .datalist__row:hover { background: var(--d-fill); }
+
+/* spec table (property / treatment specs) */
+.specs { display: flex; flex-wrap: wrap; gap: 0 28px; }
+.specs__item { padding: 10px 0; }
+.specs__k {
+  display: block; font-family: var(--f-mono); font-size: 10.5px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--d-faint);
+}
+.specs__v {
+  display: block; margin-top: 4px; font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------------- tabs --- */
+.tabs {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  border-bottom: var(--hair) solid var(--d-line);
+  margin-bottom: clamp(32px, 4vw, 56px);
+}
+.tab {
+  position: relative; padding: 13px 18px;
+  font-size: 14px; font-weight: 450; color: var(--d-faint);
+  transition: color var(--t-fast) var(--ease);
+}
+.tab::after {
+  content: ""; position: absolute; left: 18px; right: 18px; bottom: -1px; height: 1px;
+  background: var(--d-ink); transform: scaleX(0); transform-origin: left;
+  transition: transform var(--t-med) var(--ease);
+}
+.tab:hover { color: var(--d-sub); }
+.tab[aria-selected="true"] { color: var(--d-ink); }
+.tab[aria-selected="true"]::after { transform: scaleX(1); }
+.tabpanel { animation: panelIn var(--t-med) var(--ease) both; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* --------------------------------------------------------------- people --- */
+.person__media { aspect-ratio: 4 / 5; background: var(--d-fill-2); overflow: hidden; }
+.person__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease); }
+.person:hover .person__media img { transform: scale(1.035); }
+.person__name { font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
+.person__role {
+  margin-top: 6px; font-family: var(--f-mono); font-size: 10.5px;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--d-faint);
+}
+.person__bio { margin-top: 14px; font-size: 14.5px; line-height: 1.62; color: var(--d-sub); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.chip {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em;
+  padding: 5px 10px; border: var(--hair) solid var(--d-line); border-radius: 999px;
+  color: var(--d-sub);
+}
+
+/* -------------------------------------------------------------- schedule --- */
+.schedule { border-top: var(--hair) solid var(--d-line); }
+.schedule__row {
+  display: grid; gap: 4px 22px; align-items: baseline;
+  grid-template-columns: 78px minmax(0, 1fr);
+  padding: 18px 0; border-bottom: var(--hair) solid var(--d-line-soft);
+  transition: background-color var(--t-fast) var(--ease);
+}
+@media (min-width: 860px) { .schedule__row { grid-template-columns: 92px minmax(0, 1.5fr) minmax(0, 1fr) auto; } }
+.schedule__time { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.schedule__name { font-size: 15.5px; }
+.schedule__coach { font-size: 14px; color: var(--d-sub); }
+.schedule__row:hover { background: var(--d-fill); }
+
+/* ----------------------------------------------------------------- form --- */
+.form { display: grid; gap: 18px; }
+.form__row { display: grid; gap: 18px; }
+@media (min-width: 680px) { .form__row--2 { grid-template-columns: 1fr 1fr; } }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { font-size: 13.5px; font-weight: 450; }
+.field input, .field select, .field textarea {
+  width: 100%; height: 50px; padding: 0 15px;
+  background: transparent; color: var(--d-ink);
+  border: var(--hair) solid var(--d-line); border-radius: var(--d-radius);
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.field textarea { height: auto; min-height: 120px; padding: 14px 15px; resize: vertical; }
+.field input::placeholder, .field textarea::placeholder { color: var(--d-faint); }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--d-ink); background: var(--d-surface, #fff);
+}
+.field__hint { font-size: 12.5px; color: var(--d-faint); }
+.form__note { font-size: 13.5px; color: var(--d-sub); }
+
+/* confirmation state — swapped in for a form on submit by demo.js.
+   Deliberately not a celebratory card: a hairline box and a statement. */
+.confirm {
+  display: grid; gap: 20px; justify-items: start;
+  padding: clamp(30px, 4vw, 52px);
+  border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius-lg);
+  background: var(--d-fill);
+  animation: panelIn var(--t-med) var(--ease) both;
+}
+.confirm__mark {
+  display: grid; place-items: center; width: 44px; height: 44px;
+  border: var(--hair) solid var(--d-line); border-radius: 50%;
+}
+.confirm__t { font-size: clamp(20px, 1.7vw, 24px); font-weight: 500; letter-spacing: -0.02em; }
+.confirm__d { font-size: 15.5px; line-height: 1.65; color: var(--d-sub); max-width: 52ch; }
+.confirm__ref {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--d-faint);
+}
+
+
+/* --------------------------------------------------------------- footer --- */
+.site-footer {
+  background: var(--d-ink); color: rgba(255, 255, 255, 0.62);
+  padding: clamp(64px, 8vw, 120px) 0 36px;
+}
+.site-footer a { color: rgba(255, 255, 255, 0.62); transition: color var(--t-fast); }
+.site-footer a:hover { color: #fff; }
+.footer__grid { display: grid; gap: 44px; }
+@media (min-width: 860px) { .footer__grid { grid-template-columns: 1.6fr repeat(3, 1fr); gap: 56px; } }
+.footer__brand { display: flex; align-items: center; gap: 11px; color: #fff; }
+.footer__brand img { width: 24px; height: 24px; border-radius: 6px; filter: invert(1); }
+.footer__brand span { font-size: 15px; font-weight: 600; letter-spacing: 0.1em; }
+.footer__tag { margin-top: 18px; font-size: 14.5px; max-width: 34ch; line-height: 1.6; }
+.footer__h {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 18px;
+}
+.footer__list li + li { margin-top: 11px; }
+.footer__list a { font-size: 14.5px; }
+.footer__bottom {
+  display: flex; flex-wrap: wrap; gap: 14px 28px; justify-content: space-between;
+  margin-top: clamp(44px, 6vw, 80px); padding-top: 26px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px; color: rgba(255, 255, 255, 0.4);
+}
+
+/* ------------------------------------------------------------- reveal fx --- */
+.rv { opacity: 0; transform: translateY(14px); transition: opacity 700ms var(--ease), transform 700ms var(--ease); }
+.rv.in { opacity: 1; transform: none; }
+.rv-1 { transition-delay: 80ms; }
+.rv-2 { transition-delay: 160ms; }
+.rv-3 { transition-delay: 240ms; }
+html.no-js .rv { opacity: 1; transform: none; }
+
+/* ============================================================ ART DIRECTION
+   Each demo reinterprets the same system. Same components, different world.
+   ======================================================================== */
+
+/* -- SEAI GYM — cinematic, athletic, precise, powerful ---------------------- */
+.demo-gym {
+  --d-bg: #0a0a0b;
+  --d-ink: #f4f4f5;
+  --d-sub: rgba(244, 244, 245, 0.6);
+  --d-faint: rgba(244, 244, 245, 0.38);
+  --d-line: rgba(244, 244, 245, 0.14);
+  --d-line-soft: rgba(244, 244, 245, 0.08);
+  --d-fill: rgba(244, 244, 245, 0.04);
+  --d-fill-2: rgba(244, 244, 245, 0.07);
+  --d-accent: #f4f4f5;
+  --d-on-accent: #0a0a0b;
+  --d-surface: #0f0f11;
+  --d-display-weight: 600;
+  --d-display-tracking: -0.045em;
+  --d-hero-media: 78vh;
+}
+.demo-gym .display--serif { font-style: italic; }
+.demo-gym .statstrip { background: rgba(244, 244, 245, 0.14); }
+.demo-gym .statstrip__cell { background: #0a0a0b; }
+.demo-gym .site-header { background: color-mix(in srgb, #0a0a0b 78%, transparent); }
+.demo-gym .demo-back { background: rgba(20, 20, 22, 0.85); color: rgba(244, 244, 245, 0.7); border-color: rgba(244, 244, 245, 0.16); }
+.demo-gym .demo-back:hover { color: #fff; border-color: rgba(244, 244, 245, 0.5); }
+
+/* -- SEAI RESTAURANT — quiet luxury hospitality ---------------------------- */
+.demo-restaurant {
+  --d-bg: #f7f4ef;
+  --d-ink: #1a1613;
+  --d-sub: #5c534a;
+  --d-faint: #9a9086;
+  --d-line: rgba(26, 22, 19, 0.13);
+  --d-line-soft: rgba(26, 22, 19, 0.07);
+  --d-fill: rgba(26, 22, 19, 0.03);
+  --d-fill-2: rgba(26, 22, 19, 0.06);
+  --d-accent: #1a1613;
+  --d-on-accent: #f7f4ef;
+  --d-surface: #fffdfa;
+  --d-display: var(--f-serif);
+  --d-display-weight: 400;
+  --d-display-tracking: -0.02em;
+}
+.demo-restaurant .display--l { font-size: clamp(2.4rem, 6vw, 5rem); }
+.demo-restaurant .section--alt { background: #efe9e0; }
+
+/* -- SEAI SALON — fashion-house beauty ------------------------------------- */
+.demo-salon {
+  --d-bg: #faf7f8;
+  --d-ink: #171114;
+  --d-sub: #5e5158;
+  --d-faint: #9c8d95;
+  --d-line: rgba(23, 17, 20, 0.12);
+  --d-line-soft: rgba(23, 17, 20, 0.06);
+  --d-fill: rgba(23, 17, 20, 0.025);
+  --d-fill-2: rgba(23, 17, 20, 0.055);
+  --d-accent: #171114;
+  --d-on-accent: #faf7f8;
+  --d-display: var(--f-serif);
+  --d-display-weight: 400;
+  --d-display-tracking: -0.025em;
+}
+.demo-salon .display--xl { font-size: clamp(2.9rem, 9vw, 8rem); }
+.demo-salon .section--alt { background: #f2ebee; }
+
+/* -- SEAI CLINIC — quiet, trustworthy, sophisticated healthcare ----------- */
+.demo-clinic {
+  --d-bg: #f8fafb;
+  --d-ink: #0d1b24;
+  --d-sub: #4a5f6d;
+  --d-faint: #8698a4;
+  --d-line: rgba(13, 27, 36, 0.12);
+  --d-line-soft: rgba(13, 27, 36, 0.06);
+  --d-fill: rgba(13, 27, 36, 0.028);
+  --d-fill-2: rgba(13, 27, 36, 0.055);
+  --d-accent: #0d1b24;
+  --d-on-accent: #f8fafb;
+  --d-surface: #ffffff;
+  --d-display-weight: 500;
+  --d-display-tracking: -0.03em;
+}
+.demo-clinic .section--alt { background: #eef3f6; }
+
+/* -- SEAI REAL ESTATE — private brokerage ---------------------------------- */
+.demo-realestate {
+  --d-bg: #fbfbfa;
+  --d-ink: #12120f;
+  --d-sub: #55554e;
+  --d-faint: #8d8d84;
+  --d-line: rgba(18, 18, 15, 0.12);
+  --d-line-soft: rgba(18, 18, 15, 0.06);
+  --d-fill: rgba(18, 18, 15, 0.028);
+  --d-fill-2: rgba(18, 18, 15, 0.055);
+  --d-accent: #12120f;
+  --d-on-accent: #fbfbfa;
+  --d-display-weight: 500;
+  --d-display-tracking: -0.04em;
+}
+
+/* -- SEAI BUSINESS — expensive modern consultancy -------------------------- */
+.demo-business {
+  --d-bg: #fcfcfb;
+  --d-ink: #0c0c0d;
+  --d-sub: #515156;
+  --d-faint: #8b8b92;
+  --d-line: rgba(12, 12, 13, 0.11);
+  --d-line-soft: rgba(12, 12, 13, 0.055);
+  --d-fill: rgba(12, 12, 13, 0.026);
+  --d-fill-2: rgba(12, 12, 13, 0.05);
+  --d-accent: #0c0c0d;
+  --d-on-accent: #fcfcfb;
+  --d-surface: #ffffff;
+  --d-display-weight: 500;
+  --d-display-tracking: -0.038em;
+  --d-display: var(--f-serif);
+  --d-display-weight: 400;
+}
+.demo-business .display--xl { letter-spacing: -0.025em; }
+.demo-business .section--ink { background: #0c0c0d; }
+
+/* ------------------------------------------------------------- responsive -- */
+@media (max-width: 980px) {
+  .header-in { grid-template-columns: 1fr auto; height: 62px; }
+}
+@media (max-width: 640px) {
+  .hero__actions { flex-direction: column; align-items: stretch; }
+  .hero__actions .btn { width: 100%; }
+  .card__meta { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .rv { opacity: 1; transform: none; }
+  .frame--reveal img { clip-path: none; }
+}
+
+/* ============================================================ LEGACY LAYER
+   Temporary bridge. The six demo pages still carry their original class
+   vocabulary while each is rebuilt in turn. These rules map that vocabulary
+   onto the new system so nothing renders unstyled in the meantime.
+   Each block is deleted as its demo is rebuilt.
+   ======================================================================== */
+
+/* -- containers & sections -- */
+.demo-container { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--pad-x); }
+.demo-section { padding-block: var(--sec-y); }
+.demo-section-alt { background: var(--d-fill); }
+.section-header { max-width: 66ch; margin-bottom: clamp(36px, 4.5vw, 64px); }
+.section-header.text-center { margin-inline: auto; text-align: center; }
+.section-header .section-tag { display: block; margin-bottom: 16px; }
+.section-header h2 { font-family: var(--d-display); font-weight: var(--d-display-weight); letter-spacing: var(--d-display-tracking); line-height: 1.02; font-size: clamp(1.9rem, 4.4vw, 3.4rem); }
+.section-sub { margin-top: 18px; font-size: 1.0625rem; line-height: 1.6; color: var(--d-sub); }
+
+/* -- header -- */
+.demo-header { position: sticky; top: 0; z-index: 200; background: color-mix(in srgb, var(--d-bg) 88%, transparent); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px); border-bottom: var(--hair) solid var(--d-line-soft); }
+.demo-header .demo-container { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+.demo-brand { display: flex; align-items: center; gap: 11px; }
+.demo-logo { width: 30px; height: 30px; border-radius: 8px; background: var(--d-ink); color: var(--d-bg); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; letter-spacing: 0.02em; }
+.demo-name { font-size: 15px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.demo-nav { display: flex; gap: 32px; }
+.demo-nav a { position: relative; font-size: 14px; font-weight: 450; color: var(--d-sub); padding: 8px 0; transition: color var(--t-fast); }
+.demo-nav a::after { content: ""; position: absolute; left: 0; right: 100%; bottom: 2px; height: 1px; background: var(--d-ink); transition: right var(--t-med) var(--ease); }
+.demo-nav a:hover, .demo-nav a[aria-current="page"] { color: var(--d-ink); }
+.demo-nav a:hover::after, .demo-nav a[aria-current="page"]::after { right: 0; }
+.demo-nav-cta { background: var(--d-accent) !important; color: var(--d-on-accent) !important; border-radius: 999px !important; padding: 9px 18px !important; height: auto !important; }
+/* The mobile panel (.demo-mobile-nav) is a CHILD of .demo-header, so it shares
+   the header's stacking context. At z-index 190 it therefore paints over the
+   burger, which has z-index auto — making the menu impossible to close by
+   tapping the button. Lift the button above the panel. */
+.demo-menu-btn { position: relative; z-index: 200; }
+.demo-menu-btn { display: none; width: 40px; height: 40px; align-items: center; justify-content: center; flex-direction: column; gap: 5px; border: var(--hair) solid var(--d-line); border-radius: 999px; }
+.demo-menu-btn span { display: block; width: 15px; height: 1.5px; background: var(--d-ink); transition: transform var(--t-med) var(--ease), opacity var(--t-fast); }
+body.menu-open .demo-menu-btn span:first-child { transform: translateY(3.25px) rotate(45deg); }
+body.menu-open .demo-menu-btn span:nth-child(2) { opacity: 0; }
+body.menu-open .demo-menu-btn span:last-child { transform: translateY(-3.25px) rotate(-45deg); }
+.demo-mobile-nav { display: none; position: fixed; inset: 0; z-index: 190; background: var(--d-bg); flex-direction: column; padding: 96px var(--pad-x) 40px; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s var(--t-med); }
+body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: none; transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s; }
+.demo-mobile-nav a { padding: 16px 2px; font-size: 19px; border-bottom: var(--hair) solid var(--d-line-soft); }
+.demo-mobile-cta { margin-top: 20px; justify-content: center; }
+
+/* -- hero -- */
+.demo-hero { position: relative; padding: clamp(80px, 10vw, 150px) 0 clamp(56px, 7vw, 104px); overflow: hidden; }
+.hero-bg { position: absolute; inset: 0; background: var(--d-ink); opacity: 0.025; pointer-events: none; }
+.demo-gym .hero-bg { opacity: 0.05; }
+.hero-content { position: relative; text-align: center; max-width: 900px; margin-inline: auto; }
+.hero-tag { display: block; margin-bottom: 20px; }
+.demo-hero h1 { font-family: var(--d-display); font-weight: var(--d-display-weight); letter-spacing: var(--d-display-tracking); line-height: 0.98; font-size: clamp(2.4rem, 6.4vw, 5.25rem); text-wrap: balance; }
+.hero-sub { margin: 26px auto 0; max-width: 56ch; font-size: clamp(1.0625rem, 1.4vw, 1.25rem); line-height: 1.55; color: var(--d-sub); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 36px; }
+.hero-stats, .hero-metrics, .hero-trust { display: flex; flex-wrap: wrap; gap: 32px 56px; justify-content: center; margin-top: 48px; padding-top: 32px; border-top: var(--hair) solid var(--d-line-soft); }
+.stat { text-align: center; }
+.stat-num { display: block; font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: clamp(1.5rem, 2.6vw, 2.15rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
+.stat-label { display: block; margin-top: 9px; font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--d-faint); }
+.hero-scroll { display: none; }
+
+/* -- buttons (legacy variants) -- */
+.btn-primary { background: var(--d-accent) !important; color: var(--d-on-accent) !important; border-color: var(--d-accent) !important; }
+.btn-secondary { background: transparent !important; color: var(--d-ink) !important; border-color: var(--d-line) !important; }
+.btn-secondary:hover { border-color: var(--d-ink) !important; }
+.btn-full { width: 100%; }
+
+/* -- generic grids & cards -- */
+.menu-grid, .service-grid, .program-grid, .coach-grid, .team-grid, .doctor-grid, .agent-grid,
+.facility-grid, .portal-features, .gallery-grid, .insight-grid, .case-grid, .process-steps,
+.equipment-grid { display: grid; gap: clamp(18px, 2.2vw, 30px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.process-steps { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+
+.menu-item, .service-card, .program-card, .coach-card, .team-card, .doctor-card, .agent-card,
+.facility-item, .membership-card, .property-card, .rental-card, .insight-card, .case-card,
+.portal-card, .wine-card, .process-step, .gallery-item {
+  border: var(--hair) solid var(--d-line); border-radius: var(--d-radius);
+  background: var(--d-surface, var(--d-bg)); overflow: hidden;
+  transition: border-color var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+}
+.menu-item:hover, .service-card:hover, .program-card:hover, .coach-card:hover, .membership-card:hover,
+.property-card:hover, .rental-card:hover, .insight-card:hover, .case-card:hover, .wine-card:hover {
+  border-color: color-mix(in srgb, var(--d-ink) 26%, transparent); transform: translateY(-3px);
+}
+.coach-img, .team-img, .doctor-img, .agent-img, .property-img, .rental-img, .gallery-item, .about-img-placeholder {
+  aspect-ratio: 4 / 5; background: var(--d-fill-2);
+}
+.coach-info, .team-info, .doctor-info, .agent-info, .property-info, .rental-info { padding: clamp(20px, 2.2vw, 28px); }
+.coach-name, .team-name, .doctor-name, .agent-name, .program-name, .service-name,
+.membership-name, .property-name, .rental-name, .insight-title, .case-title, .wine-name, .item-name {
+  font-size: 17px; font-weight: 500; letter-spacing: -0.012em;
+}
+.coach-title, .team-focus, .doctor-specialty, .agent-stats, .doctor-creds { margin-top: 6px; font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--d-faint); }
+.coach-bio, .team-bio, .doctor-bio, .program-desc, .service-desc, .insight-excerpt, .case-desc, .property-desc, .rental-desc, .wine-desc, .step-desc, .portal-card p, .facility-item p {
+  margin-top: 10px; font-size: 14.5px; line-height: 1.62; color: var(--d-sub);
+}
+.item-desc { font-size: 14px; color: var(--d-sub); line-height: 1.55; }
+.item-price { font-family: var(--f-mono); font-size: 15px; font-weight: 500; }
+.membership-price { text-align: center; padding: 22px 0 4px; }
+.membership-price .amount { font-family: var(--f-mono); font-size: clamp(1.9rem, 3vw, 2.5rem); font-weight: 500; letter-spacing: -0.02em; }
+.membership-price .period { display: block; font-family: var(--f-mono); font-size: 12px; color: var(--d-faint); }
+.membership-badge, .service-badge, .property-badge, .rental-badge, .case-tag, .insight-category {
+  display: inline-block; font-family: var(--f-mono); font-size: 9.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 4px 9px; border-radius: 999px;
+  background: var(--d-ink); color: var(--d-bg);
+}
+.membership-card.featured, .service-card.featured { border-color: var(--d-ink); }
+.membership-features, .program-features, .service-deliverables, .coach-creds, .doctor-creds, .team-focus, .chips { list-style: none; margin-top: 16px; display: flex; flex-direction: column; gap: 7px; }
+.membership-features li, .program-features li, .service-deliverables li { font-size: 14px; color: var(--d-sub); display: flex; gap: 10px; }
+.membership-features li::before, .program-features li::before, .service-deliverables li::before { content: ""; flex: 0 0 auto; width: 9px; height: 1px; background: currentColor; opacity: 0.5; margin-top: 10px; }
+.property-meta, .rental-meta, .property-location, .rental-location, .wine-type, .case-tag, .insight-category, .insight-read, .highlight-label, .portal-note, .form-note, .step-number { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--d-faint); }
+.property-location, .rental-location, .wine-type { display: block; margin-bottom: 8px; }
+.property-meta, .rental-meta { display: flex; gap: 16px; margin-top: 14px; font-variant-numeric: tabular-nums; }
+.property-actions, .rental-actions { display: flex; gap: 10px; padding: 0 clamp(20px, 2.2vw, 28px) clamp(20px, 2.2vw, 28px); }
+.property-actions .btn, .rental-actions .btn { flex: 1; }
+.case-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.case-metrics span, .insight-category { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; padding: 4px 9px; border: var(--hair) solid var(--d-line); border-radius: 999px; color: var(--d-sub); }
+.step-number { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: var(--hair) solid var(--d-line); color: var(--d-ink); margin-bottom: 16px; }
+.process-step { padding: clamp(24px, 3vw, 34px); }
+.process-step .step-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
+
+/* -- schedule -- */
+.schedule-tabs, .menu-tabs, .service-tabs, .property-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: var(--hair) solid var(--d-line); margin-bottom: clamp(28px, 3.5vw, 48px); }
+.schedule-tab, .menu-tab, .service-tab, .property-tab { position: relative; padding: 12px 16px; font-size: 13.5px; font-weight: 450; color: var(--d-faint); transition: color var(--t-fast); }
+.schedule-tab::after, .menu-tab::after, .service-tab::after, .property-tab::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: -1px; height: 1px; background: var(--d-ink); transform: scaleX(0); transform-origin: left; transition: transform var(--t-med) var(--ease); }
+.schedule-tab.active, .menu-tab.active, .service-tab.active, .property-tab.active { color: var(--d-ink); }
+.schedule-tab.active::after, .menu-tab.active::after, .service-tab.active::after, .property-tab.active::after { transform: scaleX(1); }
+.schedule-list { display: flex; flex-direction: column; }
+.schedule-item { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 4px 20px; align-items: baseline; padding: 17px 0; border-bottom: var(--hair) solid var(--d-line-soft); }
+@media (min-width: 860px) { .schedule-item { grid-template-columns: 88px minmax(0, 1.4fr) minmax(0, 1fr) auto; } }
+.schedule-item .time { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.schedule-item .session { font-size: 15.5px; }
+.schedule-item .coach, .schedule-item .facility-item p { font-size: 14px; color: var(--d-sub); }
+
+/* -- about / contact / hours -- */
+.about-grid { display: grid; gap: clamp(32px, 4vw, 64px); align-items: start; }
+@media (min-width: 900px) { .about-grid { grid-template-columns: 1fr 1fr; } }
+.about-text { font-size: 16px; line-height: 1.72; color: var(--d-sub); }
+.about-text + .about-text { margin-top: 15px; }
+.about-highlights { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 32px; padding-top: 28px; border-top: var(--hair) solid var(--d-line-soft); }
+.highlight-num { display: block; font-family: var(--f-mono); font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 500; letter-spacing: -0.02em; }
+.contact-grid { display: grid; gap: clamp(28px, 3.5vw, 56px); }
+@media (min-width: 900px) { .contact-grid { grid-template-columns: 1fr 1fr; } }
+.contact-item { display: flex; gap: 16px; margin-bottom: 26px; }
+.contact-icon { flex: 0 0 auto; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: var(--hair) solid var(--d-line); border-radius: var(--d-radius); color: var(--d-ink); }
+.contact-item h3 { font-size: 15px; font-weight: 500; }
+.contact-item p, .contact-item a { font-size: 14.5px; line-height: 1.62; color: var(--d-sub); }
+.map-placeholder, .contact-map { aspect-ratio: 4 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: var(--d-fill-2); border: var(--hair) solid var(--d-line); border-radius: var(--d-radius); color: var(--d-faint); text-align: center; padding: 24px; }
+.map-placeholder p { font-size: 14px; max-width: 30ch; }
+.hours-section { margin-top: 30px; }
+.hours-section h3 { font-size: 15px; font-weight: 500; margin-bottom: 14px; }
+.hours-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1px; background: var(--d-line); border: var(--hair) solid var(--d-line); }
+.hours-item { display: flex; justify-content: space-between; gap: 12px; padding: 13px 15px; background: var(--d-bg); font-size: 14px; }
+.hours-item span:first-child { color: var(--d-sub); }
+
+/* -- forms -- */
+.reservation-form, .booking-form, .appointment-form, .membership-form, .valuation-form, .contact-form, .signup-form { max-width: 720px; margin-inline: auto; }
+.form-row { display: grid; gap: 18px; }
+@media (min-width: 680px) { .form-row { grid-template-columns: 1fr 1fr; } }
+.form-field { display: flex; flex-direction: column; gap: 8px; }
+.form-field.full-width { grid-column: 1 / -1; }
+.form-field label { font-size: 13.5px; font-weight: 450; }
+.form-field input, .form-field select, .form-field textarea { width: 100%; height: 50px; padding: 0 15px; background: transparent; border: var(--hair) solid var(--d-line); border-radius: var(--d-radius); color: var(--d-ink); transition: border-color var(--t-fast); }
+.form-field textarea { height: auto; min-height: 120px; padding: 14px 15px; resize: vertical; }
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: none; border-color: var(--d-ink); }
+.form-field input::placeholder, .form-field textarea::placeholder { color: var(--d-faint); }
+.form-success { text-align: center; padding: 44px 20px; }
+.success-icon { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; border: var(--hair) solid var(--d-line); color: var(--d-ink); margin-bottom: 22px; }
+.form-success h3 { font-size: 21px; font-weight: 500; margin-bottom: 10px; }
+.form-success p { font-size: 15px; color: var(--d-sub); margin-bottom: 24px; }
+.gallery-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filter-btn { padding: 8px 16px; border: var(--hair) solid var(--d-line); border-radius: 999px; font-size: 13px; color: var(--d-sub); transition: color var(--t-fast), border-color var(--t-fast); }
+.filter-btn.active { background: var(--d-ink); border-color: var(--d-ink); color: var(--d-bg); }
+
+/* -- footer -- */
+.demo-footer { background: var(--d-ink); color: rgba(255, 255, 255, 0.6); padding: clamp(56px, 7vw, 104px) 0 30px; }
+.demo-footer .footer-grid { display: grid; gap: 40px; }
+@media (min-width: 860px) { .demo-footer .footer-grid { grid-template-columns: 1.7fr repeat(3, 1fr); gap: 52px; } }
+.footer-brand { display: flex; align-items: center; gap: 11px; }
+.footer-brand .demo-logo { background: #fff; color: var(--d-ink); }
+.footer-brand .demo-name { color: #fff; }
+.footer-tagline { margin-top: 16px; font-size: 14.5px; max-width: 34ch; line-height: 1.6; }
+.footer-nav h4, .footer-contact h4 { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 16px; font-weight: 500; }
+.footer-nav a, .footer-contact p, .footer-contact a { display: block; font-size: 14.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.58); }
+.footer-nav a + a { margin-top: 10px; }
+.footer-nav a:hover, .footer-contact a:hover { color: #fff; }
+.footer-bottom { display: flex; flex-wrap: wrap; gap: 14px 28px; justify-content: space-between; align-items: center; margin-top: clamp(40px, 5vw, 72px); padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.copyright, .footer-seai { font-size: 13px; color: rgba(255, 255, 255, 0.4); }
+.footer-seai { transition: color var(--t-fast); }
+.footer-seai:hover { color: #fff; }
+.text-center { text-align: center; }
+.active { color: var(--d-ink); }
+
+@media (max-width: 980px) {
+  .demo-nav, .demo-nav-cta { display: none; }
+  .demo-menu-btn { display: flex; }
+  body.menu-open { overflow: hidden; }
+  .demo-mobile-nav { display: flex; }
+}
+@media (max-width: 640px) {
+  .hero-actions { flex-direction: column; }
+  .hero-actions .btn { width: 100%; }
+  .property-actions, .rental-actions { flex-direction: column; }
+  .demo-footer .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+}
+
+/* -- remaining legacy gaps -- */
+.membership-grid { display: grid; gap: clamp(18px, 2.2vw, 28px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.program-icon, .service-icon, .facility-icon, .portal-icon {
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  border: var(--hair) solid var(--d-line); border-radius: var(--d-radius);
+  color: var(--d-ink); margin-bottom: 18px;
+}
+.facility-icon { width: 52px; height: 52px; margin-inline: auto; }
+.facility-item { text-align: center; padding: clamp(26px, 3vw, 38px); }
+.contact-info { min-width: 0; }
+.schedule-panel, .menu-panel, .service-panel, .property-panel { animation: panelIn var(--t-med) var(--ease) both; }
+
+/* -- final legacy gaps -- */
+.about-content, .item-info, .insight-meta { min-width: 0; }
+.about-image { aspect-ratio: 4/3; background: var(--d-fill-2); border: var(--hair) solid var(--d-line); border-radius: var(--d-radius); }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: center; margin-top: 28px; }
+.meta-item { display: flex; align-items: baseline; gap: 8px; }
+.meta-label { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--d-faint); }
+.meta-value { font-size: 14.5px; }
+.highlight { min-width: 0; }
+.wine-grid { display: grid; gap: clamp(18px, 2.2vw, 26px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); }
+.wine-prices { display: flex; gap: 16px; margin-top: 12px; font-family: var(--f-mono); font-size: 13px; color: var(--d-sub); }
+.wine-prices span:first-child { color: var(--d-ink); font-weight: 500; }
+.duration, .service-price .duration { font-family: var(--f-mono); font-size: 12.5px; color: var(--d-faint); }
+.service-price { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 18px; padding-top: 16px; border-top: var(--hair) solid var(--d-line-soft); }
+.service-price span:first-child { font-family: var(--f-mono); font-size: 16px; font-weight: 500; }
+.gallery-placeholder { transition: transform var(--t-slow) var(--ease); }
+.team-title, .team-specialties, .agent-title, .agent-bio { margin-top: 7px; font-size: 13.5px; color: var(--d-sub); line-height: 1.6; }
+.team-specialties { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--d-faint); }
+.trust-item, .stat { text-align: center; }
+.trust-num, .metric-num { display: block; font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: clamp(1.5rem, 2.6vw, 2.15rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
+.trust-label, .metric-label { display: block; margin-top: 9px; font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--d-faint); }
+.portal-cta { margin-top: 18px; }
+.property-grid, .rental-grid { display: grid; gap: clamp(18px, 2.2vw, 28px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.rental-price { font-family: var(--f-mono); font-size: 18px; font-weight: 500; }
+.agent-bio, .insight-link { font-size: 14px; color: var(--d-sub); line-height: 1.6; }
+.insight-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-weight: 500; color: var(--d-ink); }
+.insight-link:hover { gap: 10px; }
+.hero-search { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; }
+.search-field { flex: 1 1 180px; max-width: 260px; }
+.search-field select { width: 100%; height: 48px; padding: 0 15px; background: transparent; border: var(--hair) solid var(--d-line); border-radius: var(--d-radius); color: var(--d-ink); }
+.btn-sm { height: 38px; padding: 0 18px; font-size: 13.5px; }
+
+.metric { min-width: 0; }
+
+/* brand lockup uses the real SEAI mark */
+.demo-logo { object-fit: contain; border-radius: 8px; background: none !important; color: inherit !important; font-size: 0 !important; }
+.footer-brand .demo-logo { filter: invert(1); }
+
+/* back-link now lives in the header flow (was a fixed pill overlapping brand) */
+.demo-header .demo-back {
+  position: static; inset: auto; z-index: auto;
+  margin-right: 18px; flex: 0 0 auto;
+}
+@media (max-width: 1100px) { .demo-header .demo-back { display: none; } }
+/* SEAI mark: black tile on light themes, inverted for the dark gym theme */
+.demo-gym .demo-logo, .demo-back ~ * .demo-logo { filter: invert(1); }
+.demo-gym .demo-logo { filter: invert(1); }
+
+/* --- 390px overflow fix -------------------------------------------------
+   Grid/flex children default to min-width:auto, so a long email, phone or
+   address in the contact block refused to shrink and pushed the page 7px
+   wider than the viewport. Let those children shrink and wrap. */
+.contact-grid, .about-grid, .form-row, .hours-grid, .schedule-list { min-width: 0; }
+.contact-grid > *, .about-grid > *, .form-row > *, .hours-grid > * { min-width: 0; }
+.contact-item, .contact-info, .contact-map { min-width: 0; max-width: 100%; }
+.contact-item > div, .contact-info > * { min-width: 0; }
+.contact-item p, .contact-item a, .contact-info p, .contact-info a,
+.contact-item h3, .map-placeholder p, .hours-item span {
+  overflow-wrap: anywhere; word-break: break-word;
+}
+
+</style>
+<!--DEMO-CSS:END-->
+</head>
+<body class="demo-realestate">
+<a class="skip" href="#main">Skip to content</a>
+
+
+<header class="demo-header" id="header">
+  <div class="container demo-container">
+    <a class="demo-back" href="/" aria-label="Back to SEAI">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <path d="M19 12H5M12 19l-7-7 7-7"/>
+  </svg>
+  <span>Back to SEAI</span>
+</a>
+    <a class="demo-brand" href="#top" aria-label="SEAI Real Estate — home">
+      <img class="demo-logo" src="/logo.svg" width="30" height="30" alt="" />
+      <span class="demo-name">SEAI Real Estate</span>
+    </a>
+    <nav class="demo-nav" id="nav" aria-label="Main navigation">
+      <a href="#buy">Buy</a>
+      <a href="#rent">Rent</a>
+      <a href="#agents">Agents</a>
+      <a href="#valuation" class="demo-nav-cta">Get Valuation</a>
+    </nav>
+    <button class="demo-menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <nav class="demo-mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+    <a href="#buy">Buy</a>
+    <a href="#rent">Rent</a>
+    <a href="#agents">Agents</a>
+    <a href="#valuation" class="demo-mobile-cta">Get Valuation</a>
+  </nav>
+</header>
+
+<main id="main">
+
+  <section class="demo-hero" id="top" aria-labelledby="hero-title">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container demo-container">
+      <div class="hero-content">
+        <p class="hero-tag" aria-hidden="true">South Mumbai | Bandra | Powai</p>
+        <h1 id="hero-title">Exceptional Homes.<br />Expert Guidance.</h1>
+        <p class="hero-sub">Curated luxury properties. Transparent transactions. A partner who knows the market.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#buy">Explore Properties</a>
+          <a class="btn btn-secondary" href="#valuation">Free Valuation</a>
+        </div>
+        <div class="hero-search" id="hero-search">
+          <div class="search-field">
+            <label for="search-type" class="visually-hidden">Transaction Type</label>
+            <select id="search-type" aria-label="Buy or Rent">
+              <option value="buy">Buy</option>
+              <option value="rent">Rent</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label for="search-area" class="visually-hidden">Area</label>
+            <select id="search-area" aria-label="Select Area">
+              <option value="">All Areas</option>
+              <option value="south-mumbai">South Mumbai</option>
+              <option value="bandra">Bandra</option>
+              <option value="juhu">Juhu</option>
+              <option value="powai">Powai</option>
+              <option value="worli">Worli</option>
+              <option value="prabhadevi">Prabhadevi</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label for="search-budget" class="visually-hidden">Budget</label>
+            <select id="search-budget" aria-label="Budget Range">
+              <option value="">Any Budget</option>
+              <option value="5-10">5-10 Cr</option>
+              <option value="10-20">10-20 Cr</option>
+              <option value="20-50">20-50 Cr</option>
+              <option value="50+">50 Cr+</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" type="button" id="search-btn">Search Properties</button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+    </div>
+  </section>
+
+  <section class="demo-section" id="buy" aria-labelledby="buy-title">
+    <div class="container demo-container">
+      <header class="section-header">
+        <p class="section-tag">Properties for Sale</p>
+        <h2 id="buy-title">Find Your Next Home</h2>
+        <p class="section-sub">Curated listings. Verified ownership. Transparent pricing.</p>
+      </header>
+      <div class="property-tabs" role="tablist" aria-label="Property types" id="property-tabs">
+        <button role="tab" aria-selected="true" class="property-tab active" data-type="apartment">Apartments</button>
+        <button role="tab" aria-selected="false" class="property-tab" data-type="penthouse">Penthouses</button>
+        <button role="tab" aria-selected="false" class="property-tab" data-type="villa">Villas & Bungalows</button>
+        <button role="tab" aria-selected="false" class="property-tab" data-type="commercial">Commercial</button>
+      </div>
+
+      <div role="tabpanel" id="panel-apartment" class="property-panel active" aria-labelledby="tab-apartment">
+        <div class="property-grid">
+          <article class="property-card">
+            <div class="property-badge">Exclusive</div>
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">Malabar Hill</div>
+              <h3 class="property-name">Oceanfront 4BHK - 4,200 sq ft</h3>
+              <p class="property-desc">Sea-facing, private lift lobby, 4-car parking, clubhouse access</p>
+              <div class="property-meta">
+                <span>48 Cr</span>
+                <span>4 Bed - 4.5 Bath</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+          <article class="property-card">
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">Bandra West</div>
+              <h3 class="property-name">Designer 3BHK - 2,800 sq ft</h3>
+              <p class="property-desc">Fully furnished, smart home, sea view, 2-car parking</p>
+              <div class="property-meta">
+                <span>22 Cr</span>
+                <span>3 Bed - 3.5 Bath</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+          <article class="property-card">
+            <div class="property-badge">New Launch</div>
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">Worli</div>
+              <h3 class="property-name">Ultra-Luxury 4BHK - 3,500 sq ft</h3>
+              <p class="property-desc">Private pool, home automation, concierge, 3-car parking</p>
+              <div class="property-meta">
+                <span>35 Cr</span>
+                <span>4 Bed - 4 Bath</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+          <article class="property-card">
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">Prabhadevi</div>
+              <h3 class="property-name">Spacious 3BHK - 2,200 sq ft</h3>
+              <p class="property-desc">High floor, city view, modular kitchen, 2-car parking</p>
+              <div class="property-meta">
+                <span>18 Cr</span>
+                <span>3 Bed - 3 Bath</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="panel-penthouse" class="property-panel" aria-labelledby="tab-penthouse" hidden>
+        <div class="property-grid">
+          <article class="property-card">
+            <div class="property-badge">Signature</div>
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">Cuffe Parade</div>
+              <h3 class="property-name">Triplex Penthouse - 6,500 sq ft</h3>
+              <p class="property-desc">Private terrace pool, 360 deg views, 5-car parking, staff quarters</p>
+              <div class="property-meta">
+                <span>85 Cr</span>
+                <span>5 Bed - 6 Bath</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+          <article class="property-card">
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">Altamount Road</div>
+              <h3 class="property-name">Duplex Penthouse - 4,800 sq ft</h3>
+              <p class="property-desc">Private elevator, roof garden, home theater, 4-car parking</p>
+              <div class="property-meta">
+                <span>62 Cr</span>
+                <span>4 Bed - 5 Bath</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="panel-villa" class="property-panel" aria-labelledby="tab-villa" hidden>
+        <div class="property-grid">
+          <article class="property-card">
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">Alibaug</div>
+              <h3 class="property-name">Beachfront Villa - 8,000 sq ft</h3>
+              <p class="property-desc">Private beach access, infinity pool, 6 bedrooms, staff quarters, helipad</p>
+              <div class="property-meta">
+                <span>45 Cr</span>
+                <span>6 Bed - 7 Bath</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="panel-commercial" class="property-panel" aria-labelledby="tab-commercial" hidden>
+        <div class="property-grid">
+          <article class="property-card">
+            <div class="property-img" aria-hidden="true"></div>
+            <div class="property-info">
+              <div class="property-location">BKC</div>
+              <h3 class="property-name">Grade A Office - 15,000 sq ft</h3>
+              <p class="property-desc">Full floor plate, LEED Platinum, 24/7 security, ample parking</p>
+              <div class="property-meta">
+                <span>450/sq ft/mo</span>
+                <span>Available Immediately</span>
+              </div>
+            </div>
+            <div class="property-actions">
+              <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+              <a class="btn btn-primary btn-sm" href="#enquiry">Enquire</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section demo-section-alt" id="rent" aria-labelledby="rent-title">
+    <div class="container demo-container">
+      <header class="section-header">
+        <p class="section-tag">Properties for Rent</p>
+        <h2 id="rent-title">Premium Rentals</h2>
+        <p class="section-sub">Furnished, semi-furnished, unfurnished. Flexible lease terms. Verified landlords.</p>
+      </header>
+      <div class="rental-grid">
+        <article class="rental-card">
+          <div class="rental-badge">Furnished</div>
+          <div class="rental-img" aria-hidden="true"></div>
+          <div class="rental-info">
+            <div class="rental-location">Bandra West</div>
+            <h3 class="rental-name">Luxury 2BHK - 1,400 sq ft</h3>
+            <p class="rental-desc">Sea view, modular kitchen, washer/dryer, 1-car parking</p>
+            <div class="rental-meta">
+              <span class="rental-price">4.5 Lac/mo</span>
+              <span>2 Bed - 2 Bath</span>
+            </div>
+          </div>
+          <div class="rental-actions">
+            <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+            <a class="btn btn-primary btn-sm" href="#enquiry">Schedule Tour</a>
+          </div>
+        </article>
+        <article class="rental-card">
+          <div class="rental-badge">Semi-Furnished</div>
+          <div class="rental-img" aria-hidden="true"></div>
+          <div class="rental-info">
+            <div class="rental-location">Powai</div>
+            <h3 class="rental-name">Spacious 3BHK - 1,800 sq ft</h3>
+            <p class="rental-desc">Lake view, modular kitchen, ACs, 1-car parking, clubhouse</p>
+            <div class="rental-meta">
+              <span class="rental-price">2.8 Lac/mo</span>
+              <span>3 Bed - 3 Bath</span>
+            </div>
+          </div>
+          <div class="rental-actions">
+            <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+            <a class="btn btn-primary btn-sm" href="#enquiry">Schedule Tour</a>
+          </div>
+        </article>
+        <article class="rental-card">
+          <div class="rental-img" aria-hidden="true"></div>
+          <div class="rental-info">
+            <div class="rental-location">Worli</div>
+            <h3 class="rental-name">Executive 1BHK - 900 sq ft</h3>
+            <p class="rental-desc">Fully furnished, sea view, gym/pool access, 1-car parking</p>
+            <div class="rental-meta">
+              <span class="rental-price">2.2 Lac/mo</span>
+              <span>1 Bed - 1.5 Bath</span>
+            </div>
+          </div>
+          <div class="rental-actions">
+            <a class="btn btn-secondary btn-sm" href="#property-detail">View Details</a>
+            <a class="btn btn-primary btn-sm" href="#enquiry">Schedule Tour</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section" id="agents" aria-labelledby="agents-title">
+    <div class="container demo-container">
+      <header class="section-header">
+        <p class="section-tag">Our Experts</p>
+        <h2 id="agents-title">Agents Who Deliver</h2>
+        <p class="section-sub">Specialists in their micro-markets. 500+ transactions combined.</p>
+      </header>
+      <div class="agent-grid">
+        <article class="agent-card">
+          <div class="agent-img" aria-hidden="true"></div>
+          <div class="agent-info">
+            <h3 class="agent-name">Rohit Malhotra</h3>
+            <p class="agent-title">Founder / South Mumbai Specialist</p>
+            <p class="agent-bio">18 years. 300+ luxury deals. Malabar Hill to Cuffe Parade. Discretion guaranteed.</p>
+            <div class="agent-stats">
+              <span>2000 Cr+ Sales</span>
+              <span>98% Client Retention</span>
+            </div>
+          </div>
+        </article>
+        <article class="agent-card">
+          <div class="agent-img" aria-hidden="true"></div>
+          <div class="agent-info">
+            <h3 class="agent-name">Neha Shah</h3>
+            <p class="agent-title">Bandra & Juhu Specialist</p>
+            <p class="agent-bio">12 years. Celebrity & HNWI clientele. Rental & sales expert. Multilingual.</p>
+            <div class="agent-stats">
+              <span>800 Cr+ Sales</span>
+              <span>50+ Luxury Rentals/Year</span>
+            </div>
+          </div>
+        </article>
+        <article class="agent-card">
+          <div class="agent-img" aria-hidden="true"></div>
+          <div class="agent-info">
+            <h3 class="agent-name">Karan Mehta</h3>
+            <p class="agent-title">New Developments / Investment</p>
+            <p class="agent-bio">10 years. Pre-launch access. Portfolio builder for NRIs. ROI-focused approach.</p>
+            <div class="agent-stats">
+              <span>1200 Cr+ Sales</span>
+              <span>Investment Advisory</span>
+            </div>
+          </div>
+        </article>
+        <article class="agent-card">
+          <div class="agent-img" aria-hidden="true"></div>
+          <div class="agent-info">
+            <h3 class="agent-name">Ananya Iyer</h3>
+            <p class="agent-title">Powai & Thane Specialist</p>
+            <p class="agent-bio">8 years. End-user focused. First-time buyer advocate. Transparent process.</p>
+            <div class="agent-stats">
+              <span>400 Cr+ Sales</span>
+              <span>Family Homes Expert</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section demo-section-alt" id="valuation" aria-labelledby="valuation-title">
+    <div class="container demo-container">
+      <header class="section-header text-center">
+        <p class="section-tag">Free Valuation</p>
+        <h2 id="valuation-title">Know Your Property Worth</h2>
+        <p class="section-sub">Data-driven valuation. No obligation. Confidential report in 48 hours.</p>
+      </header>
+      <form class="valuation-form" id="valuation-form" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="val-type">Property Type *</label>
+            <select id="val-type" name="type" required>
+              <option value="">Select type</option>
+              <option value="apartment">Apartment</option>
+              <option value="penthouse">Penthouse</option>
+              <option value="villa">Villa / Bungalow</option>
+              <option value="commercial">Commercial Office</option>
+              <option value="retail">Retail Space</option>
+              <option value="land">Land / Plot</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="val-area">Area / Locality *</label>
+            <input type="text" id="val-area" name="area" required placeholder="e.g., Malabar Hill, Bandra West, Powai" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="val-size">Built-up Area (sq ft) *</label>
+            <input type="number" id="val-size" name="size" required min="100" placeholder="e.g., 2500" />
+          </div>
+          <div class="form-field">
+            <label for="val-age">Property Age (years) *</label>
+            <input type="number" id="val-age" name="age" required min="0" max="100" placeholder="e.g., 5" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="val-bedrooms">Bedrooms *</label>
+            <select id="val-bedrooms" name="bedrooms" required>
+              <option value="">Select</option>
+              <option value="1">1 BHK</option>
+              <option value="2">2 BHK</option>
+              <option value="3">3 BHK</option>
+              <option value="4">4 BHK</option>
+              <option value="5+">5+ BHK</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="val-parking">Car Parking</label>
+            <select id="val-parking" name="parking">
+              <option value="0">None</option>
+              <option value="1">1 Car</option>
+              <option value="2">2 Cars</option>
+              <option value="3+">3+ Cars</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="val-furnishing">Furnishing Status</label>
+            <select id="val-furnishing" name="furnishing">
+              <option value="unfurnished">Unfurnished</option>
+              <option value="semi">Semi-Furnished</option>
+              <option value="furnished">Fully Furnished</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="val-floor">Floor / Total Floors</label>
+            <input type="text" id="val-floor" name="floor" placeholder="e.g., 12/25" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="val-name">Your Name *</label>
+            <input type="text" id="val-name" name="name" required autocomplete="name" placeholder="Full name" />
+          </div>
+          <div class="form-field">
+            <label for="val-phone">Phone *</label>
+            <input type="tel" id="val-phone" name="phone" required autocomplete="tel" placeholder="+91 98765 43210" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field full-width">
+            <label for="val-email">Email *</label>
+            <input type="email" id="val-email" name="email" required autocomplete="email" placeholder="email@example.com" />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Get Free Valuation</button>
+        <p class="form-note">Your data is confidential. We never share it without permission.</p>
+      </form>
+      <div class="form-success" id="val-success" hidden>
+        <div class="success-icon" aria-hidden="true">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+        </div>
+        <h3>Valuation Requested</h3>
+        <p>Thank you! Your confidential report will be emailed within 48 hours.</p>
+        <button type="button" class="btn btn-secondary" id="val-reset">Another Valuation</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section" id="contact" aria-labelledby="contact-title">
+    <div class="container demo-container">
+      <header class="section-header text-center">
+        <p class="section-tag">Contact Us</p>
+        <h2 id="contact-title">Let Us Talk Property</h2>
+      </header>
+      <div class="contact-grid">
+        <div class="contact-info">
+          <div class="contact-item">
+            <div class="contact-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <h3>Office</h3>
+              <p>Suite 1201, One BKC<br />Bandra Kurla Complex, Mumbai 400051</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2"/></svg>
+            </div>
+            <div>
+              <h3>Phone</h3>
+              <p><a href="tel:+912240008888">+91 22 4000 8888</a><br /><a href="tel:+919876543214">+91 98765 43214</a> (WhatsApp)</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6L12 13L2 6"/></svg>
+            </div>
+            <div>
+              <h3>Email</h3>
+              <p><a href="mailto:hello@realestate.demo">hello@realestate.demo</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="contact-map" aria-hidden="true">
+          <div class="map-placeholder">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <p>Interactive map would be embedded here</p>
+            <a class="btn btn-secondary" href="https://maps.google.com/?q=One+BKC+Bandra+Kurla+Complex+Mumbai" target="_blank" rel="noopener">Open in Google Maps</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="demo-footer">
+  <div class="container demo-container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="demo-logo">HK</span>
+        <span class="demo-name">Real Estate</span>
+        <p class="footer-tagline">Exceptional homes. Expert guidance.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <h4>Buy</h4>
+        <a href="#buy">Apartments</a>
+        <a href="#buy">Penthouses</a>
+        <a href="#buy">Villas</a>
+        <a href="#buy">Commercial</a>
+      </nav>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <h4>Rent</h4>
+        <a href="#rent">Furnished</a>
+        <a href="#rent">Semi-Furnished</a>
+        <a href="#rent">Unfurnished</a>
+      </nav>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <p>Suite 1201, One BKC</p>
+        <p>Bandra Kurla Complex, Mumbai 400051</p>
+        <p><a href="tel:+912240008888">+91 22 4000 8888</a></p>
+        <p><a href="mailto:hello@realestate.demo">hello@realestate.demo</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="copyright">(c) 2026 Real Estate Demo. A demonstration website built by SEAI.</p>
+      <a class="footer-seai" href="/">Back to SEAI</a>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="/demo.js"></script>
+</body>
+</html>

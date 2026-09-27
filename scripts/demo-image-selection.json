@@ -1,0 +1,360 @@
+{
+ "_comment": "Curated by eye from .imgcache contact sheets, then re-verified against the DOWNLOADED files - dark thumbnails proved unreliable (a 'blow dry' pick turned out to be flowers, a 'dumbbell rack' a residential street). No photo id may appear under two businesses. Pexels License: free commercial use, no attribution required; recorded in CREDITS.json. slot: hero|wide -> large2x, else -> large.",
+ "gym": [
+  {
+   "id": 1552103,
+   "slot": "hero",
+   "name": "deadlift"
+  },
+  {
+   "id": 1552249,
+   "slot": "program-1",
+   "name": "strength"
+  },
+  {
+   "id": 29825226,
+   "slot": "program-2",
+   "name": "curl"
+  },
+  {
+   "id": 13018401,
+   "slot": "program-4",
+   "name": "barbell"
+  },
+  {
+   "id": 5327534,
+   "slot": "coach-1",
+   "name": "coach-arjun"
+  },
+  {
+   "id": 3837439,
+   "slot": "coach-2",
+   "name": "coach-vikram"
+  },
+  {
+   "id": 14524650,
+   "slot": "coach-3",
+   "name": "coach-rhea"
+  },
+  {
+   "id": 4234912,
+   "slot": "wide",
+   "name": "row"
+  },
+  {
+   "id": 9545911,
+   "slot": "wide",
+   "name": "kettlebell-floor"
+  },
+  {
+   "id": 8611295,
+   "slot": "wide",
+   "name": "kettlebells"
+  },
+  {
+   "id": 19025670,
+   "slot": "wide",
+   "name": "plates"
+  },
+  {
+   "id": 19025674,
+   "slot": "wide",
+   "name": "dumbbell-rack"
+  }
+ ],
+ "restaurant": [
+  {
+   "id": 12181763,
+   "slot": "hero",
+   "name": "table-candlelight"
+  },
+  {
+   "id": 2104568,
+   "slot": "wide",
+   "name": "wine-service"
+  },
+  {
+   "id": 5395180,
+   "slot": "dish-1",
+   "name": "beef"
+  },
+  {
+   "id": 27812507,
+   "slot": "dish-2",
+   "name": "turbot"
+  },
+  {
+   "id": 20802711,
+   "slot": "dish-3",
+   "name": "scallop"
+  },
+  {
+   "id": 24289165,
+   "slot": "dish-4",
+   "name": "seabass"
+  },
+  {
+   "id": 1327393,
+   "slot": "dish-5",
+   "name": "lamb"
+  },
+  {
+   "id": 30420679,
+   "slot": "room-1",
+   "name": "dining-room"
+  },
+  {
+   "id": 19032681,
+   "slot": "room-2",
+   "name": "mirrored-hall"
+  },
+  {
+   "id": 17294747,
+   "slot": "room-3",
+   "name": "garden-room"
+  },
+  {
+   "id": 36430088,
+   "slot": "chef-1",
+   "name": "chef-deepak"
+  },
+  {
+   "id": 15671274,
+   "slot": "chef-2",
+   "name": "kitchen-pass"
+  },
+  {
+   "id": 15689898,
+   "slot": "wide",
+   "name": "hands-plating"
+  },
+  {
+   "id": 88683183,
+   "slot": "wide",
+   "name": "frontage-night"
+  }
+ ],
+ "salon": [
+  {
+   "id": 7195799,
+   "slot": "hero",
+   "name": "atelier"
+  },
+  {
+   "id": 10318038,
+   "slot": "stylist-1",
+   "name": "stylist-rehan"
+  },
+  {
+   "id": 7195798,
+   "slot": "room-1",
+   "name": "wash-station"
+  },
+  {
+   "id": 7195805,
+   "slot": "room-2",
+   "name": "styling-floor"
+  },
+  {
+   "id": 27165067,
+   "slot": "room-3",
+   "name": "reception"
+  },
+  {
+   "id": 4123782,
+   "slot": "look-1",
+   "name": "cut-shape"
+  },
+  {
+   "id": 15659458,
+   "slot": "look-2",
+   "name": "precision-cut"
+  },
+  {
+   "id": 4981476,
+   "slot": "look-3",
+   "name": "colour"
+  },
+  {
+   "id": 10028673,
+   "slot": "wide",
+   "name": "toner"
+  },
+  {
+   "id": 4681426,
+   "slot": "wide",
+   "name": "tools"
+  }
+ ],
+ "business": [
+  {
+   "id": 35188687,
+   "slot": "hero",
+   "name": "tower-night"
+  },
+  {
+   "id": 13219418,
+   "slot": "wide",
+   "name": "facade-dusk"
+  },
+  {
+   "id": 5493188,
+   "slot": "wide",
+   "name": "boardroom-view"
+  },
+  {
+   "id": 36713445,
+   "slot": "wide",
+   "name": "meeting-glass"
+  },
+  {
+   "id": 5511098,
+   "slot": "space-1",
+   "name": "reception"
+  },
+  {
+   "id": 33631701,
+   "slot": "space-2",
+   "name": "studio-floor"
+  },
+  {
+   "id": 5444195,
+   "slot": "space-3",
+   "name": "council-room"
+  },
+  {
+   "id": 7433847,
+   "slot": "work-1",
+   "name": "engagement"
+  },
+  {
+   "id": 7433919,
+   "slot": "work-2",
+   "name": "working-session"
+  },
+  {
+   "id": 11045731,
+   "slot": "work-3",
+   "name": "desk-work"
+  },
+  {
+   "id": 112112,
+   "slot": "detail-1",
+   "name": "principal"
+  },
+  {
+   "id": 116204070,
+   "slot": "detail-2",
+   "name": "signature"
+  },
+  {
+   "id": 694938,
+   "slot": "wide",
+   "name": "briefing"
+  }
+ ],
+ "real-estate": [
+  {
+   "id": 13729358,
+   "slot": "hero",
+   "name": "architecture-detail"
+  },
+  {
+   "id": 13896850,
+   "slot": "wide",
+   "name": "residences"
+  },
+  {
+   "id": 7031406,
+   "slot": "prop-1",
+   "name": "villa-dusk"
+  },
+  {
+   "id": 7031581,
+   "slot": "prop-2",
+   "name": "house-lawn"
+  },
+  {
+   "id": 18273285,
+   "slot": "prop-3",
+   "name": "courtyard"
+  },
+  {
+   "id": 19516616,
+   "slot": "prop-4",
+   "name": "brick-facade"
+  },
+  {
+   "id": 6342356,
+   "slot": "prop-5",
+   "name": "hillside"
+  },
+  {
+   "id": 3237805,
+   "slot": "wide",
+   "name": "curved-block"
+  }
+ ],
+ "cafe": [
+  {
+   "id": 18721982,
+   "slot": "hero",
+   "name": "plants"
+  },
+  {
+   "id": 5379707,
+   "slot": "room-1",
+   "name": "white-hanging"
+  },
+  {
+   "id": 33286622,
+   "slot": "room-2",
+   "name": "fern-corner"
+  },
+  {
+   "id": 34280858,
+   "slot": "room-3",
+   "name": "counter"
+  },
+  {
+   "id": 35819402,
+   "slot": "craft-1",
+   "name": "pourover"
+  },
+  {
+   "id": 36719865,
+   "slot": "craft-2",
+   "name": "espresso"
+  },
+  {
+   "id": 32802349,
+   "slot": "craft-3",
+   "name": "pastry"
+  },
+  {
+   "id": 31353706,
+   "slot": "barista-1",
+   "name": "grinder"
+  },
+  {
+   "id": 34536646,
+   "slot": "detail-1",
+   "name": "beans"
+  },
+  {
+   "id": 12039010,
+   "slot": "detail-2",
+   "name": "cup-shadow"
+  },
+  {
+   "id": 39031263,
+   "slot": "wide",
+   "name": "window-seat"
+  },
+  {
+   "id": 33964554,
+   "slot": "wide",
+   "name": "sill-plants"
+  }
+ ]
+}
