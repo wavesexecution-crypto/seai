@@ -152,6 +152,18 @@
   window.addEventListener("scroll", revealVisible, { passive: true });
   window.addEventListener("resize", revealVisible, { passive: true });
 
+  /* ---------- Demo return context ---------- */
+  // Refresh the homepage's return context when heading back to SEAI so the
+  // homepage restores the Examples section (not the hero). Plain navigation
+  // proceeds untouched; this only records where to land back.
+  document.querySelectorAll("a.demo-back, a.footer-seai").forEach((a) => {
+    a.addEventListener("click", () => {
+      try {
+        sessionStorage.setItem("seai:return", JSON.stringify({ section: "examples", url: "/#examples", ts: Date.now() }));
+      } catch (e) { /* storage unavailable: plain navigation proceeds */ }
+    });
+  });
+
   /* ---------- Year ---------- */
   document.querySelectorAll(".year").forEach((el) => {
     el.textContent = String(new Date().getFullYear());

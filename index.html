@@ -24,6 +24,30 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<script>
+/* SEAI demo-return bootstrap: runs synchronously during head parsing,
+   before first paint and before the browser's async scroll restoration.
+   When returning from a demo (fresh sessionStorage context, or /#examples
+   referred by a demo page), kill smooth scrolling so restoration lands
+   instantly, and flag return mode so the app skips entrance animations. */
+(function () {
+  try {
+    var raw = sessionStorage.getItem("seai:return");
+    var ctx = raw ? JSON.parse(raw) : null;
+    var fresh = !!(ctx && typeof ctx.ts === "number" && Date.now() - ctx.ts < 3600000);
+    var hashReturn = window.location.hash === "#examples" && /\/examples\//.test(document.referrer || "");
+    if (fresh || hashReturn) {
+      var root = document.documentElement;
+      root.classList.add("returning");
+      root.style.scrollBehavior = "auto";
+      window.__SEAI_RETURN = fresh
+        ? { y: ctx.y, center: ctx.center, ts: ctx.ts, stored: true }
+        : { ts: Date.now(), stored: false };
+    }
+  } catch (e) { /* storage unavailable: fall through to a normal visit */ }
+})();
+</script>
+<style>html.returning .reveal{opacity:1;transform:none;transition:none}</style>
 <script type="module" src="/src/main.tsx"></script>
 </head>
 <body>

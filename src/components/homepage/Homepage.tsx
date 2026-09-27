@@ -74,15 +74,79 @@ const FAQS = [
   { q: "What if I need changes later?", a: "Revision support is included. After the included period, you can request changes at a per-update rate. We don't disappear once the site is live — your business evolves, your website should too." },
 ];
 
+// ---- demo-return restoration ----
+// Opening a demo saves { y, center, ts } under RETURN_KEY (capture phase,
+// navigation itself untouched). On the next homepage mount in the same tab,
+// returnCtx restores the Examples viewport instantly with entrance
+// animations suppressed; the flag is consumed so a later genuine visit
+// behaves normally. Fresh tabs have empty sessionStorage — unaffected.
+const RETURN_KEY = "seai:return";
+const CENTER_KEY = "seai:center";
+
+interface ReturnCtx {
+  y?: number;
+  center?: number;
+  ts: number;
+  stored: boolean;
+}
+
+function readReturnCtx(): ReturnCtx | null {
+  const w = window as unknown as { __SEAI_RETURN?: ReturnCtx };
+  // Set pre-paint by the inline bootstrap in index.html (freshness-checked).
+  if (w.__SEAI_RETURN) return w.__SEAI_RETURN;
+  // Hash-only fallback (e.g. demo opened in a new tab, where sessionStorage
+  // is empty): only a return when the referrer is a demo page, otherwise an
+  // ordinary deep link keeps its normal animated behaviour.
+  if (window.location.hash === "#examples" && /\/examples\//.test(document.referrer || "")) {
+    return { ts: Date.now(), stored: false };
+  }
+  return null;
+}
+
 function Homepage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [faqOpen, setFaqOpen] = useState<Set<number>>(new Set());
+  const [returnCtx] = useState<ReturnCtx | null>(() => readReturnCtx());
+  const isReturn = returnCtx !== null;
 
   // Gate reveal styles on JS availability (matches legacy main.js behaviour)
   useEffect(() => {
     document.documentElement.classList.add("js");
   }, []);
+
+  // Demo-return restoration: land back at the Examples carousel instantly —
+  // no hero, no smooth glide, no entrance replay. Runs once on mount.
+  useEffect(() => {
+    if (!returnCtx) return;
+    const root = document.documentElement;
+    root.style.scrollBehavior = "auto"; // inline bootstrap already set this pre-paint; belt and braces
+    const examples = document.getElementById("examples");
+    const fallback = examples
+      ? examples.getBoundingClientRect().top + window.scrollY - 80
+      : 0;
+    const y = typeof returnCtx.y === "number" && Number.isFinite(returnCtx.y)
+      ? Math.max(0, returnCtx.y)
+      : Math.max(0, fallback);
+    window.scrollTo(0, y);
+    // Pre-reveal everything at/above the restored viewport so returning never
+    // replays entrance animations; below-fold sections still reveal on scroll.
+    const line = window.innerHeight + 80;
+    document.querySelectorAll(".reveal").forEach((el) => {
+      if (el.getBoundingClientRect().top <= line) el.classList.add("in");
+    });
+    if (returnCtx.stored) {
+      try {
+        sessionStorage.removeItem(RETURN_KEY);
+        sessionStorage.removeItem(CENTER_KEY);
+      } catch { /* storage unavailable: nothing to consume */ }
+    }
+    const raf = requestAnimationFrame(() => {
+      root.classList.remove("returning");
+      root.style.removeProperty("scroll-behavior");
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [returnCtx]);
 
   // Keep the legacy `body.menu-open` contract so responsive.css shows the mobile nav,
   // lock scroll while open, and close on Escape / desktop resize.
@@ -157,11 +221,35 @@ function Homepage() {
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
+  // Persist demo-return context before leaving for a demo (capture phase;
+  // never preventDefault — history and navigation stay untouched).
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as Element | null;
+      const a = t && typeof t.closest === "function" ? t.closest('a[href^="/examples/"]') : null;
+      if (!a) return;
+      try {
+        const centerRaw = sessionStorage.getItem(CENTER_KEY);
+        const center = centerRaw !== null ? parseInt(centerRaw, 10) : NaN;
+        sessionStorage.setItem(RETURN_KEY, JSON.stringify({
+          y: window.scrollY,
+          center: Number.isInteger(center) ? center : undefined,
+          url: a.getAttribute("href"),
+          ts: Date.now(),
+        }));
+      } catch { /* storage unavailable: normal navigation proceeds */ }
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+
   // Restore an incoming deep link, e.g. /index.html#pricing from the intake
   // page navbar. The browser only honours a hash during initial HTML parsing,
   // but this page is client-rendered, so the target section does not exist yet
   // and the browser silently stays at the top. Re-apply it once mounted.
+  // Skipped in demo-return mode: the restore effect above owns the scroll.
   useEffect(() => {
+    if ((window as unknown as { __SEAI_RETURN?: unknown }).__SEAI_RETURN) return;
     const hash = window.location.hash;
     if (!hash || hash === "#") return;
 
@@ -211,6 +299,14 @@ function Homepage() {
       })),
     []
   );
+
+  // Restored fan position for a demo return (otherwise the default center).
+  const initialCenter = (() => {
+    const c = returnCtx?.center;
+    return typeof c === "number" && Number.isInteger(c)
+      ? Math.max(0, Math.min(EXAMPLES.length - 1, c))
+      : undefined;
+  })();
 
   return (
     <>
@@ -275,7 +371,7 @@ function Homepage() {
             <p className="eyebrow reveal" data-reveal-id="examples-eyebrow">01 — Proof</p>
             <h2 id="examples-title" className="sec-title reveal" data-reveal-id="examples-title">Websites people actually pay for.</h2>
             <p className="sec-lede reveal" data-reveal-id="examples-lede">{`${NUMBER_WORDS[EXAMPLES.length] ?? EXAMPLES.length} business types. Tap any card to open the real demo website.`}</p>
-            <SocialCards cards={exampleCards} />
+            <SocialCards cards={exampleCards} instant={isReturn} initialCenter={initialCenter} />
           </div>
         </section>
 
