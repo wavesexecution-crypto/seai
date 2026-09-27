@@ -34,6 +34,7 @@ import { validateImport, type SourcedRow } from './sourcing/providers.js';
 import { executeTool } from './agent/executor.js';
 import { assertNoSecretsInResponse } from './security/validate.js';
 import { embedRouter } from './routes/embed.js';
+import { customerRouter } from './customer/routes.js';
 
 const app = express();
 const here = dirname(fileURLToPath(import.meta.url));
@@ -110,7 +111,10 @@ app.use((_req, res, next) => {
       "frame-ancestors 'self' https://*.myshopify.com https://admin.shopify.com",
       "default-src 'self'",
       // App Bridge + Shopify embed SDK are loaded from Shopify's CDN.
-      "script-src 'self' https://cdn.shopify.com https://shopify-embed.shopifycloud.com",
+      // 'unsafe-inline' is required for the operator auth pages and dashboard
+      // shell, which use inline event handlers and page-specific inline scripts
+      // served from 'self'. API JSON responses are unaffected by this directive.
+      "script-src 'self' 'unsafe-inline' https://cdn.shopify.com https://shopify-embed.shopifycloud.com",
       // App Bridge loads styles and makes XHR/fetch calls to the shop's admin.
       "style-src 'self' 'unsafe-inline' https://cdn.shopify.com",
       "img-src 'self' data: https://cdn.shopify.com",
@@ -135,6 +139,10 @@ app.use('/api', (req, res, next) => {
   return requireAuth(req, res, next);
 });
 
+// Customer control center API (post-purchase website owner). The /api guard
+// above authenticates first; routes additionally enforce per-customer scoping.
+app.use('/api/customer', customerRouter);
+
 // Auth page routes — serve auth HTML pages
 function authHtml(filename: string): string {
   for (const p of [join(here, 'public', filename), join(here, '..', 'public', filename)]) {
@@ -142,13 +150,19 @@ function authHtml(filename: string): string {
   }
   return join(here, '..', 'public', filename);
 }
-for (const p of ['/sign-in', '/create-account', '/forgot-password', '/reset-password', '/verify-email']) {
-  app.get(p, (_req, res) => { res.sendFile(authHtml(p.slice(1) + '.html')); });
+for (const p of ['/sign-in', '/create-account', '/sign-up', '/forgot-password', '/reset-password', '/verify-email']) {
+  app.get(p, (_req, res) => {
+    const htmlName = p === '/sign-up' ? 'create-account.html' : p.slice(1) + '.html';
+    res.sendFile(authHtml(htmlName));
+  });
 }
 // App Store required legal pages — serve at clean URLs without .html
 for (const p of ['/privacy', '/terms', '/support']) {
   app.get(p, (_req, res) => { res.sendFile(authHtml(p.slice(1) + '.html')); });
 }
+// Customer dashboard root goes through the same auth gate as /overview.
+// Registered before static so "/" never serves the shell unauthenticated.
+app.get('/', requireAuthRedirect, (_req, res) => { res.redirect('/overview'); });
 app.use(express.static(join(here, '..', 'public')));
 
 // VX page routes — every route serves the app shell; the client router renders the view.
@@ -160,9 +174,10 @@ function shellHtml(): string {
   }
   return join(here, '..', 'public', 'index.html');
 }
-for (const p of ['/overview', '/command', '/activity', '/provider', '/tools', '/system', '/portfolio', '/creation', '/start']) {
+for (const p of ['/overview', '/modify', '/maintenance', '/performance', '/changes', '/projects', '/create', '/templates', '/deployments', '/domains', '/settings', '/command', '/activity', '/provider', '/tools', '/system', '/portfolio', '/creation', '/start']) {
   app.get(p, requireAuthRedirect, (_req, res) => { res.sendFile(shellHtml()); });
 }
+app.get('/project/*', requireAuthRedirect, (_req, res) => { res.sendFile(shellHtml()); });
 
 const errSafe = (e: any) => ({ error: String(e?.message ?? e).slice(0, 500), code: e?.code });
 

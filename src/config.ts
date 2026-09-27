@@ -49,6 +49,21 @@ export const config = {
   // Must match the gateway's GATEWAY_TOKEN_SIGNING_KEY. Generate with:
   //   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
   gatewaySecret: need('SEAI_GATEWAY_SECRET', ''),
+  // Customer maintenance subscription (configurable — never hardcode in UI).
+  maintenancePriceInr: Number(need('MAINTENANCE_PRICE_INR', '457')),
+  maintenanceCurrency: need('MAINTENANCE_CURRENCY', 'INR'),
+  maintenancePlanName: need('MAINTENANCE_PLAN_NAME', 'Website Maintenance'),
+  // Transactional email (SMTP). Sender identity for all customer mail.
+  mailFrom: need('MAIL_FROM', 'workwithseai@gmail.com'),
+  mailFromName: need('MAIL_FROM_NAME', 'SEAI'),
+  appUrl: need('APP_URL', 'https://dash.seai.store'),
+  smtp: {
+    host: need('MAIL_SMTP_HOST', ''),
+    port: Number(need('MAIL_SMTP_PORT', '587')),
+    secure: need('MAIL_SMTP_SECURE', 'false') === 'true',
+    user: need('MAIL_SMTP_USER', ''),
+    pass: need('MAIL_SMTP_PASS', ''),
+  },
 };
 
 export function maskKeyId(index: number): string {

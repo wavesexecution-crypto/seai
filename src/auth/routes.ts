@@ -15,6 +15,10 @@ import {
   findUserByEmail,
   type User,
 } from './service.js';
+import { config } from '../config.js';
+import { isMailConfigured, sendMail } from '../mail/transport.js';
+import { passwordResetEmail } from '../mail/templates.js';
+import { notifyWelcome } from '../mail/notify.js';
 
 export const authRouter = Router();
 
@@ -22,9 +26,10 @@ const SESSION_COOKIE = 'seai_session';
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 
 function setSessionCookie(res: Response, token: string): void {
+  const isProd = process.env.NODE_ENV === 'production';
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'strict',
     maxAge: COOKIE_MAX_AGE,
     path: '/',
@@ -98,6 +103,7 @@ authRouter.post('/sign-up', async (req: Request, res: Response) => {
     await createEmailVerification(user.id);
     const token = await createSession(user.id);
     setSessionCookie(res, token);
+    notifyWelcome(user.email, user.full_name);
     res.status(201).json({ ok: true, user: publicUser(user) });
   } catch (err: any) {
     res.status(400).json({ ok: false, error: err.message });
@@ -113,10 +119,28 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
   }
   const { email } = parsed.data;
   const user = await findUserByEmail(email);
-  if (user) {
-    await createPasswordReset(user.id);
+  // Generic response in every branch: never reveal whether the account exists.
+  // The reset token is only ever delivered inside the email to the owner.
+  if (!user) {
+    res.json({ ok: true, message: 'If an account exists for this email, a password reset link has been sent.' });
+    return;
   }
-  res.json({ ok: true, message: 'If an account exists, a reset link has been sent' });
+  if (!isMailConfigured()) {
+    console.error('[auth] password reset requested but email service is not configured');
+    res.status(503).json({ ok: false, error: 'Password reset is temporarily unavailable. Please try again later or contact support.' });
+    return;
+  }
+  const token = await createPasswordReset(user.id);
+  const resetUrl = `${config.appUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
+  const mail = passwordResetEmail(resetUrl);
+  try {
+    await sendMail({ to: user.email, subject: mail.subject, html: mail.html, text: mail.text });
+  } catch (err) {
+    console.error('[auth] password reset email failed:', (err as Error).message);
+    res.status(502).json({ ok: false, error: 'Could not send the reset email. Please try again later.' });
+    return;
+  }
+  res.json({ ok: true, message: 'If an account exists for this email, a password reset link has been sent.' });
 });
 
 // POST /api/auth/reset-password

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Create account — SEAI</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/auth.css" />
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a class="brand" href="/">
+      <img src="/logo.svg" width="26" height="26" alt="SEAI" />
+      <span class="n">SEAI</span>
+    </a>
+
+    <h1 class="title">Create account</h1>
+    <p class="subtitle">Set up your SEAI operator account.</p>
+
+    <div id="state" class="state-msg" style="display:none"></div>
+
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="fullName">Full name</label>
+        <div class="input-wrap">
+          <input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="Your name" required />
+        </div>
+        <span id="fullName-err" class="err-msg"></span>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="input-wrap">
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
+        </div>
+        <span id="email-err" class="err-msg"></span>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Create a password" required />
+          <button type="button" class="toggle-vis" aria-label="Show password" onclick="toggleVisibility('password', this)">Show</button>
+        </div>
+        <div class="strength" id="strength">
+          <div class="bar" id="bar1"></div>
+          <div class="bar" id="bar2"></div>
+          <div class="bar" id="bar3"></div>
+          <div class="bar" id="bar4"></div>
+          <span class="strength-label" id="strengthLabel"></span>
+        </div>
+        <ul class="requirements" id="reqs">
+          <li id="req-length"><span class="dot"></span> At least 8 characters</li>
+          <li id="req-upper"><span class="dot"></span> One uppercase letter</li>
+          <li id="req-lower"><span class="dot"></span> One lowercase letter</li>
+          <li id="req-number"><span class="dot"></span> One number</li>
+          <li id="req-symbol"><span class="dot"></span> One symbol</li>
+        </ul>
+      </div>
+
+      <div class="field">
+        <label for="confirmPassword">Confirm password</label>
+        <div class="input-wrap">
+          <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm your password" required />
+          <button type="button" class="toggle-vis" aria-label="Show password" onclick="toggleVisibility('confirmPassword', this)">Show</button>
+        </div>
+        <span id="confirmPassword-err" class="err-msg"></span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submit">Create account</button>
+    </form>
+
+    <div class="auth-foot">
+      <span>Already have an account?</span>
+      <a href="/sign-in">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+(function () {
+  const form = document.getElementById('form');
+  const submit = document.getElementById('submit');
+  const ids = ['fullName', 'email', 'password', 'confirmPassword'];
+  const pwInput = document.getElementById('password');
+
+  function updateStrength() {
+    const pw = pwInput.value;
+    const { score, label, met } = scorePassword(pw);
+    const bars = ['bar1', 'bar2', 'bar3', 'bar4'];
+    bars.forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.className = 'bar' + (i < score ? ' on' : '');
+      if (i < score) { el.classList.remove('mid', 'strong'); if (score >= 3) el.classList.add('strong'); else if (score >= 2) el.classList.add('mid'); }
+    });
+    document.getElementById('strengthLabel').textContent = pw ? label : '';
+    document.getElementById('req-length').classList.toggle('met', met.length);
+    document.getElementById('req-upper').classList.toggle('met', met.upper);
+    document.getElementById('req-lower').classList.toggle('met', met.lower);
+    document.getElementById('req-number').classList.toggle('met', met.number);
+    document.getElementById('req-symbol').classList.toggle('met', met.symbol);
+  }
+  pwInput.addEventListener('input', updateStrength);
+
+  function validate() {
+    let ok = true;
+    clearErrors(ids);
+    const fullName = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pw = pwInput.value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (!fullName) { setField('fullName', 'Full name is required'); ok = false; }
+    if (!email) { setField('email', 'Email is required'); ok = false; }
+    else if (!isValidEmail(email)) { setField('email', 'Enter a valid email'); ok = false; }
+    if (!pw) { setField('password', 'Password is required'); ok = false; }
+    else if (pw.length < 8) { setField('password', 'Password must be at least 8 characters'); ok = false; }
+    if (!confirm) { setField('confirmPassword', 'Please confirm your password'); ok = false; }
+    else if (pw !== confirm) { setField('confirmPassword', 'Passwords do not match'); ok = false; }
+    return ok;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideState('state');
+    if (!validate()) return;
+    setLoading(submit, true);
+    try {
+      await api('/sign-up', {
+        fullName: document.getElementById('fullName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        password: pwInput.value,
+        confirmPassword: document.getElementById('confirmPassword').value,
+      });
+      go('/overview');
+    } catch (err) {
+      showState('state', 'error', err.message);
+      setLoading(submit, false);
+    }
+  });
+})();
+</script>
+</body>
+</html>

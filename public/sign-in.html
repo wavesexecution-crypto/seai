@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign in — SEAI</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/auth.css" />
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a class="brand" href="/">
+      <img src="/logo.svg" width="26" height="26" alt="SEAI" />
+      <span class="n">SEAI</span>
+    </a>
+
+    <h1 class="title">Sign in</h1>
+    <p class="subtitle">Access your SEAI operator dashboard.</p>
+
+    <div id="state" class="state-msg" style="display:none"></div>
+
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="input-wrap">
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
+        </div>
+        <span id="email-err" class="err-msg"></span>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+          <button type="button" class="toggle-vis" aria-label="Show password" onclick="toggleVisibility('password', this)">Show</button>
+        </div>
+        <span id="password-err" class="err-msg"></span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submit">Sign in</button>
+    </form>
+
+    <div class="auth-foot">
+      <button type="button" class="btn-link" onclick="go('/forgot-password')">Forgot password?</button>
+    </div>
+
+    <div class="divider">or</div>
+
+    <button type="button" class="btn btn-ghost" onclick="go('/sign-up')">Create account</button>
+
+    <div class="auth-foot" style="margin-top:18px">
+      <span>Back to</span>
+      <a href="https://seai.store">seai.store</a>
+    </div>
+  </div>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+(function () {
+  const form = document.getElementById('form');
+  const submit = document.getElementById('submit');
+  const ids = ['email', 'password'];
+
+  function validate() {
+    let ok = true;
+    clearErrors(ids);
+    const email = document.getElementById('email').value.trim();
+    const pw = document.getElementById('password').value;
+    if (!email) { setField('email', 'Email is required'); ok = false; }
+    else if (!isValidEmail(email)) { setField('email', 'Enter a valid email'); ok = false; }
+    if (!pw) { setField('password', 'Password is required'); ok = false; }
+    return ok;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideState('state');
+    if (!validate()) return;
+    setLoading(submit, true);
+    try {
+      await api('/sign-in', {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+      });
+      go('/overview');
+    } catch (err) {
+      showState('state', 'error', err.message);
+      setLoading(submit, false);
+    }
+  });
+})();
+</script>
+</body>
+</html>
