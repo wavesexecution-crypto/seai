@@ -16,3 +16,5 @@ dist/
 # local QA / tooling artefacts
 .playwright-mcp/
 qa-tmp/
+
+.vercel
