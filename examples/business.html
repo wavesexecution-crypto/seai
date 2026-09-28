@@ -820,17 +820,45 @@ html.no-js .rv { opacity: 1; transform: none; }
 .demo-nav a:hover, .demo-nav a[aria-current="page"] { color: var(--d-ink); }
 .demo-nav a:hover::after, .demo-nav a[aria-current="page"]::after { right: 0; }
 .demo-nav-cta { background: var(--d-accent) !important; color: var(--d-on-accent) !important; border-radius: 999px !important; padding: 9px 18px !important; height: auto !important; }
-/* The mobile panel (.demo-mobile-nav) is a CHILD of .demo-header, so it shares
-   the header's stacking context. At z-index 190 it therefore paints over the
-   burger, which has z-index auto — making the menu impossible to close by
-   tapping the button. Lift the button above the panel. */
-.demo-menu-btn { position: relative; z-index: 200; }
-.demo-menu-btn { display: none; width: 40px; height: 40px; align-items: center; justify-content: center; flex-direction: column; gap: 5px; border: var(--hair) solid var(--d-line); border-radius: 999px; }
+/* ---------------------------------------------------------------------
+   DEMO LAYER LADDER - one deliberate hierarchy, used by every demo.
+
+     -2  hero media / page background
+     -1  hero scrim + overlay
+      0  page content
+    190  .demo-mobile-nav   mobile overlay (full viewport, opaque)
+    200  .demo-header       sticky header, and the burger/close control
+    300  .demo-back         "Back to SEAI" pill when the menu is closed
+
+   The panel used to live INSIDE .demo-header. The header carries
+   backdrop-filter, which makes it the containing block for position:fixed
+   descendants, so `inset: 0` resolved against the 68px header instead of the
+   viewport: the overlay collapsed to 136px (its own padding) and its links
+   printed straight through the hero. Lifting the burger with a higher z-index
+   only papered over the symptom. The panel is now a sibling of the header, so
+   it is genuinely viewport-relative, and it starts below the header so the
+   brand and the close control stay live on top of it.
+   --------------------------------------------------------------------- */
+.demo-menu-btn { position: relative; }
+.demo-menu-btn { display: none; width: 44px; height: 44px; align-items: center; justify-content: center; flex-direction: column; gap: 5px; border: var(--hair) solid var(--d-line); border-radius: 999px; background: transparent; }
 .demo-menu-btn span { display: block; width: 15px; height: 1.5px; background: var(--d-ink); transition: transform var(--t-med) var(--ease), opacity var(--t-fast); }
 body.menu-open .demo-menu-btn span:first-child { transform: translateY(3.25px) rotate(45deg); }
 body.menu-open .demo-menu-btn span:nth-child(2) { opacity: 0; }
 body.menu-open .demo-menu-btn span:last-child { transform: translateY(-3.25px) rotate(-45deg); }
-.demo-mobile-nav { display: none; position: fixed; inset: 0; z-index: 190; background: var(--d-bg); flex-direction: column; padding: 96px var(--pad-x) 40px; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s var(--t-med); }
+.demo-mobile-nav {
+  display: none;
+  position: fixed;
+  top: 68px; right: 0; bottom: 0; left: 0;
+  z-index: 190;
+  background: var(--d-bg);
+  flex-direction: column;
+  padding: 20px var(--pad-x) 40px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0; visibility: hidden; transform: translateY(6px);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s var(--t-med);
+}
 body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: none; transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s; }
 .demo-mobile-nav a { padding: 16px 2px; font-size: 19px; border-bottom: var(--hair) solid var(--d-line-soft); }
 .demo-mobile-cta { margin-top: 20px; justify-content: center; }
@@ -936,6 +964,14 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 .contact-icon { flex: 0 0 auto; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: var(--hair) solid var(--d-line); border-radius: var(--d-radius); color: var(--d-ink); }
 .contact-item h3 { font-size: 15px; font-weight: 500; }
 .contact-item p, .contact-item a { font-size: 14.5px; line-height: 1.62; color: var(--d-sub); }
+/* Phone / email / address links are standalone controls on their own line, so
+   they need a real hit area. As bare inline text they measured 17-20px, under
+   the 24px minimum target. Padding-only, so the layout is untouched. */
+.contact-item a, .contact-info a {
+  display: inline-block;
+  padding-block: 3px;
+  min-height: 24px;
+}
 .map-placeholder, .contact-map { aspect-ratio: 4 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: var(--d-fill-2); border: var(--hair) solid var(--d-line); border-radius: var(--d-radius); color: var(--d-faint); text-align: center; padding: 24px; }
 .map-placeholder p { font-size: 14px; max-width: 30ch; }
 .hours-section { margin-top: 30px; }
@@ -1004,8 +1040,14 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 @media (max-width: 980px) {
   .demo-nav, .demo-nav-cta { display: none; }
   .demo-menu-btn { display: flex; }
-  body.menu-open { overflow: hidden; }
   .demo-mobile-nav { display: flex; }
+  /* While the overlay is open the header sits above it, so it must be opaque -
+     the page would otherwise scroll through the translucent bar behind the
+     brand and close button. */
+  body.menu-open .demo-header {
+    background: var(--d-bg);
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
 }
 @media (max-width: 640px) {
   .hero-actions { flex-direction: column; }
@@ -1570,7 +1612,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   letter-spacing: 0.13em; text-transform: uppercase; color: var(--d-faint);
 }
 .re-listing__name { margin: 0; font-size: clamp(18px, 1.7vw, 21px); font-weight: 500; letter-spacing: -0.02em; line-height: 1.22; }
-.re-listing__name a { color: inherit; }
+.re-listing__name a { color: inherit; display: inline-block; padding-block: 2px; min-height: 24px; }
 .re-listing__price {
   margin: 10px 0 0; font-family: var(--f-mono); font-size: 16px;
   font-weight: 500; color: var(--d-ink); font-variant-numeric: tabular-nums;
@@ -1712,7 +1754,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   </svg>
   <span>Back to SEAI</span>
 </a>
-    <a class="demo-brand" href="#top" aria-label="SEAI Business — home">
+    <a class="demo-brand" href="#top" aria-label="SEAI Business â€” home">
       <img class="demo-logo" src="/logo.svg" width="30" height="30" alt="" />
       <span class="demo-name">SEAI Business</span>
     </a>
@@ -1726,13 +1768,16 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
       <span></span><span></span><span></span>
     </button>
   </div>
+</header>
+  <!-- Mobile nav sits outside <header>: the header has
+       backdrop-filter, which makes it the containing block for
+       position:fixed children, collapsing a viewport overlay. -->
   <nav class="demo-mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
     <a href="#services">Services</a>
     <a href="#insights">Insights</a>
     <a href="#team">Team</a>
     <a href="#contact" class="demo-mobile-cta">Start a Conversation</a>
   </nav>
-</header>
 
 <main id="main">
 
@@ -1776,14 +1821,14 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           <p class="offer__num" aria-hidden="true">01</p>
           <div class="offer__body">
             <h3 class="offer__title">Growth Strategy</h3>
-            <p class="offer__lede">Market entry, go-to-market design, pricing architecture and channel strategy — built from your numbers rather than a template.</p>
+            <p class="offer__lede">Market entry, go-to-market design, pricing architecture and channel strategy â€” built from your numbers rather than a template.</p>
             <ul class="offer__caps">
               <li>TAM / SAM / SOM analysis</li>
               <li>ICP definition &amp; segmentation</li>
               <li>Competitive positioning</li>
               <li>Three-year financial model</li>
             </ul>
-            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">→</span></a>
+            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">â†’</span></a>
           </div>
         </li>
         <li class="offer">
@@ -1797,21 +1842,21 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
               <li>Investor outreach strategy</li>
               <li>Term sheet support</li>
             </ul>
-            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">→</span></a>
+            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">â†’</span></a>
           </div>
         </li>
         <li class="offer">
           <p class="offer__num" aria-hidden="true">03</p>
           <div class="offer__body">
             <h3 class="offer__title">Operations Excellence</h3>
-            <p class="offer__lede">Revenue operations, process automation and KPI frameworks — the machinery that keeps growing without more headcount.</p>
+            <p class="offer__lede">Revenue operations, process automation and KPI frameworks â€” the machinery that keeps growing without more headcount.</p>
             <ul class="offer__caps">
               <li>Sales &amp; marketing operations</li>
               <li>Finance &amp; HR process design</li>
               <li>OKR / KPI implementation</li>
               <li>Tool stack rationalisation</li>
             </ul>
-            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">→</span></a>
+            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">â†’</span></a>
           </div>
         </li>
         <li class="offer">
@@ -1825,7 +1870,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
               <li>Due diligence management</li>
               <li>Negotiation &amp; close support</li>
             </ul>
-            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">→</span></a>
+            <a class="offer__cta" href="#contact">Engage us <span class="arr" aria-hidden="true">â†’</span></a>
           </div>
         </li>
       </ol>
@@ -1879,7 +1924,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
           <h3 class="insight-title">The Series A Metrics That Matter in 2026</h3>
           <p class="insight-excerpt">Investors have shifted focus. Here are the 7 metrics every SaaS founder must hit before Series A conversations.</p>
-          <a class="insight-link" href="#">Read Article -></a>
+          <span class="insight-link">Read Article -></a>
         </article>
         <article class="insight-card">
           <div class="insight-meta">
@@ -1888,7 +1933,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
           <h3 class="insight-title">RevOps for Early-Stage: Build Before You Need It</h3>
           <p class="insight-excerpt">Most founders wait until chaos. Here is the minimum viable RevOps stack for pre-Series A companies.</p>
-          <a class="insight-link" href="#">Read Article -></a>
+          <span class="insight-link">Read Article -></a>
         </article>
         <article class="insight-card">
           <div class="insight-meta">
@@ -1897,7 +1942,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
           <h3 class="insight-title">Pricing as a Growth Lever: The Framework</h3>
           <p class="insight-excerpt">Pricing is not a one-time decision. A systematic approach to packaging, discounting, and expansion revenue.</p>
-          <a class="insight-link" href="#">Read Article -></a>
+          <span class="insight-link">Read Article -></a>
         </article>
         <article class="insight-card">
           <div class="insight-meta">
@@ -1906,7 +1951,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
           <h3 class="insight-title">Preparing for Exit: The 12-Month Checklist</h3>
           <p class="insight-excerpt">The best exits are planned years ahead. Here is what strategic buyers actually diligence.</p>
-          <a class="insight-link" href="#">Read Article -></a>
+          <span class="insight-link">Read Article -></a>
         </article>
         <article class="insight-card">
           <div class="insight-meta">
@@ -1915,7 +1960,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
           <h3 class="insight-title">Hiring Your First VP Sales: The Scorecard</h3>
           <p class="insight-excerpt">Do not hire for pedigree. Hire for stage-fit. The rubric we use with every portfolio company.</p>
-          <a class="insight-link" href="#">Read Article -></a>
+          <span class="insight-link">Read Article -></a>
         </article>
         <article class="insight-card">
           <div class="insight-meta">
@@ -1924,11 +1969,11 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
           <h3 class="insight-title">Unit Economics Deep-Dive: Beyond LTV/CAC</h3>
           <p class="insight-excerpt">Payback period, gross margin per cohort, expansion revenue. The metrics sophisticated investors track.</p>
-          <a class="insight-link" href="#">Read Article -></a>
+          <span class="insight-link">Read Article -></a>
         </article>
       </div>
       <div class="text-center" style="margin-top: 40px;">
-        <a class="btn btn-secondary" href="#">View All Insights -></a>
+        <span class="btn btn-secondary">View All Insights -></span>
       </div>
     </div>
   </section>
