@@ -1,5 +1,62 @@
 {
- "_comment": "Curated by eye from .imgcache contact sheets, then re-verified against the DOWNLOADED files - dark thumbnails proved unreliable (a 'blow dry' pick turned out to be flowers, a 'dumbbell rack' a residential street). No photo id may appear under two businesses. Pexels License: free commercial use, no attribution required; recorded in CREDITS.json. slot: hero|wide -> large2x, else -> large.",
+  "_comment": "Curated by eye from .imgcache contact sheets, then re-verified against the DOWNLOADED files - dark thumbnails proved unreliable (a 'blow dry' pick turned out to be flowers, a 'dumbbell rack' a residential street). No photo id may appear under two businesses. Pexels License: free commercial use, no attribution required; recorded in CREDITS.json. slot: hero|wide -> large2x, else -> large.",
+  "clinic": [
+  {
+   "id": 37770089,
+   "slot": "hero",
+   "name": "clinic-corridor"
+  },
+  {
+   "id": 6129107,
+   "slot": "wide",
+   "name": "reception"
+  },
+  {
+   "id": 6129444,
+   "slot": "wide",
+   "name": "consult"
+  },
+  {
+   "id": 9641992,
+   "slot": "wide",
+   "name": "diagnostics"
+  },
+  {
+   "id": 33102084,
+   "slot": "wide",
+   "name": "dispensary"
+  },
+  {
+   "id": 15962798,
+   "slot": "doctor-1",
+   "name": "doctor-mehta"
+  },
+  {
+   "id": 32254667,
+   "slot": "doctor-2",
+   "name": "doctor-shah"
+  },
+  {
+   "id": 29995617,
+   "slot": "doctor-3",
+   "name": "doctor-patel"
+  },
+  {
+   "id": 8376318,
+   "slot": "doctor-4",
+   "name": "doctor-rao"
+  },
+  {
+   "id": 32160037,
+   "slot": "doctor-5",
+   "name": "doctor-nair"
+  },
+  {
+   "id": 7904406,
+   "slot": "doctor-6",
+   "name": "doctor-iyer"
+  }
+ ],
  "gym": [
   {
    "id": 1552103,
@@ -255,44 +312,99 @@
  ],
  "real-estate": [
   {
-   "id": 13729358,
+   "id": 8954107,
    "slot": "hero",
-   "name": "architecture-detail"
+   "name": "stair-spiral"
   },
   {
-   "id": 13896850,
-   "slot": "wide",
-   "name": "residences"
-  },
-  {
-   "id": 7031406,
+   "id": 7031604,
    "slot": "prop-1",
-   "name": "villa-dusk"
-  },
-  {
-   "id": 7031581,
-   "slot": "prop-2",
-   "name": "house-lawn"
+   "name": "villa-pool"
   },
   {
    "id": 18273285,
+   "slot": "prop-2",
+   "name": "villa-garden"
+  },
+  {
+   "id": 15456211,
    "slot": "prop-3",
-   "name": "courtyard"
+   "name": "suite-bedroom"
   },
   {
-   "id": 19516616,
+   "id": 7377669,
    "slot": "prop-4",
-   "name": "brick-facade"
+   "name": "living-volume"
   },
   {
-   "id": 6342356,
+   "id": 7045356,
    "slot": "prop-5",
-   "name": "hillside"
+   "name": "kitchen-island"
   },
   {
-   "id": 3237805,
-   "slot": "wide",
-   "name": "curved-block"
+   "id": 7045920,
+   "slot": "prop-6",
+   "name": "dining-room"
+  },
+  {
+   "id": 7045918,
+   "slot": "detail-1",
+   "name": "terrace-deck"
+  },
+  {
+   "id": 33529500,
+   "slot": "detail-2",
+   "name": "arrival-lobby"
+  },
+  {
+   "id": 16383998,
+   "slot": "detail-3",
+   "name": "glass-atrium"
+  },
+  {
+   "id": 36551042,
+   "slot": "agent-1",
+   "name": "agent-iyer"
+  },
+  {
+   "id": 8560310,
+   "slot": "agent-2",
+   "name": "agent-marsh"
+  },
+  {
+   "id": 8278977,
+   "slot": "agent-3",
+   "name": "agent-tanaka"
+  },
+  {
+   "id": 10347517,
+   "slot": "agent-4",
+   "name": "agent-haddad"
+  },
+  {
+   "id": 11505497,
+   "slot": "hood-1",
+   "name": "hood-bandra"
+  },
+  {
+   "id": 14577907,
+   "slot": "hood-2",
+   "name": "hood-worli"
+  },
+  {
+   "id": 26970225,
+   "slot": "hood-3",
+   "name": "hood-powai"
+  },
+  {
+   "id": 31619253,
+   "slot": "editorial-1",
+   "name": "facade-geometry"
+  },
+  {
+   "id": 11692835,
+   "slot": "editorial-2",
+   "name": "canopy-detail"
   }
  ],
  "cafe": [

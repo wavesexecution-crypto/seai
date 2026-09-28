@@ -157,16 +157,29 @@
   }
 
   function setupPageCheckboxes() {
-    document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(input => {
+    const boxes = Array.from(
+      document.querySelectorAll('.checkbox-group input[type="checkbox"]')
+    );
+    const counter = document.querySelector("[data-pages-count]");
+
+    const sync = () => {
+      if (!counter) return;
+      const n = boxes.filter((b) => b.checked).length;
+      counter.textContent = `${n} of ${boxes.length} selected`;
+    };
+
+    boxes.forEach((input) => {
       input.addEventListener("change", () => {
         const value = input.value;
         if (input.checked) {
           if (!formData.pages.includes(value)) formData.pages.push(value);
         } else {
-          formData.pages = formData.pages.filter(p => p !== value);
+          formData.pages = formData.pages.filter((p) => p !== value);
         }
+        sync();
       });
     });
+    sync();
   }
 
   function setupNavigation() {

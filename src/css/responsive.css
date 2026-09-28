@@ -56,30 +56,34 @@ html { scroll-padding-top: 88px; }
   body.menu-open .menu-btn span:first-child { transform: translateY(3.8px) rotate(45deg); }
   body.menu-open .menu-btn span:last-child { transform: translateY(-3.8px) rotate(-45deg); }
 
+  /* Overlay is a SIBLING of the sticky header, so `position: fixed` resolves
+     against the viewport. It is layered just under the header and starts below
+     it, so the live brand + close button stay on top with no z-index tricks. */
   .mobile-nav {
     position: fixed;
-    top: 0;
+    top: 64px;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 95;
+    z-index: 90;
     background: var(--surface);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
-    padding: 108px clamp(28px, 6vw, 64px) 40px;
+    padding: 8px clamp(28px, 6vw, 64px) 40px;
     visibility: hidden;
     opacity: 0;
     transform: translateY(6px);
     transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s var(--t-med);
   }
+  body.menu-open .site-header { background: var(--surface); }
   body.menu-open .mobile-nav {
     visibility: visible;
     opacity: 1;
     transform: none;
     transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s;
   }
-  /* keep brand + close button tappable above the fullscreen nav */
-  body.menu-open .header-in { position: relative; z-index: 96; }
   .mobile-nav a {
     display: flex;
     align-items: center;
@@ -107,8 +111,14 @@ html { scroll-padding-top: 88px; }
   }
   .mobile-nav a.btn {
     margin-top: 18px;
-    justify-content:center;
+    justify-content: center;
+    /* `.mobile-nav a` sets ink on every link and outranks `.btn-dark`, which
+       left this CTA as dark-on-dark. Restate the inverted pairing here so the
+       pill keeps its own hierarchy. */
+    color: #fff;
+    border-color: var(--ink);
   }
+  .mobile-nav a.btn:hover { color: #fff; padding-left: 26px; }
   .mobile-nav a.btn::after { content: none; }
 
   .hero-title {

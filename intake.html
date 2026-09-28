@@ -229,17 +229,61 @@
               </div>
             </div>
             <div class="form-field full-width">
-              <label for="required-pages">Required pages / sections</label>
-              <div class="checkbox-group" role="group" aria-label="Required pages">
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="home" checked /> Home / Hero</label>
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="about" /> About Us</label>
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="services" /> Services / Menu</label>
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="gallery" /> Gallery / Portfolio</label>
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="team" /> Team / Providers</label>
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="testimonials" /> Testimonials / Reviews</label>
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="blog" /> Blog / News</label>
-                <label class="checkbox-label"><input type="checkbox" name="pages" value="contact" checked /> Contact / Book</label>
+              <div class="choice-head">
+                <span class="field-label" id="required-pages">Required pages / sections</span>
+                <span class="choice-count" data-pages-count aria-live="polite">2 selected</span>
               </div>
+              <!-- Real checkboxes drive the payload; the visible box is drawn by CSS
+                   from :checked / :focus-visible so keyboard and AT behaviour is native. -->
+              <div class="checkbox-group" role="group" aria-labelledby="required-pages">
+                <fieldset class="choice-group">
+                  <legend class="choice-group__title">Essential</legend>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="home" checked />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">Home / Hero</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="about" />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">About Us</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="services" />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">Services / Menu</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="contact" checked />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">Contact / Book</span>
+                  </label>
+                </fieldset>
+                <fieldset class="choice-group">
+                  <legend class="choice-group__title">Proof &amp; content</legend>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="gallery" />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">Gallery / Portfolio</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="team" />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">Team / Providers</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="testimonials" />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">Testimonials / Reviews</span>
+                  </label>
+                  <label class="choice">
+                    <input type="checkbox" name="pages" value="blog" />
+                    <span class="choice__box" aria-hidden="true"></span>
+                    <span class="choice__text">Blog / News</span>
+                  </label>
+                </fieldset>
+              </div>
+              <p class="field-hint">Everything here is a starting point — we shape the final structure together.</p>
             </div>
             <div class="form-field full-width">
               <label for="anything-else">Additional requirements</label>

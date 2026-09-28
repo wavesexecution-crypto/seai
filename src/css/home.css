@@ -728,7 +728,22 @@ html.js .hero .hero-actions.reveal.in { transition-delay: 220ms; }
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
-.style-option input { position: absolute; opacity: 0; pointer-events: none; }
+/* The radio is visually hidden, but `.form-field input` still hands it
+   `width: 100%`. Without a positioned ancestor that absolute box resolves
+   against the viewport-sized initial containing block, so every hidden radio
+   stretched to the full page width at its cell's static offset and dragged a
+   horizontal scrollbar along (up to ~980px at 1440). Scoping the card as the
+   containing block keeps each input inside its own option. */
+.style-option { position: relative; display: block; }
+.style-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
 .style-card {
   display: flex;
   flex-direction: column;
@@ -758,21 +773,129 @@ html.js .hero .hero-actions.reveal.in { transition-delay: 220ms; }
 .style-card span { font-size: 14px; font-weight: 600; color: var(--ink); }
 .style-card small { font-size: 12px; color: var(--faint); }
 
-/* checkbox group */
-.checkbox-group {
+/* ---- required pages: selection tiles -------------------------------------
+   Replaces a wrapping row of native checkboxes. Each option is a full-width
+   tile so the whole row is the tap target, state is drawn from :checked, and
+   the options are split into two labelled groups so the set can be scanned
+   instead of read as one dense checklist. One column on phones; the two
+   groups only sit side by side once each still has room to breathe. */
+.choice-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
 }
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
+.field-label {
   font-size: 14px;
-  color: var(--sub);
+  font-weight: 500;
+  color: var(--ink);
 }
-.checkbox-label input { width: 18px; height: 18px; accent-color: var(--ink); }
+.choice-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.checkbox-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 26px 32px;
+}
+@media (min-width: 760px) {
+  .checkbox-group { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+.choice-group {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.choice-group__title {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 0 0 2px;
+  margin-bottom: 4px;
+}
+.choice {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 12px 15px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+.choice:hover { border-color: var(--ink); }
+/* The native control stays in the tree for semantics, keyboard order and the
+   payload, and is stretched over its own tile so the whole row is the hit
+   area. Making the tile the containing block also stops `.form-field input`'s
+   `width: 100%` from resolving against the page. */
+.choice input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.choice__box {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.choice__box::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 3.5px;
+  width: 5px;
+  height: 9.5px;
+  border: solid #fff;
+  border-width: 0 1.8px 1.8px 0;
+  transform: rotate(45deg) scale(0.6);
+  opacity: 0;
+  transition: opacity var(--t-fast), transform var(--t-fast) var(--ease);
+}
+.choice__text {
+  font-size: 14.5px;
+  line-height: 1.35;
+  color: var(--sub);
+  transition: color var(--t-fast);
+}
+.choice input:checked ~ .choice__box {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.choice input:checked ~ .choice__box::after { opacity: 1; transform: rotate(45deg) scale(1); }
+.choice input:checked ~ .choice__text { color: var(--ink); font-weight: 500; }
+.choice:has(input:checked) { border-color: var(--ink); background: #fcfcfb; }
+.choice input:focus-visible ~ .choice__box {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.choice input:focus-visible ~ .choice__text { color: var(--ink); }
 
 /* plan selection */
 .plan-selection {
@@ -989,4 +1112,18 @@ html.js .hero .hero-actions.reveal.in { transition-delay: 220ms; }
   .step-nav { flex-direction: column-reverse; align-items: stretch; }
   .step-nav .btn { width: 100%; }
   .step-nav .btn-ghost { margin-right: 0; }
+  /* A step with a real selection set is taller than the viewport, so pin the
+     action bar to the bottom of the screen: Continue stays visible and usable
+     without hunting, and the solid surface stops step content reading through
+     it. Sticky rather than fixed, so nothing reflows and the bar still settles
+     back into the document at the end of the step. */
+  .step-nav {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    margin-top: 28px;
+    padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+  }
 }

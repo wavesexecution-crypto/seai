@@ -150,10 +150,26 @@ function Homepage() {
 
   // Keep the legacy `body.menu-open` contract so responsive.css shows the mobile nav,
   // lock scroll while open, and close on Escape / desktop resize.
+  //
+  // The lock pins the body with `position: fixed` at the current offset rather
+  // than toggling `overflow: hidden` on <html>. Chromium clamps the scroll offset
+  // when the root goes overflow:hidden (1200 -> 766) and resets it to 0 on
+  // release, which both moves the page under the user and loses their place.
   useEffect(() => {
-    document.body.classList.toggle("menu-open", mobileMenuOpen);
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    const { documentElement, body } = document;
+    body.classList.toggle("menu-open", mobileMenuOpen);
     if (!mobileMenuOpen) return;
+
+    const lockedY = window.scrollY;
+    // The pinned body removes the scrollbar; pad it back so nothing reflows.
+    const scrollbarGap = window.innerWidth - documentElement.clientWidth;
+    body.dataset.menuLock = String(lockedY);
+    body.style.position = "fixed";
+    body.style.top = `-${lockedY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    if (scrollbarGap > 0) body.style.paddingRight = `${scrollbarGap}px`;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMobileMenuOpen(false);
     };
@@ -165,7 +181,13 @@ function Homepage() {
     return () => {
       document.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", onResize);
-      document.body.style.overflow = "";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.paddingRight = "";
+      delete body.dataset.menuLock;
+      window.scrollTo(0, lockedY);
     };
   }, [mobileMenuOpen]);
 
@@ -331,15 +353,21 @@ function Homepage() {
             <span></span><span></span>
           </button>
         </div>
-        <nav className="mobile-nav" id="mobile-nav" aria-label="Mobile">
-          <a href="#how" onClick={() => setMobileMenuOpen(false)}>How it works</a>
-          <a href="#examples" onClick={() => setMobileMenuOpen(false)}>Examples</a>
-          <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
-          <a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
-          <span className="m-sep" aria-hidden="true"></span>
-          <a className="btn btn-dark m-cta" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
-        </nav>
       </header>
+
+      {/* Mobile nav lives OUTSIDE the header on purpose. The header carries
+          `backdrop-filter`, which makes it the containing block for any
+          `position: fixed` descendant — a full-viewport overlay nested inside
+          it collapses to the header's 64px and its links spill over the hero
+          with no background. As a sibling, the overlay is viewport-relative. */}
+      <nav className="mobile-nav" id="mobile-nav" aria-label="Mobile">
+        <a href="#how" onClick={() => setMobileMenuOpen(false)}>How it works</a>
+        <a href="#examples" onClick={() => setMobileMenuOpen(false)}>Examples</a>
+        <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+        <a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+        <span className="m-sep" aria-hidden="true"></span>
+        <a className="btn btn-dark m-cta" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
+      </nav>
 
       <main id="main">
 

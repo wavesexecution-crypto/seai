@@ -110,6 +110,9 @@ const BUSINESS = {
       "penthouse apartment interior", "minimalist kitchen interior",
       "staircase architecture modern", "bedroom interior design", "urban skyline building",
       "house garden exterior", "office lobby interior", "concrete facade detail",
+      // the earlier sweep was architecture-only and returned no people at all,
+      // so the agent roster had nothing to draw on
+      "estate agent portrait", "real estate consultant portrait", "businesswoman portrait office",
     ],
   },
   business: {
