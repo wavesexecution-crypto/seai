@@ -421,6 +421,32 @@ describe('storage proxy tenant isolation', () => {
     expect(putB.status).toBe(404);
   });
 
+  it('legacy inline attachments keep working when storage is unconfigured', async () => {
+    const user = await makeUser(`leg-${Date.now()}@t.co`);
+    const cr = await api('POST', '/api/customer/requests', user.cookie, { title: 'Legacy', description: 'no storage' });
+    const prev = config.storageServiceKey;
+    config.storageServiceKey = '';
+    try {
+      const up = await api('POST', '/api/storage/uploads', user.cookie, {
+        originalFilename: 'a.png',
+        mimeType: 'image/png',
+        sizeBytes: 10,
+        category: 'logo',
+      });
+      expect(up.status).toBe(503);
+      const legacy = await api('POST', `/api/customer/requests/${cr.body.request.id}/attachments`, user.cookie, {
+        filename: 'a.png',
+        mimeType: 'image/png',
+        sizeBytes: 10,
+        dataUrl: 'data:image/png;base64,AAA',
+      });
+      expect(legacy.status).toBe(201);
+      expect(legacy.body.attachment.data_url).toBeUndefined();
+    } finally {
+      config.storageServiceKey = prev;
+    }
+  });
+
   it('never exposes the service key and maps storage outages safely', async () => {
     const user = await makeUser(`sec-${Date.now()}@t.co`);
     const up = await api('POST', '/api/storage/uploads', user.cookie, {
