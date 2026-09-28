@@ -127,17 +127,46 @@ app.use((_req, res, next) => {
   next();
 });
 
-// Drain background mail before the response is written.
+// Drain background mail before the response leaves the function.
 //
 // Lifecycle emails are dispatched off the response path so a mail failure can
-// never fail a business request. On Vercel the function freezes once the
-// response is sent, which silently truncated in-flight SMTP sends and left
-// deliveries stuck in `sending`. Hooking `finish` (not overriding it) lets the
-// buffer flush while still awaiting completion, so the send actually lands.
-app.use((req, res, next) => {
-  res.on('finish', () => {
-    void drainPendingMail();
-  });
+// never fail a business request. On Vercel the function is frozen the moment
+// the response is written, which silently truncated in-flight SMTP sends and
+// left deliveries stuck in `sending` with no provider message id.
+//
+// `finish` is too late: it fires *after* the bytes are flushed, and the freeze
+// can beat the drain. So wrap the response writers instead and await the
+// bounded drain immediately before the first byte is written. A drain failure
+// is swallowed, so this can never break the endpoint.
+app.use((_req, res, next) => {
+  const origJson = res.json.bind(res);
+  const origSend = res.send.bind(res);
+  const origEnd = res.end.bind(res);
+  let drained = false;
+  const drainOnce = async (): Promise<void> => {
+    if (drained) return;
+    drained = true;
+    try {
+      await drainPendingMail();
+    } catch {
+      // Never fail the response because of mail.
+    }
+  };
+
+  res.json = ((body?: unknown) => {
+    void drainOnce().then(() => origJson(body));
+    return res;
+  }) as typeof res.json;
+  res.send = ((body?: unknown) => {
+    void drainOnce().then(() => origSend(body));
+    return res;
+  }) as typeof res.send;
+  res.end = ((chunk?: unknown, cb?: unknown) => {
+    if (drained) return origEnd(chunk as never, cb as never);
+    void drainOnce().then(() => origEnd(chunk as never, cb as never));
+    return res;
+  }) as typeof res.end;
+
   next();
 });
 // Authoritative email event intake (seai.payments, SEAI ops, deployment tooling).
