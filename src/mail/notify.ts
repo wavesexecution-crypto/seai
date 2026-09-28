@@ -3,6 +3,7 @@ import type { EmailContext } from './context.js';
 import { dashboardUrl, changeRequestUrl } from './urls.js';
 import { changeStatusLabel } from './templates/change.js';
 import { config } from '../config.js';
+import { trackPendingMail } from './pending.js';
 
 // Backwards-compatible notification helpers. Signatures are unchanged so the
 // existing auth/customer routes keep working, but every send now flows through
@@ -15,7 +16,7 @@ function target(to: string, variables: Partial<EmailContext> = {}): { to: string
 
 export function notifyWelcome(to: string, name: string, customerId?: string): void {
   const { to: recipient, variables } = target(to, { customer_name: name, dashboard_url: dashboardUrl() });
-  void dispatchEmail({ eventName: 'account.welcome', template: 'account.welcome', to: recipient, variables, customerId: customerId ?? null, dedupeParts: [customerId ?? recipient, name] });
+  trackPendingMail(() => dispatchEmail({ eventName: 'account.welcome', template: 'account.welcome', to: recipient, variables, customerId: customerId ?? null, dedupeParts: [customerId ?? recipient, name] }));
 }
 
 export function notifyChangeReceived(to: string, title: string, page: string, priority: string, requestId: string, customerId?: string): void {
@@ -27,14 +28,14 @@ export function notifyChangeReceived(to: string, title: string, page: string, pr
     request_status: 'Received',
     request_url: changeRequestUrl(requestId),
   });
-  void dispatchEmail({
+  trackPendingMail(() => dispatchEmail({
     eventName: 'change.received',
     template: 'change.received',
     to: recipient,
     variables,
     customerId: customerId ?? null,
     dedupeParts: [requestId, recipient],
-  });
+  }));
 }
 
 export function notifyChangeStatus(
@@ -55,7 +56,7 @@ export function notifyChangeStatus(
     website_url: request.websiteUrl,
     request_url: changeRequestUrl(request.id),
   });
-  void dispatchEmail({
+  trackPendingMail(() => dispatchEmail({
     eventName: template,
     template,
     to: recipient,
@@ -64,7 +65,7 @@ export function notifyChangeStatus(
     // One email per (request, status) pair. A repeated transition to the same
     // status is a duplicate, not a new email.
     dedupeParts: [request.id, status, recipient],
-  });
+  }));
 }
 
 export function notifyChangeCompleted(to: string, title: string, requestId: string, customerId?: string): void {
@@ -88,14 +89,14 @@ export function notifyWebsiteIntake(
     request_summary: intake.summary,
     order_id: intake.orderId,
   });
-  void dispatchEmail({
+  trackPendingMail(() => dispatchEmail({
     eventName: 'website.intake_received',
     template: 'website.intake_received',
     to: recipient,
     variables,
     customerId: customerId ?? null,
     dedupeParts: [customerId ?? recipient, intake.websiteName ?? intake.domain ?? 'intake'],
-  });
+  }));
 }
 
 export function notifyMaintenanceRequested(
@@ -111,14 +112,14 @@ export function notifyMaintenanceRequested(
     amount: `₹${priceInr}`,
     status: 'Payment required',
   });
-  void dispatchEmail({
+  trackPendingMail(() => dispatchEmail({
     eventName: 'maintenance.payment_required',
     template: 'maintenance.payment_required',
     to: recipient,
     variables,
     customerId: customerId ?? null,
     dedupeParts: [subscriptionId ?? recipient, 'pending_payment', recipient],
-  });
+  }));
 }
 
 export { dispatchEmail };

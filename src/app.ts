@@ -37,6 +37,7 @@ import { embedRouter } from './routes/embed.js';
 import { customerRouter } from './customer/routes.js';
 import { storageRouter } from './storage/router.js';
 import { mailEventsRouter } from './mail/events.js';
+import { drainPendingMail } from './mail/pending.js';
 
 const app = express();
 const here = dirname(fileURLToPath(import.meta.url));
@@ -123,6 +124,20 @@ app.use((_req, res, next) => {
       "connect-src 'self' https://*.myshopify.com https://admin.shopify.com",
     ].join('; ')
   );
+  next();
+});
+
+// Drain background mail before the response is written.
+//
+// Lifecycle emails are dispatched off the response path so a mail failure can
+// never fail a business request. On Vercel the function freezes once the
+// response is sent, which silently truncated in-flight SMTP sends and left
+// deliveries stuck in `sending`. Hooking `finish` (not overriding it) lets the
+// buffer flush while still awaiting completion, so the send actually lands.
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    void drainPendingMail();
+  });
   next();
 });
 // Authoritative email event intake (seai.payments, SEAI ops, deployment tooling).

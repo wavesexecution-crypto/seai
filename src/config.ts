@@ -82,6 +82,10 @@ export const config = {
   // Opt-in escape hatch that allows non-production hosts in generated links.
   // Never enable in production; used only for local rendering tests.
   mailAllowDevUrls: need('SEAI_MAIL_ALLOW_DEV_URLS', 'false') === 'true',
+  // How long the HTTP layer waits for background mail to finish before
+  // responding. Must stay under the serverless function timeout, otherwise
+  // the send is cut off mid-flight and the delivery stays stuck in `sending`.
+  mailDrainTimeoutMs: Number(need('SEAI_MAIL_DRAIN_TIMEOUT_MS', '8000')),
   // seai.storage control plane (server-side only — never expose to browsers).
   // See seai.storage docs/INTEGRATION_CONTRACT_FINAL.md for the full contract.
   storageServiceUrl: need('STORAGE_SERVICE_URL', 'http://localhost:4100'),

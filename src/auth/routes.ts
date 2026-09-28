@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from 'express';
+﻿import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import {
   createUser,
@@ -17,6 +17,7 @@ import {
 } from './service.js';
 import { createHash } from 'node:crypto';
 import { isMailConfigured } from '../mail/transport.js';
+import { trackPendingMail } from '../mail/pending.js';
 import { dispatchEmail } from '../mail/dispatch.js';
 import { passwordResetUrl } from '../mail/urls.js';
 import { notifyWelcome } from '../mail/notify.js';
@@ -178,15 +179,18 @@ authRouter.post('/reset-password', async (req: Request, res: Response) => {
   await setPassword(user.id, password);
   await markPasswordResetUsed(token);
   // Security notice. Fire-and-forget: a mail failure must never block or roll
-  // back a password the customer already changed.
-  void dispatchEmail({
-    eventName: 'account.password_changed',
-    template: 'account.password_changed',
-    to: user.email,
-    customerId: user.id,
-    dedupeParts: [user.id, resetDedupeHash(token)],
-    variables: { changed_at: new Date().toISOString(), email: user.email },
-  });
+  // back a password the customer already changed. Tracked (not dropped) so the
+  // serverless runtime drains it before freezing.
+  trackPendingMail(() =>
+    dispatchEmail({
+      eventName: 'account.password_changed',
+      template: 'account.password_changed',
+      to: user.email,
+      customerId: user.id,
+      dedupeParts: [user.id, resetDedupeHash(token)],
+      variables: { changed_at: new Date().toISOString(), email: user.email },
+    }),
+  );
   res.json({ ok: true, message: 'Password updated' });
 });
 
