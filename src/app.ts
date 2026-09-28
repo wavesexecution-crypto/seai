@@ -35,6 +35,8 @@ import { executeTool } from './agent/executor.js';
 import { assertNoSecretsInResponse } from './security/validate.js';
 import { embedRouter } from './routes/embed.js';
 import { customerRouter } from './customer/routes.js';
+import { storageRouter } from './storage/router.js';
+import { mailEventsRouter } from './mail/events.js';
 
 const app = express();
 const here = dirname(fileURLToPath(import.meta.url));
@@ -123,6 +125,22 @@ app.use((_req, res, next) => {
   );
   next();
 });
+// Authoritative email event intake (seai.payments, SEAI ops, deployment tooling).
+// Mounted BEFORE the shared body parser and before the /api session guard: it
+// authenticates with an HMAC signature instead of a customer session, and the
+// `verify` hook keeps the raw bytes so the signature covers exactly what was
+// signed. Disabled entirely unless SEAI_EVENTS_SHARED_SECRET is configured.
+app.use(
+  '/api/internal/mail',
+  express.json({
+    limit: '256kb',
+    verify: (req, _res, buf) => {
+      (req as express.Request & { rawBody?: string }).rawBody = buf.toString('utf8');
+    },
+  }),
+  mailEventsRouter,
+);
+
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
@@ -142,6 +160,11 @@ app.use('/api', (req, res, next) => {
 // Customer control center API (post-purchase website owner). The /api guard
 // above authenticates first; routes additionally enforce per-customer scoping.
 app.use('/api/customer', customerRouter);
+
+// Storage proxy (seai.storage control plane). Behind the /api session guard
+// above; routes re-enforce per-customer scoping. See storage/router.ts and
+// seai.storage docs/INTEGRATION_CONTRACT_FINAL.md.
+app.use('/api/storage', storageRouter);
 
 // Auth page routes — serve auth HTML pages
 function authHtml(filename: string): string {

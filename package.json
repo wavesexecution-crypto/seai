@@ -11,6 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:migrate": "tsx src/db/migrate.ts",
+    "email:preview": "tsx scripts/preview-emails.ts",
+    "email:audit": "tsx scripts/audit-emails.ts",
     "shopify:auth:verify": "tsx src/shopify/verify.ts"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.0",
     "nodemailer": "^10.0.10",
     "pg": "^8.13.1",
@@ -28,6 +31,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.7.4",
     "@types/nodemailer": "^8.0.2",

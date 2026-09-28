@@ -64,6 +64,32 @@ export const config = {
     user: need('MAIL_SMTP_USER', ''),
     pass: need('MAIL_SMTP_PASS', ''),
   },
+  // Public marketing/legal site. Used for public-site links inside emails.
+  publicUrl: need('PUBLIC_URL', 'https://seai.store'),
+  // Logo shown in the email header. Must be an absolute https URL reachable
+  // without a login (Gmail proxies remote images). Empty = wordmark only.
+  mailLogoUrl: need('SEAI_MAIL_LOGO_URL', `${need('APP_URL', 'https://dash.seai.store').replace(/\/$/, '')}/logo.png`),
+  mailSupportEmail: need('SEAI_SUPPORT_EMAIL', need('MAIL_FROM', 'workwithseai@gmail.com')),
+  // Shared secret for server-to-server authoritative events (seai.payments,
+  // SEAI operations webhooks). Unset => the intake route stays disabled.
+  eventsSharedSecret: need('SEAI_EVENTS_SHARED_SECRET', ''),
+  // Kill switch for the whole client email pipeline (all lifecycle sends).
+  // Useful for incidents and for dry QA runs. Delivery history is unaffected.
+  mailEventsEnabled: need('SEAI_MAIL_EVENTS_ENABLED', 'true') !== 'false',
+  // Recipient override for QA/preview runs. Set ONLY for a real mailbox that
+  // must receive every preview email (e.g. the engineering inbox).
+  mailQaRecipient: need('SEAI_MAIL_QA_RECIPIENT', ''),
+  // Opt-in escape hatch that allows non-production hosts in generated links.
+  // Never enable in production; used only for local rendering tests.
+  mailAllowDevUrls: need('SEAI_MAIL_ALLOW_DEV_URLS', 'false') === 'true',
+  // seai.storage control plane (server-side only — never expose to browsers).
+  // See seai.storage docs/INTEGRATION_CONTRACT_FINAL.md for the full contract.
+  storageServiceUrl: need('STORAGE_SERVICE_URL', 'http://localhost:4100'),
+  storageServiceName: need('STORAGE_SERVICE_NAME', 'cdf'),
+  storageServiceKey: need('STORAGE_SERVICE_KEY', ''),
+  storageJwtSecret: need('STORAGE_JWT_SECRET', ''),
+  storageTokenTtlSec: Number(need('STORAGE_TOKEN_TTL_SEC', '300')),
+  storageProxyMaxBytes: Number(need('STORAGE_PROXY_MAX_BYTES', String(10 * 1024 * 1024))),
 };
 
 export function maskKeyId(index: number): string {

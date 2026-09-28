@@ -15,10 +15,18 @@ import {
   findUserByEmail,
   type User,
 } from './service.js';
-import { config } from '../config.js';
-import { isMailConfigured, sendMail } from '../mail/transport.js';
-import { passwordResetEmail } from '../mail/templates.js';
+import { createHash } from 'node:crypto';
+import { isMailConfigured } from '../mail/transport.js';
+import { dispatchEmail } from '../mail/dispatch.js';
+import { passwordResetUrl } from '../mail/urls.js';
 import { notifyWelcome } from '../mail/notify.js';
+
+// The raw reset token is never stored or logged. The dedupe key is a one-way
+// hash so a replayed reset request cannot double-send, while two genuinely
+// different reset tokens still send two emails.
+function resetDedupeHash(token: string): string {
+  return createHash('sha256').update(token).digest('hex').slice(0, 32);
+}
 
 export const authRouter = Router();
 
@@ -103,7 +111,7 @@ authRouter.post('/sign-up', async (req: Request, res: Response) => {
     await createEmailVerification(user.id);
     const token = await createSession(user.id);
     setSessionCookie(res, token);
-    notifyWelcome(user.email, user.full_name);
+    notifyWelcome(user.email, user.full_name, user.id);
     res.status(201).json({ ok: true, user: publicUser(user) });
   } catch (err: any) {
     res.status(400).json({ ok: false, error: err.message });
@@ -131,12 +139,16 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
     return;
   }
   const token = await createPasswordReset(user.id);
-  const resetUrl = `${config.appUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
-  const mail = passwordResetEmail(resetUrl);
-  try {
-    await sendMail({ to: user.email, subject: mail.subject, html: mail.html, text: mail.text });
-  } catch (err) {
-    console.error('[auth] password reset email failed:', (err as Error).message);
+  const resetUrl = passwordResetUrl(token);
+  const result = await dispatchEmail({
+    eventName: 'account.password_reset',
+    template: 'account.password_reset',
+    to: user.email,
+    customerId: user.id,
+    dedupeParts: [user.id, resetDedupeHash(token)],
+    variables: { reset_url: resetUrl, email: user.email, expires_in_hours: '1' },
+  });
+  if (result.status === 'failed') {
     res.status(502).json({ ok: false, error: 'Could not send the reset email. Please try again later.' });
     return;
   }
@@ -165,6 +177,16 @@ authRouter.post('/reset-password', async (req: Request, res: Response) => {
   }
   await setPassword(user.id, password);
   await markPasswordResetUsed(token);
+  // Security notice. Fire-and-forget: a mail failure must never block or roll
+  // back a password the customer already changed.
+  void dispatchEmail({
+    eventName: 'account.password_changed',
+    template: 'account.password_changed',
+    to: user.email,
+    customerId: user.id,
+    dedupeParts: [user.id, resetDedupeHash(token)],
+    variables: { changed_at: new Date().toISOString(), email: user.email },
+  });
   res.json({ ok: true, message: 'Password updated' });
 });
 

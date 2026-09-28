@@ -36,25 +36,58 @@ export interface OutgoingMail {
   subject: string;
   html: string;
   text: string;
+  headers?: Record<string, string>;
 }
 
-// Sends via the provider. Resolves only when the provider ACCEPTS the
-// message (returns messageId). Rejects on any provider failure so callers
-// can never report "sent" for a message that was not accepted.
-export async function sendMail(mail: OutgoingMail): Promise<string> {
-  if (!isMailConfigured()) {
-    throw new Error('Email service is not configured');
-  }
-  const info = await getTransporter().sendMail({
+export interface SendResult {
+  messageId: string;
+  response: string;
+  accepted: string[];
+  rejected: string[];
+}
+
+function envelopeOf(mail: OutgoingMail): Record<string, unknown> {
+  return {
     from: `"${config.mailFromName}" <${config.mailFrom}>`,
     to: mail.to,
     subject: mail.subject,
     html: mail.html,
     text: mail.text,
-  });
-  const messageId = String(info.messageId ?? '');
-  // Delivery audit: recipient + subject + provider ID only. Never tokens,
-  // passwords, or credentials.
-  console.log(`[mail] accepted to=${mail.to} subject="${mail.subject}" id=${messageId} response=${String(info.response ?? '').slice(0, 120)}`);
-  return messageId;
+    ...(mail.headers ? { headers: mail.headers } : {}),
+  };
+}
+
+// Resolves only when the provider ACCEPTS the message. Rejects on any provider
+// failure so callers can never report "sent" for a message that was not accepted.
+export async function sendMail(mail: OutgoingMail): Promise<string> {
+  const result = await sendMailDetailed(mail);
+  return result.messageId;
+}
+
+export async function sendMailDetailed(mail: OutgoingMail): Promise<SendResult> {
+  if (!isMailConfigured()) {
+    throw new Error('Email service is not configured');
+  }
+  const info: any = await getTransporter().sendMail(envelopeOf(mail));
+  return {
+    messageId: String(info?.messageId ?? ''),
+    response: String(info?.response ?? ''),
+    accepted: (info?.accepted ?? []).map(String),
+    rejected: (info?.rejected ?? []).map(String),
+  };
+}
+
+export function mailTransporterInfo(): { configured: boolean; host: string; port: number; secure: boolean; user: string; from: string } {
+  return {
+    configured: isMailConfigured(),
+    host: config.smtp.host,
+    port: config.smtp.port,
+    secure: config.smtp.secure,
+    user: config.smtp.user,
+    from: `${config.mailFromName} <${config.mailFrom}>`,
+  };
+}
+
+export function resetMailTransport(): void {
+  transporter = null;
 }

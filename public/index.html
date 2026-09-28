@@ -107,6 +107,10 @@ button{font:inherit}
 .mbrand img{width:22px;height:22px;border-radius:6px;display:block}
 .scrim{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5)}
 .scrim.show{display:block}
+/* The drawer trigger exists only below the sidebar breakpoint. On desktop the
+   persistent sidebar is the navigation, so the button is not rendered at all
+   and leaves no margin/padding placeholder behind. */
+.topbar .menu{display:none}
 @media(max-width:900px){
   .app{grid-template-columns:1fr}
   .sidebar{position:fixed;z-index:50;inset:0 auto 0 0;width:260px;transform:translateX(-100%);transition:.2s}
@@ -116,9 +120,8 @@ button{font:inherit}
   .table{display:block;overflow-x:auto}
   .ctx{display:none}
   .mbrand{display:inline-flex}
-  .topbar .menu{margin-left:auto}
+  .topbar .menu{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;margin-left:auto}
 }
-.topbar .menu{margin-left:4px}
 </style>
 </head>
 <body>
@@ -157,6 +160,14 @@ const $$ = s=>[...document.querySelectorAll(s)];
 const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path, opts={}){
   const r = await fetch('/api/customer'+path, {credentials:'same-origin', headers:{'Content-Type':'application/json'}, ...opts});
+  let d={}; try{d=await r.json();}catch{}
+  if(!r.ok) throw new Error(d.error||'Request failed');
+  return d;
+}
+// Storage proxy (seai.storage). Same-origin session auth; the browser only
+// ever sees signed URLs and file IDs — never service credentials.
+async function sapi(path, opts={}){
+  const r = await fetch('/api/storage'+path, {credentials:'same-origin', ...opts});
   let d={}; try{d=await r.json();}catch{}
   if(!r.ok) throw new Error(d.error||'Request failed');
   return d;
@@ -324,16 +335,28 @@ function renderComposer(el){
     files.length=0; $('#crPrev').innerHTML='';
     [...e.target.files].slice(0,5).forEach(f=>{
       if(f.size>5*1024*1024){ alert(f.name+': over 5MB, skipped.'); return; }
-      const r=new FileReader();
-      r.onload=()=>{ files.push({filename:f.name,mimeType:f.type||'application/octet-stream',sizeBytes:f.size,dataUrl:r.result}); if((f.type||'').startsWith('image/')) $('#crPrev').insertAdjacentHTML('beforeend','<img src="'+r.result+'" alt="" />'); else $('#crPrev').insertAdjacentHTML('beforeend','<span class="filechip">'+esc(f.name)+'</span>'); };
-      r.readAsDataURL(f);
+      files.push({file:f,filename:f.name,mimeType:f.type||'application/octet-stream',sizeBytes:f.size});
+      if((f.type||'').startsWith('image/')){ const r=new FileReader(); r.onload=()=>{ $('#crPrev').insertAdjacentHTML('beforeend','<img src="'+r.result+'" alt="" />'); }; r.readAsDataURL(f); }
+      else $('#crPrev').insertAdjacentHTML('beforeend','<span class="filechip">'+esc(f.name)+'</span>');
     });
   });
+  // Storage-backed upload: bytes go to seai.storage, the change request
+  // stores only the file ID (never inline data URLs).
+  async function uploadAttachmentFile(a){
+    const category=a.mimeType.startsWith('image/')?'image':(a.mimeType==='application/pdf'?'document':'intake_attachment');
+    const up=await sapi('/uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({originalFilename:a.filename,mimeType:a.mimeType,sizeBytes:a.sizeBytes,category})});
+    await sapi('/uploads/'+encodeURIComponent(up.file.storage_file_id)+'/bytes',{method:'PUT',headers:{'Content-Type':'application/octet-stream'},body:a.file});
+    const done=await sapi('/uploads/'+encodeURIComponent(up.file.storage_file_id)+'/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    return done.object.id;
+  }
   $('#crForm').addEventListener('submit',async e=>{
     e.preventDefault();
     try{
       const d=await api('/requests',{method:'POST',body:JSON.stringify({title:$('#crTitle').value.trim(),description:$('#crDesc').value.trim(),page:$('#crPage').value.trim(),priority:$('#crPri').value})});
-      for(const a of files){ await api('/requests/'+d.request.id+'/attachments',{method:'POST',body:JSON.stringify(a)}); }
+      for(const a of files){
+        const fileId=await uploadAttachmentFile(a);
+        await api('/requests/'+d.request.id+'/attachments/storage',{method:'POST',body:JSON.stringify({fileId})});
+      }
       cache.requests=null; go('/modify?id='+d.request.id);
     }catch(err){ $('#crErr').textContent=err.message; }
   });
