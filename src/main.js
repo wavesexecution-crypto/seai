@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    SEAI — public website · interactions
    Lightweight, dependency-free, progressive.
    ============================================================ */
@@ -8,7 +8,6 @@ import "./css/base.css";
 import "./css/home.css";
 import "./css/responsive.css";
 import "./css/pages.css";
-import "./intake.js";
 
 (() => {
   "use strict";
