@@ -10,7 +10,7 @@ import {
   BusinessMark,
 } from "@/components/ui/example-icons";
 
-// Minimal index: exact category names only ??? no brand names, no descriptions.
+// Minimal index: exact category names only — no brand names, no descriptions.
 // The card is the index; the linked demo website provides all detail.
 const EXAMPLES = [
   { type: "Restaurant", url: "/examples/restaurant.html", icon: <RestaurantMark /> },
@@ -28,27 +28,27 @@ const NUMBER_WORDS = [
 ];
 
 const HOW_STEPS = [
-  { num: "01", name: "Tell us about your business", copy: "Answer a short intake form ??? name, type, what you do, location, contact info, style preferences, and goals. Takes about 5 minutes." },
-  { num: "02", name: "SEAI builds your website", copy: "SEAI generates a complete, professional website ??? design, copy, responsive layout, SEO fundamentals, and integrations ??? tailored to your business." },
+  { num: "01", name: "Tell us about your business", copy: "Answer a short intake form — name, type, what you do, location, contact info, style preferences, and goals. Takes about 5 minutes." },
+  { num: "02", name: "SEAI builds your website", copy: "SEAI generates a complete, professional website — design, copy, responsive layout, SEO fundamentals, and integrations — tailored to your business." },
   { num: "03", name: "You review and request changes", copy: "See the full site before it goes live. Request revisions on design, copy, or structure. SEAI iterates until you approve." },
   { num: "04", name: "We put it live", copy: "Connect your domain (or buy one through us). SEAI handles deployment, SSL, and goes live. Ongoing revision support included." },
 ];
 
 const DELIVERABLES = [
-  { name: "Responsive design", desc: "Flawless on mobile, tablet, and desktop. Mobile-first, not mobile-last.", icon: "???" },
-  { name: "Professional copy", desc: "Headlines, descriptions, and calls-to-action written for your business ??? not placeholder text.", icon: "???" },
-  { name: "Mobile optimization", desc: "Touch-friendly navigation, fast loading, thumb-zone CTAs. More than half your visitors use phones.", icon: "???" },
-  { name: "WhatsApp & contact CTAs", desc: "Click-to-call, click-to-WhatsApp, contact forms ??? built-in and styled for your brand.", icon: "???" },
-  { name: "SEO fundamentals", desc: "Semantic HTML, meta tags, Open Graph, sitemap, robots.txt, structured data ??? done correctly.", icon: "???" },
-  { name: "Domain connection", desc: "Use your existing domain or buy one through us. DNS configuration handled.", icon: "???" },
-  { name: "Deployment & SSL", desc: "Global CDN, automatic HTTPS, edge caching. Your site is fast everywhere.", icon: "???" },
-  { name: "Revision support", desc: "Request changes after launch. We don't disappear once the site is live.", icon: "???" },
+  { name: "Responsive design", desc: "Flawless on mobile, tablet, and desktop. Mobile-first, not mobile-last.", icon: "✦" },
+  { name: "Professional copy", desc: "Headlines, descriptions, and calls-to-action written for your business — not placeholder text.", icon: "✦" },
+  { name: "Mobile optimization", desc: "Touch-friendly navigation, fast loading, thumb-zone CTAs. More than half your visitors use phones.", icon: "✦" },
+  { name: "WhatsApp & contact CTAs", desc: "Click-to-call, click-to-WhatsApp, contact forms — built-in and styled for your brand.", icon: "✦" },
+  { name: "SEO fundamentals", desc: "Semantic HTML, meta tags, Open Graph, sitemap, robots.txt, structured data — done correctly.", icon: "✦" },
+  { name: "Domain connection", desc: "Use your existing domain or buy one through us. DNS configuration handled.", icon: "✦" },
+  { name: "Deployment & SSL", desc: "Global CDN, automatic HTTPS, edge caching. Your site is fast everywhere.", icon: "✦" },
+  { name: "Revision support", desc: "Request changes after launch. We don't disappear once the site is live.", icon: "✦" },
 ];
 
 const PRICING = [
-  { tier: "STARTER", price: "???2,999", per: "one-time", desc: "One-page business website", features: ["Single-page layout", "Responsive design", "Professional copy", "WhatsApp / contact CTA", "SEO fundamentals", "Domain connection", "Deployment & SSL", "2 rounds of revisions"], cta: "Start your website", plan: "starter", featured: false },
-  { tier: "BUSINESS", price: "???4,999", per: "one-time", desc: "Multi-section premium website", features: ["Multi-section layout (5+ sections)", "Responsive design", "Professional copy", "WhatsApp / contact CTA", "SEO fundamentals", "Domain connection", "Deployment & SSL", "4 rounds of revisions", "Blog / news section", "Google Maps integration"], cta: "Start your website", plan: "business", featured: true },
-  { tier: "COMPLETE", price: "???7,999", per: "one-time", desc: "Premium website + copy + SEO + integrations", features: ["Everything in BUSINESS", "Custom copywriting (all pages)", "Full SEO setup & submission", "Integrations (WhatsApp, forms, analytics)", "Domain purchase & setup included", "Priority deployment", "Unlimited revisions (30 days)", "Analytics dashboard setup", "3 months revision support"], cta: "Start your website", plan: "complete", featured: false },
+  { tier: "STARTER", price: "₹2,999", per: "one-time", desc: "One-page business website", features: ["Single-page layout", "Responsive design", "Professional copy", "WhatsApp / contact CTA", "SEO fundamentals", "Domain connection", "Deployment & SSL", "2 rounds of revisions"], cta: "Start your website", plan: "starter", featured: false },
+  { tier: "BUSINESS", price: "₹4,999", per: "one-time", desc: "Multi-section premium website", features: ["Multi-section layout (5+ sections)", "Responsive design", "Professional copy", "WhatsApp / contact CTA", "SEO fundamentals", "Domain connection", "Deployment & SSL", "4 rounds of revisions", "Blog / news section", "Google Maps integration"], cta: "Start your website", plan: "business", featured: true },
+  { tier: "COMPLETE", price: "₹7,999", per: "one-time", desc: "Premium website + copy + SEO + integrations", features: ["Everything in BUSINESS", "Custom copywriting (all pages)", "Full SEO setup & submission", "Integrations (WhatsApp, forms, analytics)", "Domain purchase & setup included", "Priority deployment", "Unlimited revisions (30 days)", "Analytics dashboard setup", "3 months revision support"], cta: "Start your website", plan: "complete", featured: false },
 ];
 
 const BUSINESS_TYPES = [
@@ -63,15 +63,15 @@ const BUSINESS_TYPES = [
 ];
 
 const FAQS = [
-  { q: "How long does it take?", a: "Most websites are delivered within 5???7 business days after the intake form is submitted. Complex projects may take up to 14 days. You'll see a preview before anything goes live." },
+  { q: "How long does it take?", a: "Most websites are delivered within 5–7 business days after the intake form is submitted. Complex projects may take up to 14 days. You'll see a preview before anything goes live." },
   { q: "Can I request changes?", a: "Yes. Every plan includes revision rounds (2 for STARTER, 4 for BUSINESS, unlimited for 30 days on COMPLETE). You review the full site before launch and request changes on design, copy, or structure." },
   { q: "Can I use my own domain?", a: "Absolutely. Connect an existing domain (we guide you through DNS) or purchase one through us with the COMPLETE plan. SSL and deployment are handled automatically." },
-  { q: "Do you provide the copy?", a: "Yes. Professional copy is included in every tier ??? headlines, descriptions, service text, and CTAs written for your business. COMPLETE adds custom copywriting for all pages." },
-  { q: "Will it work on mobile?", a: "Mobile-first is our default. Every SEAI website is fully responsive, touch-friendly, and optimized for thumb-zone navigation. More than half your visitors use phones ??? we design for them first." },
+  { q: "Do you provide the copy?", a: "Yes. Professional copy is included in every tier — headlines, descriptions, service text, and CTAs written for your business. COMPLETE adds custom copywriting for all pages." },
+  { q: "Will it work on mobile?", a: "Mobile-first is our default. Every SEAI website is fully responsive, touch-friendly, and optimized for thumb-zone navigation. More than half your visitors use phones — we design for them first." },
   { q: "Can I connect WhatsApp?", a: "Yes. Click-to-WhatsApp, click-to-call, and contact forms are built into every site. They're styled to match your brand and placed for maximum conversion." },
   { q: "What happens after I pay?", a: "You'll receive a confirmation and your project enters our build queue. We'll send the first preview within the delivery window. You review, request changes if needed, approve, and we deploy. Simple." },
   { q: "Is there a monthly fee?", a: "No. SEAI is a one-time payment. No subscriptions, no recurring charges. Revision support periods are included as noted per tier (30 days for STARTER/BUSINESS, 90 days for COMPLETE)." },
-  { q: "What if I need changes later?", a: "Revision support is included. After the included period, you can request changes at a per-update rate. We don't disappear once the site is live ??? your business evolves, your website should too." },
+  { q: "What if I need changes later?", a: "Revision support is included. After the included period, you can request changes at a per-update rate. We don't disappear once the site is live — your business evolves, your website should too." },
 ];
 
 // ---- demo-return restoration ----
@@ -79,7 +79,7 @@ const FAQS = [
 // navigation itself untouched). On the next homepage mount in the same tab,
 // returnCtx restores the Examples viewport instantly with entrance
 // animations suppressed; the flag is consumed so a later genuine visit
-// behaves normally. Fresh tabs have empty sessionStorage ??? unaffected.
+// behaves normally. Fresh tabs have empty sessionStorage — unaffected.
 const RETURN_KEY = "seai:return";
 const CENTER_KEY = "seai:center";
 
@@ -115,7 +115,7 @@ function Homepage() {
     document.documentElement.classList.add("js");
   }, []);
 
-  // Demo-return restoration: land back at the Examples carousel instantly ???
+  // Demo-return restoration: land back at the Examples carousel instantly —
   // no hero, no smooth glide, no entrance replay. Runs once on mount.
   useEffect(() => {
     if (!returnCtx) return;
@@ -244,7 +244,7 @@ function Homepage() {
   }, []);
 
   // Persist demo-return context before leaving for a demo (capture phase;
-  // never preventDefault ??? history and navigation stay untouched).
+  // never preventDefault — history and navigation stay untouched).
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const t = e.target as Element | null;
@@ -307,7 +307,7 @@ function Homepage() {
     });
   }, []);
 
-  // Example cards for the index grid ??? exact category names, real demo routes.
+  // Example cards for the index grid — exact category names, real demo routes.
   // Memoized so the grid's identity is stable across parent re-renders
   // (scroll state, FAQ toggles, menu).
   const exampleCards = useMemo(
@@ -336,7 +336,7 @@ function Homepage() {
 
       <header className={`site-header ${scrolled ? "scrolled" : ""}`}>
         <div className="header-in">
-          <a className="brand" href="/" aria-label="SEAI ??? home">
+          <a className="brand" href="/" aria-label="SEAI — home">
             <img src="/logo.svg" width="26" height="26" alt="" />
             <span>SEAI</span>
           </a>
@@ -347,7 +347,7 @@ function Homepage() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="header-actions">
-            <a className="btn btn-dark" href="/intake.html">Build my website <span className="arr" aria-hidden="true">???</span></a>
+            <a className="btn btn-dark" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
           </div>
           <button className="menu-btn" type="button" aria-label={mobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-nav" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             <span></span><span></span>
@@ -357,7 +357,7 @@ function Homepage() {
 
       {/* Mobile nav lives OUTSIDE the header on purpose. The header carries
           `backdrop-filter`, which makes it the containing block for any
-          `position: fixed` descendant ??? a full-viewport overlay nested inside
+          `position: fixed` descendant — a full-viewport overlay nested inside
           it collapses to the header's 64px and its links spill over the hero
           with no background. As a sibling, the overlay is viewport-relative. */}
       <nav className="mobile-nav" id="mobile-nav" aria-label="Mobile">
@@ -366,7 +366,7 @@ function Homepage() {
         <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
         <a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
         <span className="m-sep" aria-hidden="true"></span>
-        <a className="btn btn-dark m-cta" href="/intake.html">Build my website <span className="arr" aria-hidden="true">???</span></a>
+        <a className="btn btn-dark m-cta" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
       </nav>
 
       <main id="main">
@@ -378,7 +378,7 @@ function Homepage() {
             <h1 id="hero-title" className="hero-title reveal" data-reveal-id="hero-title">YOUR BUSINESS.<br />A BETTER WEBSITE.</h1>
             <p className="hero-sub reveal" data-reveal-id="hero-sub">SEAI builds premium business websites from a simple description of what you do.</p>
             <div className="hero-actions reveal" data-reveal-id="hero-actions">
-              <a className="btn btn-dark btn-lg" href="/intake.html">Build my website <span className="arr" aria-hidden="true">???</span></a>
+              <a className="btn btn-dark btn-lg" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
               <a className="btn btn-ghost btn-lg" href="#examples">See examples</a>
             </div>
           </div>
@@ -396,7 +396,7 @@ function Homepage() {
         {/* EXAMPLES / PROOF - Fan Carousel */}
         <section className="examples" id="examples" aria-labelledby="examples-title">
           <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="examples-eyebrow">01 ??? Proof</p>
+            <p className="eyebrow reveal" data-reveal-id="examples-eyebrow">01 — Proof</p>
             <h2 id="examples-title" className="sec-title reveal" data-reveal-id="examples-title">Websites people actually pay for.</h2>
             <p className="sec-lede reveal" data-reveal-id="examples-lede">{`${NUMBER_WORDS[EXAMPLES.length] ?? EXAMPLES.length} business types. Tap any card to open the real demo website.`}</p>
             <SocialCards cards={exampleCards} instant={isReturn} initialCenter={initialCenter} />
@@ -406,7 +406,7 @@ function Homepage() {
         {/* HOW IT WORKS */}
         <section className="how" id="how" aria-labelledby="how-title">
           <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="how-eyebrow">02 ??? How it works</p>
+            <p className="eyebrow reveal" data-reveal-id="how-eyebrow">02 — How it works</p>
             <h2 id="how-title" className="sec-title reveal" data-reveal-id="how-title">From description to live website in four steps.</h2>
             <p className="sec-lede reveal" data-reveal-id="how-lede">No dashboards to learn. No templates to customize. Four steps and your website is live.</p>
             <ol className="how-grid">
@@ -424,8 +424,8 @@ function Homepage() {
         {/* WHAT YOU GET */}
         <section className="deliverables" id="deliverables" aria-labelledby="deliverables-title">
           <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="deliverables-eyebrow">03 ??? What you get</p>
-            <h2 id="deliverables-title" className="sec-title reveal" data-reveal-id="deliverables-title">A complete, professional website ??? not a template.</h2>
+            <p className="eyebrow reveal" data-reveal-id="deliverables-eyebrow">03 — What you get</p>
+            <h2 id="deliverables-title" className="sec-title reveal" data-reveal-id="deliverables-title">A complete, professional website — not a template.</h2>
             <p className="sec-lede reveal" data-reveal-id="deliverables-lede">Every SEAI website includes the fundamentals that make a business look established and trustworthy.</p>
             <ul className="deliverables-grid">
               {DELIVERABLES.map((item, i) => (
@@ -442,7 +442,7 @@ function Homepage() {
         {/* PRICING */}
         <section className="pricing" id="pricing" aria-labelledby="pricing-title">
           <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="pricing-eyebrow">04 ??? Pricing</p>
+            <p className="eyebrow reveal" data-reveal-id="pricing-eyebrow">04 — Pricing</p>
             <h2 id="pricing-title" className="sec-title reveal" data-reveal-id="pricing-title">Simple, transparent pricing.</h2>
             <p className="sec-lede reveal" data-reveal-id="pricing-lede">One-time payment. No monthly fees. No hidden costs. Choose the tier that fits your business.</p>
             <div className="price-grid">
@@ -468,7 +468,7 @@ function Homepage() {
         {/* BEFORE / AFTER */}
         <section className="before-after" id="before-after" aria-labelledby="ba-title">
           <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="ba-eyebrow">05 ??? Before & After</p>
+            <p className="eyebrow reveal" data-reveal-id="ba-eyebrow">05 — Before & After</p>
             <h2 id="ba-title" className="sec-title reveal" data-reveal-id="ba-title">The difference a professional website makes.</h2>
             <p className="sec-lede reveal" data-reveal-id="ba-lede">No proper web presence versus a professional SEAI website.</p>
             <div className="ba-grid">
@@ -488,7 +488,7 @@ function Homepage() {
                   </ul>
                 </div>
               </div>
-              <div className="ba-arrow" aria-hidden="true">???</div>
+              <div className="ba-arrow" aria-hidden="true">→</div>
               <div className="ba-col reveal" data-reveal-id="ba-after">
                 <p className="ba-label">After</p>
                 <div className="ba-card ba-after">
@@ -512,7 +512,7 @@ function Homepage() {
         {/* BUSINESS TYPES */}
         <section className="business-types" id="business-types" aria-labelledby="bt-title">
           <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="bt-eyebrow">06 ??? Business types</p>
+            <p className="eyebrow reveal" data-reveal-id="bt-eyebrow">06 — Business types</p>
             <h2 id="bt-title" className="sec-title reveal" data-reveal-id="bt-title">SEAI works for any local business.</h2>
             <p className="sec-lede reveal" data-reveal-id="bt-lede">Different industries need different structures. SEAI adapts the layout, copy, and features to your business type.</p>
             <ul className="bt-grid" id="bt-grid">
@@ -531,7 +531,7 @@ function Homepage() {
         {/* FAQ */}
         <section className="faq" id="faq" aria-labelledby="faq-title">
           <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="faq-eyebrow">07 ??? FAQ</p>
+            <p className="eyebrow reveal" data-reveal-id="faq-eyebrow">07 — FAQ</p>
             <h2 id="faq-title" className="sec-title reveal" data-reveal-id="faq-title">Questions, answered directly.</h2>
             <div className="faq-list" id="faq-list">
               {FAQS.map((faq, i) => (
@@ -560,9 +560,9 @@ function Homepage() {
           <div className="container">
             <h2 id="final-title" className="final-title reveal" data-reveal-id="final-title">YOUR BUSINESS IS ALREADY REAL.<br />YOUR WEBSITE SHOULD LOOK LIKE IT.</h2>
             <div className="final-actions reveal" data-reveal-id="final-actions">
-              <a className="btn btn-invert btn-lg" href="/intake.html">Build my website <span className="arr" aria-hidden="true">???</span></a>
+              <a className="btn btn-invert btn-lg" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
             </div>
-            <p className="final-note reveal" data-reveal-id="final-note">SEAI ?? AI-built websites for real businesses</p>
+            <p className="final-note reveal" data-reveal-id="final-note">SEAI · AI-built websites for real businesses</p>
           </div>
         </section>
 
@@ -584,7 +584,7 @@ function Homepage() {
           </nav>
         </div>
         <div className="container fit-bottom">
-          <p className="copyright">?? <span className="year">2026</span> SEAI. All rights reserved.</p>
+          <p className="copyright">© <span className="year">2026</span> SEAI. All rights reserved.</p>
         </div>
       </footer>
     </>
