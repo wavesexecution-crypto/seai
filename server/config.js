@@ -7,9 +7,14 @@ const config = {
   // Payment API base URL
   paymentApiBase: process.env.SEAI_PAYMENT_API_BASE || 'https://payments.seai.store/api/v1',
 
-  // Service key for authenticating with seai.payments
+  // Service key for authenticating with seai.payments.
+  // SEAI_PUBLIC_SERVICE_KEY is the documented name (it is the key mapped to the
+  // `seai.public` identity in seai.payments src/middleware/auth.ts).
+  // SEAPI_PUBLIC_SERVICE_KEY is accepted as a legacy alias; without it a
+  // deployment configured only with the typo'd name would silently send
+  // `Authorization: Bearer ` and fail as an opaque upstream 401.
   // Must be kept secret - never exposed to browser
-  serviceKey: process.env.SEAI_PUBLIC_SERVICE_KEY || '',
+  serviceKey: process.env.SEAI_PUBLIC_SERVICE_KEY || process.env.SEAPI_PUBLIC_SERVICE_KEY || '',
 
   // Allowed origin for CORS
   allowedOrigin: process.env.ALLOWED_ORIGIN || 'https://seai.store',

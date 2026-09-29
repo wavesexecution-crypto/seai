@@ -1,24 +1,23 @@
 ﻿/* ============================================================
    SEAI Public Site Configuration
-   Runtime configuration for payment integration
+   Client-visible configuration for the payment integration.
+
+   Everything here is public by definition: it is served to the browser.
+   No service key, webhook secret, or Razorpay key secret may appear in this
+   file. The Razorpay `key_id` is a publishable identifier and is supplied by
+   the order response at runtime, so it does not need to be configured here.
    ============================================================ */
 
 (function () {
   "use strict";
 
-  // Payment API Configuration - public values only
-  window.SEAI_PAYMENT_API_BASE = window.SEAI_PAYMENT_API_BASE || "https://payments.seai.store/api/v1";
+  // Same-origin by design. The browser never talks to seai.payments directly:
+  // /api/payment/* is our own server-side proxy that holds the service key.
+  window.SEAI_PAYMENT_API_BASE = window.SEAI_PAYMENT_API_BASE || "/api/payment";
 
-  // Razorpay public key (key_id) - safe to expose in frontend
-  // Set via build: __RAZORPAY_KEY_ID__
-  window.RAZORPAY_KEY_ID = window.RAZORPAY_KEY_ID || "";
-
-  // Feature flags
+  // Feature flags.
   window.SEAI_FEATURES = {
     paymentEnabled: window.SEAI_FEATURES?.paymentEnabled !== false,
     razorpayTestMode: window.SEAI_FEATURES?.razorpayTestMode === true,
   };
-
-  console.log("[SEAI Config] Payment API:", window.SEAI_PAYMENT_API_BASE);
-  console.log("[SEAI Config] Razorpay Test Mode:", window.SEAI_FEATURES.razorpayTestMode);
 })();

@@ -8,10 +8,13 @@
 
   const STEPS = 4;
   const STEP_LABELS = ["Basics", "Details", "Style", "Review"];
-const PLAN_PRICES = {
-    starter: "�,2,999",
-    business: "�,4,999",
-    complete: "�,7,999"
+  // Display-only. The amount actually charged is always resolved server-side by
+  // seai.payments from its own plan table; these strings are never sent as a
+  // price. Keep in sync with the plan cards in intake.html.
+  const PLAN_PRICES = {
+    starter: "₹2,999",
+    business: "₹4,999",
+    complete: "₹7,999"
   };
   const PLAN_NAMES = {
     starter: "STARTER",
