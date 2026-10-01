@@ -53,7 +53,10 @@
     // File IDs only — bytes travel through signed upload URLs, and the
     // intake session scope is minted server-side, never in this file.
     storageFileIds: [],
-    intakeSessionId: null
+    intakeSessionId: null,
+    // True when attachments could not be uploaded. Recorded on the order so
+    // the downstream record is honest rather than implying files were sent.
+    attachmentsSkipped: false
   };
 
   const elements = {
@@ -504,6 +507,28 @@
     el.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  // Non-blocking notice. Used when something optional could not be carried
+  // through: the purchase must still proceed, but the customer is told rather
+  // than left believing their files were sent.
+  function showNotice(message) {
+    let el = document.querySelector(".intake-notice");
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "intake-notice";
+      // "status" rather than "alert": not an error, but must be announced.
+      el.setAttribute("role", "status");
+      const anchor = document.getElementById("photos-upload");
+      const section = anchor ? anchor.closest(".step-panel, .form-step, section, div") : null;
+      (section || document.querySelector(".intake-form-section"))?.appendChild(el);
+    }
+    el.textContent = message;
+  }
+
+  function clearNotice() {
+    const el = document.querySelector(".intake-notice");
+    if (el) el.remove();
+  }
+
   // Upload intake files to seai.storage through the same-origin intake
   // proxy. The browser only ever sees short-lived signed upload URLs and
   // storage file IDs; tenant scope is minted server-side per intake session.
@@ -561,13 +586,27 @@
     return init.fileId;
   }
 
+  const ATTACHMENT_SKIPPED_MESSAGE =
+    "We could not upload your files right now, so they are not attached to this order. " +
+    "Please continue to payment, then email your logo and photos to hello@seai.store and we will add them.";
+
   async function uploadIntakeFiles() {
     const queue = [];
     if (formData.logo) queue.push(["logo", formData.logo]);
     (formData.photos || []).forEach((f) => queue.push(["photos", f]));
     if (!queue.length) return;
-    // Probe: when the intake proxy is not deployed, preserve the previous
-    // behavior (payment without file attachments) instead of blocking submit.
+
+    // Probe for storage availability.
+    //
+    // The probe body is deliberately invalid, so a *correctly functioning*
+    // endpoint always answers 4xx (it rejects a request with no filename).
+    // Only an absent endpoint answers 404. An earlier version checked for
+    // exactly 404, which happened to work solely because these functions were
+    // not deployed yet; once they were, the probe returned 400, the guard was
+    // bypassed, and every customer who attached a file was blocked from paying
+    // by the validation error. Treat any non-2xx as "attachments unavailable".
+    //
+    // Attachments are optional. The purchase must never be blocked by storage.
     let probe;
     try {
       probe = await fetch("/api/storage/intake/uploads", {
@@ -576,13 +615,20 @@
         body: JSON.stringify({ probe: true })
       });
     } catch (err) {
-      console.warn("[intake] storage proxy unreachable, continuing without file uploads");
+      console.warn("[intake] storage unreachable; continuing without file attachments");
+      formData.attachmentsSkipped = true;
+      showNotice(ATTACHMENT_SKIPPED_MESSAGE);
       return;
     }
-    if (probe.status === 404) {
-      console.warn("[intake] storage proxy not deployed, continuing without file uploads");
+    if (!probe.ok) {
+      console.warn("[intake] storage unavailable (" + probe.status + "); continuing without file attachments");
+      formData.attachmentsSkipped = true;
+      showNotice(ATTACHMENT_SKIPPED_MESSAGE);
       return;
     }
+
+    clearNotice();
+    formData.attachmentsSkipped = false;
     formData.storageFileIds = formData.storageFileIds || [];
     for (const [kind, file] of queue) {
       if (file.size > MAX_INTAKE_FILE_BYTES) {

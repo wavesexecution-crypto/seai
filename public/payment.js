@@ -141,6 +141,9 @@
         // under a server-minted intake scope; see server/storage-proxy.js).
         intakeSessionId: formData.intakeSessionId || null,
         storageFileIds: formData.storageFileIds || [],
+        // When the storage proxy is unavailable the customer is told, and this
+        // flag records it on the order so fulfilment knows to chase the files.
+        attachmentsSkipped: formData.attachmentsSkipped === true,
         intakeData: {
           businessName: formData.businessName,
           businessType: formData.businessType,
