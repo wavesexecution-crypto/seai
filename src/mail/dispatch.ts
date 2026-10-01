@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { renderTemplate, EmailRenderError } from './registry.js';
+import { renderDocument, type Block, type RenderedEmail } from './design.js';
 import { normalizeRecipient, buildDedupeKey, claimEvent, createDelivery, markEventStatus, releaseEventClaim, updateDelivery, encodeReapableVariables } from './store.js';
 import { isMailConfigured, sendMailDetailed, type OutgoingMail, type SendResult } from './transport.js';
-import { redactSecrets } from './safety.js';
+import { redactSecrets, assertNoSecrets } from './safety.js';
 import type { EmailContext } from './context.js';
 import { config } from '../config.js';
 
@@ -22,6 +23,13 @@ export interface DispatchInput {
   correlationId?: string | null;
   /** Set false only for deliberate admin/QA sends. Default true. */
   idempotent?: boolean;
+  /**
+   * Pre-rendered content for internal operational reports whose layout is
+   * driven by the data rather than by a registered template. Still runs the
+   * secret scan and the full ledger/dedupe/SMTP path; only the template
+   * lookup is bypassed. Customer emails always use `template`.
+   */
+  rendered?: RenderedEmail;
 }
 
 export interface DispatchResult {
@@ -186,9 +194,12 @@ async function deliver(input: DispatchInput, ctx: DeliverContext): Promise<Dispa
   const correlationId = correlationOf(input);
   const label = `${input.eventName}`;
 
-  let rendered;
+  let rendered: RenderedEmail;
   try {
-    rendered = renderTemplate(template, { ...input.variables, email: recipient });
+    rendered = input.rendered ?? renderTemplate(template, { ...input.variables, email: recipient });
+    // Rendered content must clear the same leak scan as template content.
+    assertNoSecrets(rendered.html, `${template} html`);
+    assertNoSecrets(rendered.text, `${template} text`);
   } catch (err) {
     const reason = err instanceof EmailRenderError ? `${err.code}: ${err.message}` : redactSecrets((err as Error).message, 300);
     const failed = await createDelivery({
@@ -257,4 +268,40 @@ export async function dispatchMany(inputs: DispatchInput[]): Promise<DispatchRes
   const out: DispatchResult[] = [];
   for (const input of inputs) out.push(await dispatchEmail(input));
   return out;
+}
+
+export interface RenderedDispatchInput {
+  /** Business event name, e.g. `internal.intake_report`. */
+  eventName: string;
+  to: string;
+  subject: string;
+  preheader?: string;
+  blocks: Block[];
+  /** Replaying the same key never sends a second report. */
+  dedupeKey?: string;
+  dedupeParts?: (string | number | null | undefined)[];
+  correlationId?: string | null;
+}
+
+/**
+ * Sends a data-driven internal report through the identical delivery path used
+ * by customer email: design system rendering, secret scan, DB-backed dedupe,
+ * ledger records, retries and provider bookkeeping.
+ */
+export async function dispatchRenderedEmail(input: RenderedDispatchInput): Promise<DispatchResult> {
+  const rendered = renderDocument({
+    preheader: input.preheader ?? '',
+    blocks: input.blocks,
+    reason: '',
+    title: input.subject,
+  });
+  return dispatchEmail({
+    eventName: input.eventName,
+    template: input.eventName,
+    to: input.to,
+    dedupeKey: input.dedupeKey,
+    dedupeParts: input.dedupeParts,
+    correlationId: input.correlationId ?? null,
+    rendered,
+  });
 }

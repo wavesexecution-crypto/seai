@@ -53,6 +53,13 @@ export const config = {
   maintenancePriceInr: Number(need('MAINTENANCE_PRICE_INR', '457')),
   maintenanceCurrency: need('MAINTENANCE_CURRENCY', 'INR'),
   maintenancePlanName: need('MAINTENANCE_PLAN_NAME', 'Website Maintenance'),
+  // Internal SEAI operations. Never exposed to customers: the intake report is
+  // an internal briefing for the team that builds the site.
+  opsInbox: need('SEAI_OPS_INBOX', 'workwithseai@gmail.com'),
+  demoUrl: need('SEAI_DEMO_URL', 'https://demo.seai.store'),
+  // Public intake endpoint abuse control. Each accepted intake emails the
+  // operations inbox, so submissions are rate limited per IP.
+  intakeRateLimitPerHour: Number(need('SEAI_INTAKE_RATE_LIMIT', '8')),
   // Transactional email (SMTP). Sender identity for all customer mail.
   mailFrom: need('MAIL_FROM', 'workwithseai@gmail.com'),
   mailFromName: need('MAIL_FROM_NAME', 'SEAI'),

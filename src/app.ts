@@ -37,6 +37,7 @@ import { assertNoSecretsInResponse } from './security/validate.js';
 import { embedRouter } from './routes/embed.js';
 import { customerRouter, customerStaffRouter } from './customer/routes.js';
 import { storageRouter } from './storage/router.js';
+import { intakeRouter } from './intake/routes.js';
 import { mailEventsRouter } from './mail/events.js';
 import { drainPendingMail } from './mail/pending.js';
 import { reapStaleSends, describeReapResult } from './mail/reaper.js';
@@ -228,6 +229,13 @@ app.use('/api/auth', authRouter);
 // Shopify embedded gateway entry point (Phase 6). Mounts before the SPA shell
 // so the ticket can be consumed and a session established on first load.
 app.use('/embed', embedRouter);
+
+// Public website intake (seai.store). Deliberately NOT session-gated: the
+// visitor is anonymous and pre-payment, so this MUST be mounted before the
+// /api session guard below (otherwise requireAuth 401s every submission).
+// It validates, persists, resolves storage and mails the internal operations
+// report before responding.
+app.use('/api', intakeRouter);
 
 // Protect all data API routes — require valid session (skip health + auth)
 app.use('/api', (req, res, next) => {
