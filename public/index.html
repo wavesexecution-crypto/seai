@@ -347,8 +347,16 @@ function renderComposer(el){
   async function uploadAttachmentFile(a){
     const category=a.mimeType.startsWith('image/')?'image':(a.mimeType==='application/pdf'?'document':'intake_attachment');
     const up=await sapi('/uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({originalFilename:a.filename,mimeType:a.mimeType,sizeBytes:a.sizeBytes,category})});
-    await sapi('/uploads/'+encodeURIComponent(up.file.storage_file_id)+'/bytes',{method:'PUT',headers:{'Content-Type':'application/octet-stream'},body:a.file});
-    const done=await sapi('/uploads/'+encodeURIComponent(up.file.storage_file_id)+'/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    const fileId=up.file.storage_file_id;
+    // Production (S3/R2): PUT bytes directly to the presigned upload URL —
+    // the same-origin relay only serves memory/local providers (the storage
+    // API rejects relayed bytes on s3). Fall back to the relay in dev.
+    let direct=null;
+    try{ direct=await fetch(up.upload.uploadUrl,{method:'PUT',headers:{'Content-Type':a.mimeType},body:a.file}); }catch(e){ direct=null; }
+    if(!direct||!direct.ok){
+      await sapi('/uploads/'+encodeURIComponent(fileId)+'/bytes',{method:'PUT',headers:{'Content-Type':'application/octet-stream'},body:a.file});
+    }
+    const done=await sapi('/uploads/'+encodeURIComponent(fileId)+'/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     return done.object.id;
   }
   async function legacyAttachment(requestId, a){
