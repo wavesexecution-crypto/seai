@@ -9,7 +9,8 @@ import { randomUUID } from 'node:crypto';
 import { config, configuredKeyCount } from './config.js';
 import { db } from './db/db.js';
 import { authRouter } from './auth/routes.js';
-import { requireAuthRedirect, requireAuth } from './auth/middleware.js';
+import { requireAuthRedirect, requireAuth, requireStaffOrCron } from './auth/middleware.js';
+import { purgeDeadPasswordResets } from './auth/service.js';
 import { aiGateway } from './ai/gateway.js';
 import { runAgent } from './agent/loop.js';
 import { listTools } from './agent/tools.js';
@@ -34,10 +35,11 @@ import { validateImport, type SourcedRow } from './sourcing/providers.js';
 import { executeTool } from './agent/executor.js';
 import { assertNoSecretsInResponse } from './security/validate.js';
 import { embedRouter } from './routes/embed.js';
-import { customerRouter } from './customer/routes.js';
+import { customerRouter, customerStaffRouter } from './customer/routes.js';
 import { storageRouter } from './storage/router.js';
 import { mailEventsRouter } from './mail/events.js';
 import { drainPendingMail } from './mail/pending.js';
+import { reapStaleSends, describeReapResult } from './mail/reaper.js';
 
 const app = express();
 const here = dirname(fileURLToPath(import.meta.url));
@@ -169,6 +171,38 @@ app.use((_req, res, next) => {
 
   next();
 });
+
+// ---- Scheduled maintenance (Vercel Cron target) ----
+//
+// Vercel has no interval scheduler, so recovery work is invoked by a cron GET on
+// this route. It is staff-guarded for the same reason the lifecycle route is:
+// an unauthenticated endpoint that can trigger outbound email would be a
+// mail-relay abuse primitive. Vercel Cron sends `Authorization: Bearer $CRON_SECRET`
+// when one is configured, so both the staff key and the cron secret are accepted.
+//
+// Both jobs are bounded and idempotent, so repeated invocation is safe.
+app.get('/api/internal/maintenance', requireStaffOrCron, async (req, res) => {
+  const limit = Math.max(1, Math.min(200, Number(req.query.limit ?? 25) || 25));
+  let reaped: ReturnType<typeof describeReapResult> | null = null;
+  let purgeRemoved: number | null = null;
+  let error: string | null = null;
+  try {
+    const result = await reapStaleSends({ limit });
+    reaped = describeReapResult(result);
+    console.log(`[mail] reaper: ${reaped}${result.recovered.length ? '' : ''}`);
+  } catch (err) {
+    error = `reaper: ${(err as Error).message}`;
+    console.error('[mail] reaper failed:', (err as Error).message);
+  }
+  try {
+    purgeRemoved = await purgeDeadPasswordResets({ limit });
+  } catch (err) {
+    error = error ?? `reset purge: ${(err as Error).message}`;
+    console.error('[auth] reset purge failed:', (err as Error).message);
+  }
+  res.json({ ok: error === null, reaped, resetTokensPurged: purgeRemoved, error });
+});
+
 // Authoritative email event intake (seai.payments, SEAI ops, deployment tooling).
 // Mounted BEFORE the shared body parser and before the /api session guard: it
 // authenticates with an HMAC signature instead of a customer session, and the
@@ -197,12 +231,27 @@ app.use('/embed', embedRouter);
 
 // Protect all data API routes — require valid session (skip health + auth)
 app.use('/api', (req, res, next) => {
-  if (req.path === '/health' || req.path.startsWith('/auth/')) return next();
+  if (req.path === '/health' || req.path.startsWith('/health/')) return next();
+  if (req.path.startsWith('/auth/')) return next();
+  // Staff-authoritative customer operations authenticate with the service key
+  // (SEAI_STAFF_API_KEY), not a customer session, so they must be exempt from the
+  // session guard. `requireStaff` still gates them, and fails closed when unset.
+  if (isStaffPath(req.path)) return next();
   return requireAuth(req, res, next);
 });
 
+// Match the two staff operations by pattern so the :id segment is honoured.
+function isStaffPath(path: string): boolean {
+  if (path === '/customer/website/lifecycle') return true;
+  return /^\/customer\/requests\/[^/]+\/complete$/.test(path);
+}
+
 // Customer control center API (post-purchase website owner). The /api guard
 // above authenticates first; routes additionally enforce per-customer scoping.
+// Staff-authoritative customer routes (complete a change, record website
+// lifecycle). Mounted BEFORE customerRouter because that one is session-gated,
+// and these must authenticate with the staff service key alone.
+app.use('/api/customer', customerStaffRouter);
 app.use('/api/customer', customerRouter);
 
 // Storage proxy (seai.storage control plane). Behind the /api session guard
@@ -253,10 +302,28 @@ export function isVercel(): boolean {
 }
 
 // ---- Health / status ----
+//
+// Unauthenticated, so it is also an information-disclosure surface. It reports
+// only what an uptime check needs: liveness plus whether the store answers.
+// Internal operator/autonomy metadata, AI provider key inventory and per-key
+// latency, and Shopify configuration state are deliberately NOT exposed here.
+// Those belong behind an authenticated surface (see /api/admin/overview).
 app.get('/api/health', async (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'seai',
+    runtime: isVercel() ? 'vercel' : 'node',
+  });
+});
+
+// Authenticated detail for operators: the richer status this endpoint used to
+// leak publicly, now behind a session.
+app.get('/api/health/detail', requireAuth, async (_req, res) => {
   const keys = await aiGateway.keyHealth();
   res.json({
-    ok: true, service: 'seai', driver: db.driver,
+    ok: true,
+    service: 'seai',
+    driver: db.driver,
     autonomy: config.autonomyLevel,
     operator: config.operatorName,
     ollama: { configured: configuredKeyCount(), required: 6, keys: keys.map((k) => ({ keyId: k.keyId, status: k.status, requests: k.requestCount, avgLatencyMs: k.avgLatencyMs })) },

@@ -73,6 +73,13 @@ export const config = {
   // Shared secret for server-to-server authoritative events (seai.payments,
   // SEAI operations webhooks). Unset => the intake route stays disabled.
   eventsSharedSecret: need('SEAI_EVENTS_SHARED_SECRET', ''),
+  // Service key for authoritative non-customer transitions (completing a change
+  // request, recording a deployment, marking a site live). Unset = those
+  // operations are disabled entirely (503), never open.
+  staffApiKey: need('SEAI_STAFF_API_KEY', ''),
+  // Vercel's scheduled-invocation secret. Accepted only by the maintenance
+  // route, which Vercel Cron cannot authenticate with an HMAC signature.
+  cronSecret: need('CRON_SECRET', ''),
   // Kill switch for the whole client email pipeline (all lifecycle sends).
   // Useful for incidents and for dry QA runs. Delivery history is unaffected.
   mailEventsEnabled: need('SEAI_MAIL_EVENTS_ENABLED', 'true') !== 'false',

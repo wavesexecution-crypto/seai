@@ -135,6 +135,62 @@ class Database {
     void this.saveDisk(table);
   }
 
+  /**
+   * Compare-and-set update: patch only rows that still match every field in
+   * `where`. Returns the number of rows actually updated.
+   *
+   * This is the optimistic lock the stale-send reaper relies on. Two workers
+   * can both observe a stale event, but only the one whose conditional update
+   * still matches (same status AND same updated_at) wins; the loser gets 0 and
+   * skips. A plain read-then-write would let both re-send the same email.
+   */
+  async updateWhere(table: string, where: Partial<Row>, patch: Row): Promise<number> {
+    const keys = Object.keys(patch);
+    if (!keys.length) return 0;
+    const cond = Object.keys(where);
+    if (!cond.length) throw new Error('updateWhere requires a non-empty where clause');
+    if (this.usePg) {
+      const set = keys.map((k, i) => `"${k}"=$${i + 1}`).join(',');
+      const clause = cond.map((k, i) => `"${k}"=$${keys.length + i + 1}`).join(' AND ');
+      const res = await this.pool.query(
+        `UPDATE ${table} SET ${set} WHERE ${clause}`,
+        [...Object.values(patch), ...cond.map((k) => where[k])],
+      );
+      return res.rowCount ?? 0;
+    }
+    const t = this.table(table);
+    let n = 0;
+    for (let i = 0; i < t.length; i += 1) {
+      const matches = cond.every((k) => t[i][k] === where[k]);
+      if (!matches) continue;
+      t[i] = { ...t[i], ...patch };
+      n += 1;
+    }
+    if (n) void this.saveDisk(table);
+    return n;
+  }
+
+  /** Delete every row matching `where` (equality filters only). Returns rows removed. */
+  async deleteWhere(table: string, where: Partial<Row>): Promise<number> {
+    const cond = Object.keys(where);
+    if (!cond.length) throw new Error('deleteWhere requires a non-empty where clause');
+    if (this.usePg) {
+      const clause = cond.map((k, i) => `"${k}"=$${i + 1}`).join(' AND ');
+      const res = await this.pool.query(`DELETE FROM ${table} WHERE ${clause}`, cond.map((k) => where[k]));
+      return res.rowCount ?? 0;
+    }
+    const t = this.table(table);
+    let n = 0;
+    for (let i = t.length - 1; i >= 0; i -= 1) {
+      if (cond.every((k) => t[i][k] === where[k])) {
+        t.splice(i, 1);
+        n += 1;
+      }
+    }
+    if (n) void this.saveDisk(table);
+    return n;
+  }
+
   async close(): Promise<void> {
     if (this.pool) await this.pool.end().catch(() => undefined);
   }

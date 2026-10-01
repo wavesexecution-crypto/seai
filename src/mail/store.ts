@@ -16,6 +16,8 @@ export interface EmailEventRecord {
   /** Number of delivery attempts granted for this business event. */
   attempts: number;
   correlation_id: string | null;
+  /** JSON-encoded render variables, or null when not reapplicable. */
+  variables: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -46,6 +48,48 @@ export interface NewEmailEvent {
   recipient: string;
   customerId?: string | null;
   correlationId?: string | null;
+  /** Render variables, JSON-encoded, so a frozen send can be reconstructed. */
+  variablesJson?: string | null;
+}
+
+/**
+ * Templates whose variables embed a single-use secret (a password-reset or
+ * email-verification token). Their render variables are deliberately NOT
+ * persisted: duplicating a live token into `email_events` would defeat the
+ * point of storing only `token_hash`. These events are never auto-reaped —
+ * a customer who missed a reset email simply requests a new link, which mints
+ * a fresh token.
+ */
+export const NOT_REAPABLE_TEMPLATES = new Set(['account.password_reset', 'account.verify_email']);
+
+/** Variable keys that must never be written to the events table. */
+const SECRET_VARIABLE_KEYS = new Set(['reset_url', 'verify_url', 'token', 'password']);
+
+export function encodeReapableVariables(template: string, variables: Record<string, unknown> | undefined | null): string | null {
+  if (NOT_REAPABLE_TEMPLATES.has(template)) return null;
+  if (!variables || typeof variables !== 'object') return null;
+  const safe: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(variables)) {
+    if (SECRET_VARIABLE_KEYS.has(k.toLowerCase())) continue;
+    if (v === undefined) continue;
+    safe[k] = v as never;
+  }
+  if (!Object.keys(safe).length) return null;
+  try {
+    return JSON.stringify(safe);
+  } catch {
+    return null;
+  }
+}
+
+export function decodeReapableVariables(json: string | null | undefined): Record<string, unknown> {
+  if (!json) return {};
+  try {
+    const parsed = JSON.parse(json);
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
 }
 
 export interface ClaimResult {
@@ -135,6 +179,7 @@ function isStaleSend(event: EmailEventRecord): boolean {
 async function resolveExisting(
   existing: EmailEventRecord,
   recipient: string,
+  variablesJson?: string | null,
 ): Promise<ClaimResult> {
   // Already delivered: never send twice.
   if (existing.status === 'sent') return { event: existing, duplicate: true, retried: false };
@@ -149,12 +194,16 @@ async function resolveExisting(
   inFlight.add(existing.dedupe_key);
   try {
     const next = attempts + 1;
-    await db.update('email_events', existing.id, {
+    const patch: Record<string, unknown> = {
       status: 'queued' as EmailStatus,
       attempts: next,
       recipient,
       updated_at: now(),
-    });
+    };
+    // A retry that carries fresh variables (reaper, or a business re-fire)
+    // replaces the stored set; a retry without them keeps what we already have.
+    if (variablesJson) patch.variables = variablesJson;
+    await db.update('email_events', existing.id, patch);
     return {
       event: { ...existing, status: 'queued', attempts: next, recipient, updated_at: now() },
       duplicate: false,
@@ -168,8 +217,9 @@ async function resolveExisting(
 
 export async function claimEvent(input: NewEmailEvent): Promise<ClaimResult> {
   const recipient = normalizeRecipient(input.recipient);
+  const variablesJson = input.variablesJson ?? null;
   const existing = await findEventByDedupeKey(input.dedupeKey);
-  if (existing) return resolveExisting(existing, recipient);
+  if (existing) return resolveExisting(existing, recipient, variablesJson);
   if (inFlight.has(input.dedupeKey)) {
     // Another request inserted this key between our read and our insert; the
     // unique index will reject our row, so treat it as a duplicate.
@@ -188,6 +238,7 @@ export async function claimEvent(input: NewEmailEvent): Promise<ClaimResult> {
       status: 'queued' as EmailStatus,
       attempts: 1,
       correlation_id: input.correlationId ?? null,
+      variables: variablesJson,
       created_at: now(),
       updated_at: now(),
     };
@@ -202,6 +253,64 @@ export async function claimEvent(input: NewEmailEvent): Promise<ClaimResult> {
 
 export async function markEventStatus(eventId: string, status: EmailStatus): Promise<void> {
   await db.update('email_events', eventId, { status, updated_at: now() });
+}
+
+/**
+ * True when this business event already has a successful delivery.
+ *
+ * The authoritative duplicate guard for the reaper. A row's status alone is not
+ * enough: if a `sent` event is ever observed as `queued`/`sending` again (a
+ * corrupted status, a manual repair, a rollback), a status-driven retry would
+ * send a second copy. The delivery log is the record that decides.
+ */
+export async function hasSentDelivery(eventId: string): Promise<boolean> {
+  const rows = await db.list('email_deliveries', { event_id: eventId, status: 'sent' }, 1);
+  return rows.length > 0;
+}
+
+/** Statuses that represent a send which started but never finished. */
+export const ORPHANABLE_STATUSES: EmailStatus[] = ['queued', 'sending'];
+
+/**
+ * Events that were mid-send when the runtime froze and are now older than
+ * `STALE_SEND_MS`. Candidates come from equality-only `list` calls and are
+ * filtered by timestamp in JS, so this works on both the Postgres and the
+ * disk-backed memory driver.
+ *
+ * Bounded per status and overall, so one sweep can never flood the queue.
+ */
+export async function listStaleSendEvents(limit = 25): Promise<EmailEventRecord[]> {
+  const bounded = Math.max(1, Math.min(500, limit));
+  const out: EmailEventRecord[] = [];
+  for (const status of ORPHANABLE_STATUSES) {
+    const rows = (await db.list('email_events', { status }, bounded)) as EmailEventRecord[];
+    for (const row of rows) {
+      const updated = Date.parse(String(row.updated_at ?? row.created_at ?? ''));
+      if (!Number.isFinite(updated)) continue;
+      if (Date.now() - updated <= STALE_SEND_MS) continue;
+      out.push(row);
+    }
+  }
+  // Oldest first, so a bounded sweep always rescues the longest-orphaned work.
+  out.sort((a, b) => Date.parse(String(a.updated_at)) - Date.parse(String(b.updated_at)));
+  return out.slice(0, bounded);
+}
+
+/**
+ * Atomically take ownership of a stale event by flipping it to `failed`, the
+ * state `resolveExisting` already treats as retryable.
+ *
+ * The compare-and-set is on (id, status, updated_at). If another worker already
+ * touched the row the update matches nothing and returns 0, so the loser skips
+ * instead of sending the same email twice.
+ */
+export async function claimStaleEvent(event: EmailEventRecord): Promise<boolean> {
+  const changed = await db.updateWhere(
+    'email_events',
+    { id: event.id, status: event.status, updated_at: event.updated_at },
+    { status: 'failed' as EmailStatus, updated_at: now() },
+  );
+  return changed === 1;
 }
 
 export async function createDelivery(input: {

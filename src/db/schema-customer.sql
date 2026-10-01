@@ -10,10 +10,28 @@ CREATE TABLE IF NOT EXISTS customer_websites (
   deployment_status TEXT NOT NULL DEFAULT 'unknown',
   last_deployment_at TIMESTAMPTZ,
   ssl_status TEXT NOT NULL DEFAULT 'unknown',
+  -- Verified purchase handoff, recorded only by the staff-authorised lifecycle
+  -- route. order_id makes website.purchase_confirmed stateful and therefore
+  -- idempotent: the notice is emitted when the order is first recorded, and a
+  -- re-post of the same order is a no-op.
+  order_id TEXT,
+  plan_name TEXT,
+  order_amount_paise INTEGER,
+  order_currency TEXT,
+  order_confirmed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_customer_websites_user ON customer_websites(user_id);
+CREATE INDEX IF NOT EXISTS idx_customer_websites_order ON customer_websites(order_id);
+
+-- Additive upgrade path for databases created before the purchase columns.
+ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_id TEXT;
+ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS plan_name TEXT;
+ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_amount_paise INTEGER;
+ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_currency TEXT;
+ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_confirmed_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_customer_websites_order ON customer_websites(order_id);
 
 -- External analytics/health data source connections (real data only)
 CREATE TABLE IF NOT EXISTS analytics_connections (

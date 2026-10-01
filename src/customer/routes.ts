@@ -3,9 +3,14 @@ import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { db } from '../db/db.js';
 import { config } from '../config.js';
-import { requireAuth } from '../auth/middleware.js';
-import { notifyChangeReceived, notifyChangeStatus, notifyMaintenanceRequested, notifyWebsiteIntake } from '../mail/notify.js';
+import { requireAuth, requireStaff } from '../auth/middleware.js';
+import { notifyChangeReceived, notifyChangeStatus, notifyMaintenanceRequested, notifyWebsiteIntake, notifyPurchaseConfirmed, notifyDomainConnected, notifyWebsiteDeployed, notifyWebsiteReady } from '../mail/notify.js';
 import { storage } from '../storage/client.js';
+
+function formatInr(amountPaise: number, currency: string): string {
+  const symbol = currency === 'INR' ? '₹' : currency === 'USD' ? '$' : currency === 'EUR' ? '€' : `${currency} `;
+  return `${symbol}${(amountPaise / 100).toFixed(2)}`;
+}
 
 // Intake-scoped storage files (customerId "intake:<uuid>") may be adopted
 // onto a real customer website after signup. Only READY files in intake
@@ -58,6 +63,205 @@ async function adoptIntakeFiles(
 // customer (req.user.id). No cross-customer reads or writes.
 export const customerRouter = Router();
 
+// Authoritative, non-customer transitions: completing a change request, and
+// recording website purchase/deployment/domain/ready state.
+//
+// Deliberately a SEPARATE router, mounted ahead of `customerRouter`, because
+// that router is gated by `requireAuth`. These operations must be callable by a
+// service key alone — a customer session is explicitly not sufficient — so
+// registering them inside the session gate would make them unreachable (401) for
+// exactly the automation that is meant to drive them.
+export const customerStaffRouter = Router();
+
+/** POST /api/customer/requests/:id/complete — staff-only completion.
+ *
+ * A separate route rather than a flag on the customer one, so the capability is
+ * auditable in isolation and the customer path can never be widened by accident.
+ */
+customerStaffRouter.post('/requests/:id/complete', requireStaff, async (req: Request, res: Response) => {
+  const parsed = z.object({
+    summary: z.string().max(2000).optional(),
+    note: z.string().max(4000).optional(),
+  }).safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ ok: false, error: parsed.error.errors[0].message });
+    return;
+  }
+  // Staff act across tenants, so the request is looked up by id alone; the
+  // authoritative recipient is the owning customer.
+  const rows = await db.list('change_requests', { id: req.params.id }, 1);
+  const row = rows[0];
+  if (!row) {
+    res.status(404).json({ ok: false, error: 'Request not found' });
+    return;
+  }
+  if (row.status === 'completed') {
+    res.json({ ok: true, request: row, alreadyCompleted: true });
+    return;
+  }
+  const now = new Date().toISOString();
+  await db.update('change_requests', row.id, { status: 'completed', updated_at: now });
+  if (parsed.data.note) {
+    await db.insert('change_messages', {
+      id: randomUUID(),
+      request_id: row.id,
+      user_id: row.user_id,
+      author_role: 'seai',
+      body: parsed.data.note,
+      created_at: now,
+    });
+  }
+  const owner = await db.list('users', { id: row.user_id }, 1);
+  const ownerEmail = String(owner[0]?.email ?? '');
+  if (ownerEmail) {
+    notifyChangeStatus(
+      ownerEmail,
+      'completed',
+      {
+        id: row.id,
+        title: row.title,
+        summary: parsed.data.summary ?? row.description,
+        page: row.page,
+        priority: row.priority,
+      },
+      String(row.user_id),
+    );
+  }
+  res.json({ ok: true, request: { ...row, status: 'completed' } });
+});
+
+/**
+ * POST /api/customer/website/lifecycle — staff-authoritative website status.
+ *
+ * The write path for the website lifecycle events. Each notice is emitted from a
+ * real, persisted state transition, never on a bare call:
+ *
+ *   - order recorded for the first time         -> website.purchase_confirmed
+ *   - domain set or changed                     -> website.domain_connected
+ *   - deployment_status enters a deployed state -> website.deployed
+ *   - deployed AND TLS active                   -> website.ready
+ *
+ * Keyed on order_id and domain+deployment id, so a repeated call is a no-op
+ * rather than a second email. Nothing is emitted unless the field changed.
+ */
+customerStaffRouter.post('/website/lifecycle', requireStaff, async (req: Request, res: Response) => {
+  const parsed = z.object({
+    userId: z.string().min(1, 'userId is required').max(80),
+    siteName: z.string().max(120).optional(),
+    domain: z.string().max(253).optional(),
+    deploymentStatus: z.string().max(60).optional(),
+    sslStatus: z.string().max(60).optional(),
+    deploymentId: z.string().max(120).optional(),
+    purchase: z.object({
+      orderId: z.string().min(1).max(120),
+      planName: z.string().min(1).max(120),
+      amountPaise: z.number().int().nonnegative(),
+      currency: z.string().max(8).default('INR'),
+      paymentId: z.string().max(120).optional(),
+      purchasedAt: z.string().max(60).optional(),
+    }).optional(),
+  }).safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ ok: false, error: parsed.error.errors[0].message });
+    return;
+  }
+  const input = parsed.data;
+  const owner = (await db.list('users', { id: input.userId }, 1))[0];
+  if (!owner) {
+    res.status(404).json({ ok: false, error: 'Customer not found' });
+    return;
+  }
+  const recipient = String(owner.email ?? '');
+  const existing = (await db.list('customer_websites', { user_id: input.userId }, 1))[0];
+  if (!existing) {
+    res.status(404).json({ ok: false, error: 'No website is recorded for this customer yet' });
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const before = {
+    site_name: String(existing.site_name ?? ''),
+    domain: String(existing.domain ?? ''),
+    deployment_status: String(existing.deployment_status ?? 'unknown'),
+    ssl_status: String(existing.ssl_status ?? 'unknown'),
+    order_id: existing.order_id == null ? null : String(existing.order_id),
+  };
+  const patch: Record<string, unknown> = { updated_at: now };
+  if (input.siteName) patch.site_name = input.siteName.trim();
+  if (input.domain) patch.domain = input.domain.trim().toLowerCase();
+  if (input.deploymentStatus) {
+    patch.deployment_status = input.deploymentStatus.trim().toLowerCase();
+    patch.last_deployment_at = now;
+  }
+  if (input.sslStatus) patch.ssl_status = input.sslStatus.trim().toLowerCase();
+  if (input.purchase) {
+    patch.order_id = input.purchase.orderId;
+    patch.plan_name = input.purchase.planName;
+    patch.order_amount_paise = input.purchase.amountPaise;
+    patch.order_currency = input.purchase.currency;
+    patch.order_confirmed_at = input.purchase.purchasedAt ?? now;
+  }
+  await db.update('customer_websites', existing.id, patch);
+  const after = (await db.list('customer_websites', { user_id: input.userId }, 1))[0];
+
+  const emitted: string[] = [];
+  const siteName = String(after.site_name ?? '');
+  const domain = String(after.domain ?? '');
+
+  if (input.purchase && before.order_id !== input.purchase.orderId) {
+    notifyPurchaseConfirmed(
+      recipient,
+      {
+        customerName: String(owner.full_name ?? '') || undefined,
+        planName: input.purchase.planName,
+        amount: formatInr(input.purchase.amountPaise, input.purchase.currency),
+        orderId: input.purchase.orderId,
+        purchasedAt: input.purchase.purchasedAt ?? now,
+        websiteName: siteName,
+        currency: input.purchase.currency,
+        paymentId: input.purchase.paymentId,
+      },
+      input.userId,
+    );
+    emitted.push('website.purchase_confirmed');
+  }
+
+  if (domain && before.domain !== domain) {
+    notifyDomainConnected(recipient, { websiteName: siteName, domain }, input.userId);
+    emitted.push('website.domain_connected');
+  }
+
+  const deploymentStatus = String(after.deployment_status ?? 'unknown');
+  const sslStatus = String(after.ssl_status ?? 'unknown');
+
+  if (DEPLOYED_STATES.has(deploymentStatus) && !DEPLOYED_STATES.has(before.deployment_status)) {
+    notifyWebsiteDeployed(
+      recipient,
+      { websiteName: siteName, domain, deploymentId: input.deploymentId, changedAt: now },
+      input.userId,
+    );
+    emitted.push('website.deployed');
+  }
+
+  if (DEPLOYED_STATES.has(deploymentStatus) && SECURE_STATES.has(sslStatus) && domain) {
+    // Only on the transition INTO ready. Without this, every idempotent re-post
+    // would report (and could re-send) a readiness notice for a site that has
+    // been ready all along.
+    const wasReady = DEPLOYED_STATES.has(before.deployment_status) && SECURE_STATES.has(before.ssl_status);
+    if (!wasReady) {
+      notifyWebsiteReady(
+        recipient,
+        { websiteName: siteName, domain, orderId: after.order_id == null ? undefined : String(after.order_id) },
+        input.userId,
+      );
+      emitted.push('website.ready');
+    }
+  }
+
+  res.json({ ok: true, website: after, emitted });
+});
+
+
 customerRouter.use(requireAuth);
 
 const PROVIDERS = ['ga4', 'search_console', 'pagespeed', 'gbp'] as const;
@@ -95,13 +299,16 @@ customerRouter.get('/overview', async (req: Request, res: Response) => {
   });
 });
 
-// PUT /api/customer/website — link or update the customer's own website
+// PUT /api/customer/website — link or update the customer's own website.
+//
+// Customers record what THEY know: the site name and domain. They may not assert
+// deployment or TLS state, because that is SEAI's authoritative status; those
+// columns are staff-only via /website/lifecycle below. (The dashboard never sent
+// them anyway, so this is not a behaviour change for the UI.)
 customerRouter.put('/website', async (req: Request, res: Response) => {
   const parsed = z.object({
     siteName: z.string().min(1, 'Website name is required').max(120),
     domain: z.string().min(1, 'Domain is required').max(253),
-    deploymentStatus: z.string().max(60).optional(),
-    sslStatus: z.string().max(60).optional(),
     intakeFileIds: z.array(z.string().min(1).max(128)).max(20).optional(),
     orderRef: z.string().max(80).optional(),
   }).safeParse(req.body);
@@ -116,8 +323,6 @@ customerRouter.put('/website', async (req: Request, res: Response) => {
     await db.update('customer_websites', existing[0].id, {
       site_name: parsed.data.siteName.trim(),
       domain: parsed.data.domain.trim().toLowerCase(),
-      deployment_status: parsed.data.deploymentStatus ?? existing[0].deployment_status,
-      ssl_status: parsed.data.sslStatus ?? existing[0].ssl_status,
       updated_at: now,
     });
     const rows = await db.list('customer_websites', { user_id: userId }, 1);
@@ -136,8 +341,8 @@ customerRouter.put('/website', async (req: Request, res: Response) => {
     user_id: userId,
     site_name: parsed.data.siteName.trim(),
     domain: parsed.data.domain.trim().toLowerCase(),
-    deployment_status: parsed.data.deploymentStatus ?? 'unknown',
-    ssl_status: parsed.data.sslStatus ?? 'unknown',
+    deployment_status: 'unknown',
+    ssl_status: 'unknown',
     created_at: now,
     updated_at: now,
   });
@@ -149,7 +354,8 @@ customerRouter.put('/website', async (req: Request, res: Response) => {
     }
   }
   // Confirms receipt of their details only. This never implies the site is
-  // live: readiness/deployment emails require an authoritative status event.
+  // live: readiness/deployment emails are emitted by the staff lifecycle route
+  // from the authoritative status transition.
   notifyWebsiteIntake(
     req.user!.email,
     {
@@ -161,6 +367,12 @@ customerRouter.put('/website', async (req: Request, res: Response) => {
   );
   res.status(201).json({ ok: true, website: row });
 });
+
+// Deployment states that mean "a deployment finished for this domain".
+const DEPLOYED_STATES = new Set(['deployed', 'live', 'ready', 'published', 'active']);
+// TLS states that mean the site is actually served over https.
+const SECURE_STATES = new Set(['active', 'valid', 'issued', 'ok']);
+
 
 // GET /api/customer/performance — connections + real snapshots (empty when none)
 customerRouter.get('/performance', async (req: Request, res: Response) => {
@@ -290,9 +502,14 @@ customerRouter.post('/requests/:id/messages', async (req: Request, res: Response
 });
 
 // POST /api/customer/requests/:id/status — limited client transitions.
-// Every accepted transition emails the customer from the status itself, so all
-// five lifecycle stages are covered by one code path. Re-sending the same status
-// is deduplicated, never re-emailed.
+//
+// A customer may move their own request through the collaborative stages, but
+// may NOT mark it `completed`. Completion is an assertion about SEAI's own work,
+// and self-certifying it both corrupted the record and emailed the customer a
+// false "we completed your work" notice. `completed` is therefore staff-only and
+// is refused here with 403; staff use the dedicated route below.
+//
+// Tenant isolation is unchanged: the request must still belong to the caller.
 customerRouter.post('/requests/:id/status', async (req: Request, res: Response) => {
   const row = await ownedRequest(req, res);
   if (!row) return;
@@ -302,6 +519,13 @@ customerRouter.post('/requests/:id/status', async (req: Request, res: Response) 
     return;
   }
   const next = parsed.data.status;
+  if (next === 'completed') {
+    res.status(403).json({
+      ok: false,
+      error: 'Only SEAI can mark a change request completed',
+    });
+    return;
+  }
   await db.update('change_requests', row.id, { status: next, updated_at: new Date().toISOString() });
   const rows = await db.list('change_requests', { id: row.id, user_id: uid(req) }, 1);
   const current = rows[0];
@@ -330,6 +554,7 @@ customerRouter.post('/requests/:id/status', async (req: Request, res: Response) 
   }
   res.json({ ok: true, request: current ?? row });
 });
+
 
 // POST /api/customer/requests/:id/attachments — metadata + data URL (5MB cap)
 customerRouter.post('/requests/:id/attachments', async (req: Request, res: Response) => {

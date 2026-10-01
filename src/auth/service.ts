@@ -59,6 +59,12 @@ export interface Session {
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const RESET_TTL_MS = 60 * 60 * 1000;
+/**
+ * How long a dead password-reset row is retained before it may be purged.
+ * Long enough to investigate a failed reset; short enough that hashed-but-dead
+ * personal data does not accumulate indefinitely.
+ */
+const RESET_RETENTION_MS = 24 * 60 * 60 * 1000;
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 
 export async function createUser(fullName: string, email: string, password: string): Promise<User> {
@@ -160,6 +166,42 @@ export async function markPasswordResetUsed(token: string): Promise<void> {
   if (rows.length > 0) {
     await db.update('password_resets', rows[0].id, { used_at: new Date().toISOString() });
   }
+}
+
+/**
+ * Bounded cleanup of dead password-reset records.
+ *
+ * Only removes rows that can no longer authenticate anything:
+ *   - already used (single-use, consumed), or
+ *   - expired (past the TTL) and never used.
+ *
+ * A live, unexpired, unused token is NEVER deleted, and rows younger than
+ * `minAgeMs` are kept so recent security history survives for investigation.
+ * `db.deleteWhere` is equality-only, so the candidate set is selected with
+ * `list` and each row is removed by exact id.
+ *
+ * Returns how many rows were removed. Safe to call repeatedly (a cron target).
+ */
+export async function purgeDeadPasswordResets(
+  options: { minAgeMs?: number; limit?: number } = {},
+): Promise<number> {
+  const minAgeMs = Math.max(0, options.minAgeMs ?? RESET_RETENTION_MS);
+  const limit = Math.max(1, Math.min(1000, options.limit ?? 200));
+  const cutoff = Date.now() - minAgeMs;
+  const rows = await db.list('password_resets', {}, limit * 4);
+  let removed = 0;
+  for (const row of rows) {
+    if (removed >= limit) break;
+    const created = Date.parse(String(row.created_at ?? ''));
+    if (!Number.isFinite(created) || created > cutoff) continue;
+    const used = row.used_at != null;
+    const expired = Date.parse(String(row.expires_at ?? '')) < Date.now();
+    // Never touch an unexpired, unused token: it is still a live credential.
+    if (!used && !expired) continue;
+    await db.deleteWhere('password_resets', { id: row.id });
+    removed += 1;
+  }
+  return removed;
 }
 
 export async function setPassword(userId: string, newPassword: string): Promise<void> {

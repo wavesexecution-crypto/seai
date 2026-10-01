@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { renderTemplate, EmailRenderError } from './registry.js';
-import { normalizeRecipient, buildDedupeKey, claimEvent, createDelivery, markEventStatus, releaseEventClaim, updateDelivery } from './store.js';
+import { normalizeRecipient, buildDedupeKey, claimEvent, createDelivery, markEventStatus, releaseEventClaim, updateDelivery, encodeReapableVariables } from './store.js';
 import { isMailConfigured, sendMailDetailed, type OutgoingMail, type SendResult } from './transport.js';
 import { redactSecrets } from './safety.js';
 import type { EmailContext } from './context.js';
@@ -60,8 +60,24 @@ export function setMailDryRun(value: boolean): void {
   dryRun = value;
 }
 
+// Control characters have no legitimate place in an address. NUL in particular
+// is accepted by the shape regex below (it is neither whitespace nor @), so it
+// must be excluded explicitly rather than left to nodemailer.
+const CONTROL_CHARS = /[\x00-\x1F\x7F]/;
+
+/**
+ * True when the value is a single, syntactically usable mailbox.
+ *
+ * Deliberately strict and single-recipient: CRLF sequences (header injection),
+ * comma lists and space-separated lists are all rejected here rather than being
+ * handed to the provider.
+ */
 export function isValidRecipient(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+  const raw = String(value ?? '');
+  if (!raw) return false;
+  if (CONTROL_CHARS.test(raw)) return false;
+  if (raw !== raw.trim()) return false;
+  return /^[^\s@,]+@[^\s@,]+\.[^\s@,]{2,}$/.test(raw);
 }
 
 let nonIdempotentSeq = 0;
@@ -132,6 +148,9 @@ export async function dispatchEmail(input: DispatchInput): Promise<DispatchResul
       recipient,
       customerId: input.customerId ?? null,
       correlationId,
+      // Persisted so a send frozen by a serverless teardown can be rebuilt.
+      // Token-bearing templates return null here and are never reaped.
+      variablesJson: encodeReapableVariables(template, input.variables as Record<string, unknown> | undefined),
     });
   } catch (err) {
     const reason = `claim failed: ${redactSecrets((err as Error).message, 200)}`;

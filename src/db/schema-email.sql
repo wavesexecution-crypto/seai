@@ -28,6 +28,12 @@ CREATE TABLE IF NOT EXISTS email_events (
   status TEXT NOT NULL DEFAULT 'queued',
   attempts INTEGER NOT NULL DEFAULT 1,
   correlation_id TEXT,
+  -- Render variables, JSON-encoded, so a send orphaned by a serverless freeze can
+  -- be reconstructed and retried instead of being lost forever. Tokens are never
+  -- written here (see NOT_APPLICABLE_REAP_TEMPLATES): a password-reset or
+  -- email-verification URL embeds a single-use secret, and that secret must not be
+  -- duplicated into another table.
+  variables TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -35,6 +41,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_email_events_dedupe ON email_events(dedupe
 CREATE INDEX IF NOT EXISTS idx_email_events_customer ON email_events(customer_id);
 CREATE INDEX IF NOT EXISTS idx_email_events_status ON email_events(status);
 CREATE INDEX IF NOT EXISTS idx_email_events_correlation ON email_events(correlation_id);
+-- Supports the bounded stale-send sweep (status + recency) without a table scan.
+CREATE INDEX IF NOT EXISTS idx_email_events_stale ON email_events(status, updated_at);
+
+-- Additive upgrade path for databases created before `variables` existed.
+ALTER TABLE email_events ADD COLUMN IF NOT EXISTS variables TEXT;
+CREATE INDEX IF NOT EXISTS idx_email_events_stale ON email_events(status, updated_at);
 
 CREATE TABLE IF NOT EXISTS email_deliveries (
   id TEXT PRIMARY KEY,
