@@ -53,7 +53,11 @@
     // File IDs only — bytes travel through signed upload URLs, and the
     // intake session scope is minted server-side, never in this file.
     storageFileIds: [],
+    // Same ids, but paired with the slot the report labels them by.
+    storageFiles: [],
     intakeSessionId: null,
+    // Opaque reference returned by the CDF once the intake is recorded.
+    intakeReference: null,
     // True when attachments could not be uploaded. Recorded on the order so
     // the downstream record is honest rather than implying files were sent.
     attachmentsSkipped: false
@@ -636,10 +640,90 @@
       }
       const id = await uploadOneFile(kind, file);
       if (formData.storageFileIds.indexOf(id) === -1) formData.storageFileIds.push(id);
+      // The CDF intake report labels each asset by slot, so the kind has to
+      // travel with the id rather than being dropped here.
+      formData.storageFiles = formData.storageFiles || [];
+      if (!formData.storageFiles.some((f) => f.fileId === id)) {
+        formData.storageFiles.push({ fileId: id, slot: kind });
+      }
     }
   }
 
-async function handleSubmit() {
+// Stable per submission, so a double submit or a retry of the report call
+  // cannot create two intakes (and therefore cannot send two reports).
+  function intakeIdempotencyKey() {
+    if (formData.intakeIdempotencyKey) return formData.intakeIdempotencyKey;
+    const rand =
+      window.crypto && window.crypto.randomUUID
+        ? window.crypto.randomUUID()
+        : String(Date.now()) + "-" + Math.random().toString(36).slice(2);
+    formData.intakeIdempotencyKey = "intake-" + rand;
+    return formData.intakeIdempotencyKey;
+  }
+
+  function intakePayload() {
+    return {
+      idempotencyKey: intakeIdempotencyKey(),
+      submittedAt: new Date().toISOString(),
+      clientName: "",
+      businessName: formData.businessName || "",
+      email: formData.email || "",
+      phone: formData.phone || "",
+      whatsapp: formData.whatsapp || "",
+      instagram: formData.instagram || "",
+      existingSite: formData.existingSite || "",
+      domain: "",
+      businessType: formData.businessType || "",
+      industry: "",
+      location: formData.location || "",
+      whatYouDo: formData.whatYouDo || "",
+      targetCustomers: "",
+      businessDescription: "",
+      sellingPoints: "",
+      goals: formData.primaryGoal || "",
+      preferredStyle: formData.preferredStyle || "",
+      preferredColors: "",
+      preferredTypography: "",
+      pagesRequested: formData.pages || [],
+      featuresRequested: [],
+      references: "",
+      competitors: "",
+      specialInstructions: formData.anythingElse || "",
+      content: {},
+      plan: PLAN_NAMES[formData.plan] || formData.plan || "",
+      amount: PLAN_PRICES[formData.plan] || "",
+      intakeSession: formData.intakeSessionId || "",
+      files: formData.storageFiles || []
+    };
+  }
+
+  // Sends the completed intake to the CDF so the team gets the briefing email.
+  // Best effort by design: the report is an internal notification, so a CDF
+  // outage must never stop a customer from paying.
+  async function reportIntakeToOps() {
+    const base = window.SEAI_INTAKE_API_BASE;
+    if (!base) return null;
+    try {
+      const res = await fetch(base.replace(/\/$/, "") + "/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(intakePayload())
+      });
+      if (!res.ok) {
+        console.warn("[intake] CDF intake report rejected (" + res.status + ")");
+        return null;
+      }
+      const data = await res.json().catch(function () {
+        return null;
+      });
+      return data && data.reference ? data.reference : null;
+    } catch (err) {
+      console.warn("[intake] CDF intake report unreachable; continuing to payment");
+      return null;
+    }
+  }
+
+  async function handleSubmit() {
     collectStepData(currentStep);
     if (!validateStep(currentStep)) return;
 
@@ -650,6 +734,10 @@ async function handleSubmit() {
       showError(err && err.message ? err.message : "Could not upload files. Please try again.");
       return;
     }
+
+    // Tell the CDF about the completed intake before payment. The intake is the
+    // sales lead, so it is recorded even if the customer drops out at payment.
+    formData.intakeReference = await reportIntakeToOps();
 
     // Payment integration is REQUIRED for production purchases
     if (!window.SEAIPayment || !window.SEAIPayment.initiatePayment) {
@@ -675,8 +763,9 @@ async function handleSubmit() {
       document.getElementById("success-email").textContent = formData.email || "your email";
 
       const refEl = document.getElementById("success-ref");
-      if (refEl && result?.projectId) {
-        refEl.textContent = `Reference: ${result.projectId}`;
+      if (refEl) {
+        const ref = result?.projectId || formData.intakeReference;
+        if (ref) refEl.textContent = `Reference: ${ref}`;
       }
     }
     window.scrollTo({ top: 0, behavior: "smooth" });

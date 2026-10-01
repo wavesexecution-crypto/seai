@@ -15,6 +15,13 @@
   // /api/payment/* is our own server-side proxy that holds the service key.
   window.SEAI_PAYMENT_API_BASE = window.SEAI_PAYMENT_API_BASE || "/api/payment";
 
+  // Client intake reporting (CDF). Unlike payments this needs no service key:
+  // /api/intake is an intentionally public, rate-limited, honeypot-guarded
+  // endpoint that answers only with an opaque reference. The browser therefore
+  // calls it directly instead of adding another proxy hop, and a failure here
+  // must never block the purchase.
+  window.SEAI_INTAKE_API_BASE = window.SEAI_INTAKE_API_BASE || "https://dash.seai.store/api";
+
   // Feature flags.
   window.SEAI_FEATURES = {
     paymentEnabled: window.SEAI_FEATURES?.paymentEnabled !== false,
