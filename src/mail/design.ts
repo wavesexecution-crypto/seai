@@ -1,6 +1,6 @@
 ﻿import { escapeAttr, escapeHtml, safeUrl, stripControl, subjectSafe } from './safety.js';
 import { config } from '../config.js';
-import { dashboardUrl, logoUrl, privacyUrl, supportMailto, supportUrl, termsUrl } from './urls.js';
+import { dashboardUrl, privacyUrl, supportMailto, termsUrl } from './urls.js';
 
 export type Tone = 'neutral' | 'positive' | 'warning' | 'critical';
 
@@ -105,7 +105,7 @@ export function eyebrow(label: string): Block {
 
 export function heading(value: string): Block {
   return {
-    html: `<h1 style="margin:0 0 16px;font-size:26px;line-height:1.25;font-weight:600;letter-spacing:-.01em;color:${PALETTE.ink};">${escapeHtml(text(value))}</h1>`,
+    html: `<h1 class="seai-h1" style="margin:0 0 14px;font-size:25px;line-height:1.22;font-weight:600;letter-spacing:-.015em;color:${PALETTE.ink};">${escapeHtml(text(value))}</h1>`,
     text: plain(value),
   };
 }
@@ -114,14 +114,14 @@ export function paragraph(value: string, options: { color?: string; size?: numbe
   const color = options.color ?? PALETTE.sub;
   const size = options.size ?? 15;
   return {
-    html: `<p style="margin:0 0 14px;font-size:${size}px;line-height:1.65;color:${color};">${escapeHtml(text(value))}</p>`,
+    html: `<p style="margin:0 0 12px;font-size:${size}px;line-height:1.6;color:${color};">${escapeHtml(text(value))}</p>`,
     text: wrapPlain(value),
   };
 }
 
 export function note(value: string): Block {
   return {
-    html: `<p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:${PALETTE.faint};">${escapeHtml(text(value))}</p>`,
+    html: `<p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:${PALETTE.faint};">${escapeHtml(text(value))}</p>`,
     text: wrapPlain(value),
   };
 }
@@ -133,11 +133,12 @@ export function divider(): Block {
   };
 }
 
+// Restrained status label: small uppercase, letterspaced, no pill chrome.
 export function statusBadge(label: string, tone: Tone = 'neutral'): Block {
   const color = TONE_COLOR[tone];
   return {
-    html: `<p style="margin:0 0 16px;"><span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color};border:1px solid ${PALETTE.border};background:${PALETTE.fill};border-radius:999px;padding:5px 12px;">${escapeHtml(text(label))}</span></p>`,
-    text: `[${plain(label).toUpperCase()}]`,
+    html: `<p class="seai-label" style="margin:0 0 14px;font-size:11px;line-height:1.3;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:${color};">${escapeHtml(text(label))}</p>`,
+    text: plain(label).toUpperCase(),
   };
 }
 
@@ -159,12 +160,12 @@ export function infoBlock(title: string | null, rows: InfoRow[]): Block {
   const usable = rows.filter((r) => text(r.value).length > 0);
   if (usable.length === 0) return { html: '', text: '' };
   const headingHtml = title
-    ? `<p style="margin:0 0 10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:${PALETTE.faint};font-weight:600;">${escapeHtml(text(title))}</p>`
+    ? `<p style="margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:${PALETTE.faint};font-weight:600;">${escapeHtml(text(title))}</p>`
     : '';
   const body = usable.map((r) => row(r.label, r.value, r.href)).join('');
   const plainRows = usable.map((r) => `${plain(r.label)}: ${plain(r.value)}`).join('\n');
   return {
-    html: `<tr><td style="padding:0 0 20px;border:1px solid ${PALETTE.border};background:${PALETTE.panel};border-radius:12px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="padding:18px 20px 4px;">${headingHtml}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${body}</table></td></tr></table></td></tr>`,
+    html: `<tr><td style="padding:0 0 6px;border:1px solid ${PALETTE.border};background:${PALETTE.panel};border-radius:10px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td class="seai-card" style="padding:16px 18px 4px;">${headingHtml}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${body}</table></td></tr></table></td></tr>`,
     text: plainRows,
   };
 }
@@ -201,8 +202,8 @@ export function stepList(items: string[]): Block {
 
 export function cta(label: string, href: string): Block {
   const url = safeUrl(href, { label: 'Call to action' });
-  const html = `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 0 8px;"><tr><td bgcolor="${PALETTE.button}" style="border-radius:8px;mso-padding-alt:14px 28px;"><a href="${escapeAttr(url)}" style="display:inline-block;padding:14px 28px;font-family:${FONT};font-size:15px;font-weight:600;line-height:1;color:${PALETTE.buttonInk};text-decoration:none;border-radius:8px;" class="seai-cta">${escapeHtml(text(label))}</a></td></tr></table>`;
-  return { html: `<tr><td style="padding:4px 0 20px;">${html}</td></tr>`, text: `${plain(label)}:\n${url}` };
+  const html = `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0;"><tr><td bgcolor="${PALETTE.button}" style="border-radius:8px;mso-padding-alt:15px 30px;"><a href="${escapeAttr(url)}" style="display:inline-block;padding:15px 30px;font-family:${FONT};font-size:15px;font-weight:600;line-height:1;color:${PALETTE.buttonInk};text-decoration:none;border-radius:8px;" class="seai-cta">${escapeHtml(text(label))}</a></td></tr></table>`;
+  return { html: `<tr><td style="padding:6px 0 22px;">${html}</td></tr>`, text: `${plain(label)}:\n${url}` };
 }
 
 export function secondaryLink(label: string, href: string): Block {
@@ -244,44 +245,35 @@ export function preheaderBlock(value: string): Block {
   };
 }
 
+// Brand mark: a text wordmark, never a remote image.
+//
+// A hosted image proved unreliable in real inboxes — mail clients fetch remote
+// images through a proxy that refuses cross-origin-restricted assets, which
+// rendered as a broken-image placeholder. A styled wordmark cannot fail, loads
+// instantly on mobile, and matches the monochrome product identity.
 function logoBlock(): Block {
-  const url = logoUrl();
-  const wordmark = `<span style="font-size:15px;font-weight:700;letter-spacing:.16em;color:${PALETTE.ink};">SEAI</span>`;
-  if (!url) {
-    return {
-      html: `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="padding:0;">${wordmark}</td></tr></table>`,
-      text: 'SEAI',
-    };
-  }
-  const mark = `<img src="${escapeAttr(url)}" width="34" height="34" alt="SEAI" style="display:block;width:34px;height:34px;border:0;border-radius:8px;outline:none;text-decoration:none;" />`;
   return {
-    html: `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="padding:0;vertical-align:middle;"><a href="${escapeAttr(dashboardUrl())}" style="text-decoration:none;">${mark}</a></td><td style="padding:0 0 0 12px;vertical-align:middle;">${wordmark}</td></tr></table>`,
+    html: `<p style="margin:0;font-size:15px;line-height:1;font-weight:700;letter-spacing:.22em;color:${PALETTE.ink};">SEAI</p>`,
     text: 'SEAI',
   };
 }
 
-function footerBlock(reason: string): Block {
+function footerBlock(): Block {
   const support = config.mailSupportEmail;
   const year = new Date().getFullYear();
   const html = [
     `<tr><td style="padding:8px 0 0;"><div style="height:1px;line-height:1px;font-size:0;background:${PALETTE.border};">&nbsp;</div></td></tr>`,
-    `<tr><td style="padding:20px 0 0;">`,
-    `<p style="margin:0 0 10px;font-size:12px;line-height:1.6;color:${PALETTE.faint};">${escapeHtml(text(reason))}</p>`,
-    `<p style="margin:0 0 10px;font-size:12px;line-height:1.7;color:${PALETTE.faint};">Questions or a change request? Reply to this email or use the dashboard: <a href="${escapeAttr(dashboardUrl())}" style="color:${PALETTE.sub};text-decoration:underline;">${escapeHtml(dashboardUrl())}</a></p>`,
-    `<p style="margin:0 0 10px;font-size:12px;line-height:1.7;color:${PALETTE.faint};">SEAI &middot; <a href="${escapeAttr(supportMailto())}" style="color:${PALETTE.sub};text-decoration:underline;">${escapeHtml(support)}</a> &middot; <a href="${escapeAttr(supportUrl())}" style="color:${PALETTE.sub};text-decoration:underline;">Support</a> &middot; <a href="${escapeAttr(privacyUrl())}" style="color:${PALETTE.sub};text-decoration:underline;">Privacy</a> &middot; <a href="${escapeAttr(termsUrl())}" style="color:${PALETTE.sub};text-decoration:underline;">Terms</a></p>`,
-    `<p style="margin:0;font-size:11px;line-height:1.6;color:#4b4b53;">&copy; ${year} SEAI. This is a service message for your SEAI account.</p>`,
+    `<tr><td style="padding:22px 0 0;text-align:left;">`,
+    `<p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:${PALETTE.sub};">Questions? Reply to this email.</p>`,
+    `<p style="margin:0;font-size:12px;line-height:1.6;color:${PALETTE.faint};">SEAI &middot; <a href="${escapeAttr(supportMailto())}" style="color:${PALETTE.faint};text-decoration:underline;">${escapeHtml(support)}</a> &middot; <a href="${escapeAttr(privacyUrl())}" style="color:${PALETTE.faint};text-decoration:underline;">Privacy</a> &middot; <a href="${escapeAttr(termsUrl())}" style="color:${PALETTE.faint};text-decoration:underline;">Terms</a></p>`,
     `</td></tr>`,
   ].join('');
   const plain = [
-    `Questions or a change request? Reply to this email or use the dashboard:`,
-    dashboardUrl(),
+    `Questions? Reply to this email.`,
     '',
     `SEAI · ${support}`,
-    `Support: ${supportUrl()}`,
     `Privacy: ${privacyUrl()}`,
     `Terms: ${termsUrl()}`,
-    '',
-    `© ${year} SEAI. This is a service message for your SEAI account.`,
   ].join('\n');
   return { html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${html}</table>`, text: plain };
 }
@@ -293,10 +285,11 @@ const HEAD_STYLE = `
     a{color:${PALETTE.sub};}
     .seai-cta{display:inline-block!important;}
     @media only screen and (max-width:600px){
-      .seai-pad{padding:24px 18px!important;}
-      .seai-card{padding:16px 16px 4px!important;}
-      .seai-cta{display:block!important;width:100%!important;text-align:center!important;box-sizing:border-box!important;}
-      .seai-h1{font-size:23px!important;line-height:1.3!important;}
+      .seai-pad{padding:26px 20px 34px!important;}
+      .seai-card{padding:15px 15px 2px!important;}
+      .seai-cta{display:block!important;width:100%!important;text-align:center!important;box-sizing:border-box!important;padding:16px 20px!important;}
+      .seai-h1{font-size:22px!important;line-height:1.28!important;letter-spacing:-.01em!important;}
+      .seai-label{letter-spacing:.14em!important;}
       .seai-url{word-break:break-all!important;}
     }
   `;
@@ -322,8 +315,7 @@ function buildText(spec: DocumentSpec): string {
     if (!value) continue;
     parts.push(value, '');
   }
-  const foot = footerBlock(spec.reason).text;
-  parts.push(foot);
+  parts.push(footerBlock().text);
   return `${parts.join('\n').replace(/\n{3,}/g, '\n\n').trim()}\n`;
 }
 
@@ -334,7 +326,7 @@ export function renderDocument(spec: DocumentSpec): RenderedEmail {
     .map((b) => b.html)
     .filter(Boolean)
     .join('');
-  const inner = [logo.html, `<tr><td style="padding:34px 0 0;">`, body, `</td></tr>`].join('');
+  const inner = [logo.html, `<tr><td style="padding:30px 0 0;">`, body, `</td></tr>`].join('');
   const html = `<!doctype html>
 <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -353,11 +345,11 @@ export function renderDocument(spec: DocumentSpec): RenderedEmail {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${PALETTE.page};">
 <tr><td align="center" style="padding:0;">
 <table role="presentation" width="${WIDTH}" cellpadding="0" cellspacing="0" style="width:100%;max-width:${WIDTH}px;border-collapse:collapse;">
-<tr><td class="seai-pad" style="padding:40px 32px 48px;">
+<tr><td class="seai-pad" style="padding:36px 32px 44px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
 ${pre.html}
 ${inner}
-${footerBlock(spec.reason).html}
+${footerBlock().html}
 </table>
 </td></tr>
 </table>

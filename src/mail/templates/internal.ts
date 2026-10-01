@@ -1,5 +1,5 @@
-import { cta, eyebrow, heading, infoBlock, linkList, note, paragraph } from '../design.js';
-import { dashboardUrl, performanceUrl, publicSiteUrl } from '../urls.js';
+import { cta, heading, infoBlock, paragraph, statusBadge } from '../design.js';
+import { performanceUrl, publicSiteUrl } from '../urls.js';
 import type { EmailContext } from '../context.js';
 import type { EmailTemplateDef } from '../types.js';
 import { DEFAULT_REASON } from '../types.js';
@@ -31,14 +31,17 @@ export const internalTemplates: EmailTemplateDef[] = [
     wired: false,
     build: (ctx) => {
       const rows = metricRows(ctx);
-      const blocks = [eyebrow('Performance'), heading('Performance update'), paragraph(`Here is the latest reading for ${ctx.website_name}${ctx.domain ? ` (${ctx.domain})` : ''}.`)];
+      const blocks = [
+        statusBadge('Performance', 'neutral'),
+        heading('How your website is doing.'),
+      ];
       if (rows.length > 0) {
-        blocks.push(infoBlock('Metrics', rows.map((r) => ({ label: r.label, value: r.value }))));
-        blocks.push(note('These figures come straight from your connected analytics sources.'));
-        blocks.push(cta('Open Performance Dashboard', performanceUrl()));
+        blocks.push(paragraph(`Here is the latest reading for ${ctx.website_name}.`));
+        blocks.push(infoBlock(null, rows.map((r) => ({ label: r.label, value: r.value }))));
+        blocks.push(cta('View performance', performanceUrl()));
       } else {
-        blocks.push(paragraph('Analytics is not connected yet, so there are nothing to report. Connect Google Analytics in your dashboard to start receiving real website data.'));
-        blocks.push(cta('Connect Analytics', dashboardUrl('/settings')));
+        blocks.push(paragraph("Analytics aren't connected yet, so there's nothing to report. Connect them in your dashboard and we'll start sending real numbers."));
+        blocks.push(cta('Connect analytics', performanceUrl()));
       }
       return blocks;
     },
@@ -47,23 +50,20 @@ export const internalTemplates: EmailTemplateDef[] = [
     name: 'sales.cold_outreach',
     category: 'internal',
     subject: 'A better website for {{website_name}}',
-    preheader: 'A short note from SEAI about your online presence.',
+    preheader: 'A short note from SEAI.',
     reason: 'You are receiving this because SEAI looked up your business online.',
     trigger: 'Reserved: sales outreach. Not a customer lifecycle email; never sent by the API.',
     required: ['website_name', 'alert_summary'],
     optional: ['customer_name'],
     wired: false,
     build: (ctx) => [
-      eyebrow('Hello from SEAI'),
+      statusBadge('Hello from SEAI', 'neutral'),
       heading(`A better website for ${ctx.website_name}`),
-      paragraph(`Hi — I looked at ${ctx.website_name} online and noticed ${ctx.alert_summary}. First impressions now happen on Google before anyone walks in, and a slow or missing site quietly sends customers elsewhere.`),
-      paragraph('SEAI builds premium one-page business websites in about a week — copy, design, domain, and launch handled, with an owner dashboard for changes and maintenance afterwards.'),
-      paragraph('Would you like a free homepage mockup? Reply "yes" and I will send one over.'),
-      linkList([
-        { label: 'See what SEAI builds', href: publicSiteUrl() },
-        { label: 'Create an account', href: dashboardUrl('/create-account') },
-      ]),
-      note('— SEAI · workwithseai@gmail.com'),
+      paragraph(
+        `Hi — I looked at ${ctx.website_name} online and noticed ${ctx.alert_summary}. Most people find a business on Google first, and a weak site quietly sends them elsewhere.`,
+      ),
+      paragraph('SEAI builds premium business websites in about a week — copy, design, domain, and launch handled.'),
+      cta('See what we build', publicSiteUrl()),
     ],
   },
 ];

@@ -87,7 +87,7 @@ export function parseSafeUrl(raw: string, opts: UrlOptions = {}): URL | null {
     }
     return parsed;
   }
-  if (parsed.protocol === 'http:' && opts.allowHttp) {
+  if (parsed.protocol === 'http:' && (opts.allowHttp || devUrlsAllowed())) {
     if (isUnsafeHost(parsed.hostname) && !devUrlsAllowed()) {
       throw new EmailSafetyError('URL_PRIVATE_HOST', `${label} URL points at a private host`);
     }

@@ -1,166 +1,129 @@
-import { cta, eyebrow, heading, infoBlock, note, paragraph, statusBadge } from '../design.js';
-import { dashboardUrl, maintenanceUrl } from '../urls.js';
+﻿import { cta, heading, infoBlock, note, paragraph, statusBadge } from '../design.js';
+import { maintenanceUrl } from '../urls.js';
 import type { EmailTemplateDef } from '../types.js';
 import { DEFAULT_REASON } from '../types.js';
-
-const COVERAGE = [
-  'Hosting and uptime monitoring',
-  'SSL certificate and domain connection',
-  'Security patches and backups',
-  'Content and copy updates',
-  'Change requests with priority turnaround',
-];
-
-function coverageText(): string {
-  return COVERAGE.join(', ');
-}
 
 export const maintenanceTemplates: EmailTemplateDef[] = [
   {
     name: 'maintenance.payment_required',
     category: 'maintenance',
     subject: 'Activate your SEAI maintenance',
-    preheader: 'Your maintenance plan is reserved — complete payment to activate it.',
+    preheader: 'Complete payment to keep your site running.',
     reason: DEFAULT_REASON,
     trigger: 'Maintenance subscription created or reset to pending payment (no payment provider call).',
     required: ['plan_name', 'maintenance_price', 'status'],
     optional: ['maintenance_covers', 'billing_interval', 'customer_name'],
     wired: true,
     build: (ctx) => [
-      statusBadge(ctx.status || 'Payment required', 'warning'),
-      eyebrow('Maintenance'),
-      heading('Activate your SEAI maintenance'),
-      paragraph(
-        `${ctx.plan_name} is ready to start. Maintenance is active only once payment succeeds, so nothing is covered until then.`,
-      ),
-      infoBlock('Plan', [
+      statusBadge('Maintenance', 'warning'),
+      heading('Keep your website running.'),
+      paragraph('Complete your payment to activate your plan.'),
+      infoBlock(null, [
         { label: 'Plan', value: ctx.plan_name },
-        { label: 'Price', value: `${ctx.maintenance_price} per ${ctx.billing_interval}` },
-        { label: 'Status', value: ctx.status || 'Payment required' },
+        { label: 'Price', value: `${ctx.maintenance_price} / ${ctx.billing_interval}` },
       ]),
-      infoBlock('What maintenance covers', [
-        { label: 'Includes', value: ctx.maintenance_covers || coverageText() },
-      ]),
-      cta('Activate Maintenance', maintenanceUrl()),
-      note('Payment is handled on the SEAI dashboard. We never ask for card details over email.'),
+      cta('Activate maintenance', maintenanceUrl()),
+      note('Questions? Reply to this email.'),
     ],
   },
   {
     name: 'maintenance.activated',
     category: 'maintenance',
     subject: 'SEAI maintenance is now active',
-    preheader: 'Your site is covered — here is exactly what maintenance includes.',
+    preheader: 'Your plan is active.',
     reason: DEFAULT_REASON,
     trigger: 'Authoritative state change: maintenance subscription status becomes active.',
     required: ['plan_name', 'maintenance_price', 'activated_at', 'status'],
     optional: ['maintenance_covers', 'billing_interval', 'next_billing_date', 'website_name', 'domain'],
     wired: true,
     build: (ctx) => [
-      statusBadge(ctx.status || 'Active', 'positive'),
-      eyebrow('Maintenance active'),
-      heading('Your maintenance is now active'),
+      statusBadge('Active', 'positive'),
+      heading('Your maintenance is active.'),
       paragraph(
-        `${ctx.plan_name} is active${ctx.website_name ? ` for ${ctx.website_name}` : ''}. Your website stays online, secure, and up to date without you lifting a finger.`,
+        ctx.website_name
+          ? `We're looking after ${ctx.website_name} from here.`
+          : "We're looking after your website from here.",
       ),
-      infoBlock('Plan', [
+      infoBlock(null, [
         { label: 'Plan', value: ctx.plan_name },
-        { label: 'Price', value: `${ctx.maintenance_price} per ${ctx.billing_interval}` },
-        { label: 'Activated', value: ctx.activated_at },
-        { label: 'Status', value: ctx.status || 'Active' },
-        ...(ctx.next_billing_date ? [{ label: 'Next billing date', value: ctx.next_billing_date }] : []),
+        { label: 'Price', value: `${ctx.maintenance_price} / ${ctx.billing_interval}` },
+        { label: 'Started', value: ctx.activated_at },
+        ...(ctx.next_billing_date ? [{ label: 'Next billing', value: ctx.next_billing_date }] : []),
       ]),
-      infoBlock('What maintenance covers', [{ label: 'Includes', value: ctx.maintenance_covers || coverageText() }]),
-      cta('Manage Maintenance', maintenanceUrl()),
-      note('Need something changed? Requests made while maintenance is active are prioritised.'),
+      cta('Manage maintenance', maintenanceUrl()),
+      note('Need a change? Request it from your dashboard any time.'),
     ],
   },
   {
     name: 'maintenance.payment_successful',
     category: 'maintenance',
     subject: 'SEAI maintenance payment received',
-    preheader: 'Payment confirmed for your SEAI maintenance plan.',
+    preheader: 'Payment received.',
     reason: DEFAULT_REASON,
     trigger: 'Authoritative payment confirmation from the payment service.',
     required: ['amount', 'status'],
     optional: ['plan_name', 'payment_id', 'purchased_at', 'next_billing_date', 'billing_interval', 'maintenance_price'],
     wired: true,
     build: (ctx) => [
-      statusBadge(ctx.status || 'Active', 'positive'),
-      eyebrow('Payment received'),
-      heading('Thanks — your maintenance payment went through'),
-      paragraph('We have your payment and your maintenance is in place.'),
-      infoBlock('Payment', [
+      statusBadge(ctx.status || 'Payment received', 'positive'),
+      heading('Your maintenance payment is in.'),
+      paragraph('Your plan continues without a break.'),
+      infoBlock(null, [
         { label: 'Amount', value: ctx.amount },
         { label: 'Plan', value: ctx.plan_name },
-        { label: 'Paid on', value: ctx.purchased_at },
-        ...(ctx.payment_id ? [{ label: 'Payment ID', value: ctx.payment_id }] : []),
-        { label: 'Status', value: ctx.status || 'Active' },
-        ...(ctx.next_billing_date ? [{ label: 'Next billing date', value: ctx.next_billing_date }] : []),
+        ...(ctx.next_billing_date ? [{ label: 'Next billing', value: ctx.next_billing_date }] : []),
       ]),
-      cta('Manage Maintenance', maintenanceUrl()),
-      note('Need an invoice for your records? Reply to this email and we will send one.'),
+      cta('Manage maintenance', maintenanceUrl()),
     ],
   },
   {
     name: 'maintenance.payment_failed',
     category: 'maintenance',
-    subject: 'Your SEAI maintenance payment failed',
-    preheader: 'We could not take the payment for your SEAI maintenance.',
+    subject: 'Action needed for your SEAI maintenance',
+    preheader: 'Your payment did not go through.',
     reason: DEFAULT_REASON,
     trigger: 'Authoritative payment failure from the payment service.',
     required: ['status'],
     optional: ['plan_name', 'amount', 'failure_reason', 'payment_id', 'maintenance_price', 'billing_interval'],
     wired: true,
     build: (ctx) => [
-      statusBadge('Payment failed', 'critical'),
-      eyebrow('Action needed'),
-      heading('Your maintenance payment did not go through'),
-      paragraph(
-        `We could not take the payment for ${ctx.plan_name || 'your SEAI maintenance'}. No money has left your account.`,
-      ),
-      infoBlock('Payment', [
+      statusBadge(ctx.status || 'Payment failed', 'critical'),
+      heading("Your maintenance payment didn't go through."),
+      paragraph('Update your payment to keep your plan running.'),
+      infoBlock(null, [
         { label: 'Amount due', value: ctx.amount || ctx.maintenance_price },
-        { label: 'Status', value: ctx.status || 'Payment failed' },
         ...(ctx.failure_reason ? [{ label: 'Reason', value: ctx.failure_reason }] : []),
-        ...(ctx.payment_id ? [{ label: 'Attempt ID', value: ctx.payment_id }] : []),
       ]),
-      paragraph('What to do: open the dashboard and retry the payment. Once it succeeds, maintenance continues without any interruption to your website.'),
-      cta('Retry Maintenance Payment', maintenanceUrl()),
-      note('SEAI will never email you card numbers, bank details, or ask you to confirm a payment by reply.'),
+      cta('Update payment', maintenanceUrl()),
     ],
   },
   {
     name: 'maintenance.renewing',
     category: 'maintenance',
-    subject: 'Your SEAI maintenance is renewing soon',
-    preheader: 'A heads-up before your maintenance renews.',
+    subject: 'Your SEAI maintenance renewal is coming up',
+    preheader: 'Your plan renews soon.',
     reason: DEFAULT_REASON,
     trigger: 'Only when a real next_billing_date exists on the subscription record.',
     required: ['plan_name', 'maintenance_price', 'next_billing_date', 'billing_date'],
     optional: ['status', 'billing_interval', 'website_name'],
     wired: true,
     build: (ctx) => [
-      statusBadge('Upcoming billing', 'warning'),
-      eyebrow('Maintenance renewal'),
-      heading('Your maintenance renews soon'),
-      paragraph(
-        `${ctx.plan_name} renews on ${ctx.billing_date || ctx.next_billing_date} for ${ctx.maintenance_price} per ${ctx.billing_interval}.`,
-      ),
-      infoBlock('Renewal', [
+      statusBadge('Renewing soon', 'neutral'),
+      heading('Your maintenance renews soon.'),
+      infoBlock(null, [
         { label: 'Plan', value: ctx.plan_name },
-        { label: 'Amount', value: `${ctx.maintenance_price} per ${ctx.billing_interval}` },
-        { label: 'Expected billing date', value: ctx.billing_date || ctx.next_billing_date },
-        { label: 'Status', value: ctx.status || 'Active' },
+        { label: 'Amount', value: `${ctx.maintenance_price} / ${ctx.billing_interval}` },
+        { label: 'Date', value: ctx.billing_date || ctx.next_billing_date },
       ]),
-      cta('Manage Maintenance', maintenanceUrl()),
-      note('Your website keeps running either way — maintenance is about edits, security, and uptime support.'),
+      cta('Manage maintenance', maintenanceUrl()),
+      note('No action needed if your payment details are up to date.'),
     ],
   },
   {
     name: 'maintenance.ended',
     category: 'maintenance',
     subject: 'Your SEAI maintenance has ended',
-    preheader: 'Maintenance coverage ended — here is what happens to your site.',
+    preheader: 'Your plan has ended.',
     reason: DEFAULT_REASON,
     trigger: 'Authoritative state change: subscription status becomes cancelled or expired.',
     required: ['status'],
@@ -168,43 +131,34 @@ export const maintenanceTemplates: EmailTemplateDef[] = [
     wired: true,
     build: (ctx) => [
       statusBadge(ctx.status || 'Ended', 'neutral'),
-      eyebrow('Maintenance ended'),
-      heading('Your SEAI maintenance has ended'),
-      paragraph(
-        `${ctx.plan_name || 'Your maintenance plan'} is no longer active as of ${ctx.billing_date || 'today'}.`,
-      ),
-      infoBlock('What this means', [
+      heading('Your maintenance has ended.'),
+      paragraph('Your website stays online. Reactivate any time to pick up where you left off.'),
+      infoBlock(null, [
         { label: 'Plan', value: ctx.plan_name },
-        { label: 'Status', value: ctx.status || 'Ended' },
         { label: 'Ended on', value: ctx.billing_date },
       ]),
-      paragraph('Your website stays online and unchanged. What stops is the SEAI care layer: hosting upkeep, SSL renewals, security patches, backups, and change requests.'),
-      cta('Restart Maintenance', maintenanceUrl()),
-      note('Changed your mind? Reactivating takes one payment and coverage resumes the same day.'),
+      cta('Restart maintenance', maintenanceUrl()),
     ],
   },
   {
     name: 'maintenance.payment_reminder',
     category: 'maintenance',
-    subject: 'Action needed: SEAI maintenance payment',
-    preheader: 'Your SEAI maintenance payment needs attention.',
+    subject: 'Action needed for your SEAI maintenance',
+    preheader: 'Your payment needs attention.',
     reason: DEFAULT_REASON,
     trigger: 'Reserved legacy template kept for compatibility; superseded by maintenance.payment_failed.',
     required: ['plan_name'],
     optional: ['maintenance_price', 'status', 'failure_reason', 'amount'],
     wired: false,
     build: (ctx) => [
-      statusBadge('Payment needs attention', 'warning'),
-      eyebrow('Maintenance'),
-      heading('Your maintenance payment needs attention'),
-      paragraph(`We could not take the payment for ${ctx.plan_name}. Update payment to keep maintenance running.`,),
-      infoBlock('Plan', [
+      statusBadge('Action needed', 'warning'),
+      heading('Your maintenance payment needs attention.'),
+      paragraph('Update your payment to keep your plan running.'),
+      infoBlock(null, [
         { label: 'Plan', value: ctx.plan_name },
         { label: 'Amount due', value: ctx.amount || ctx.maintenance_price },
-        ...(ctx.failure_reason ? [{ label: 'Reason', value: ctx.failure_reason }] : []),
       ]),
-      cta('Manage Maintenance', maintenanceUrl()),
-      note(`Prefer to talk to us? Reply to this email or open your dashboard: ${dashboardUrl()}`),
+      cta('Update payment', maintenanceUrl()),
     ],
   },
 ];
