@@ -76,6 +76,13 @@ export class PublicError extends Error {
   }
 }
 
+export function isPublicError(err) {
+  return (
+    err instanceof PublicError ||
+    (err && typeof err === 'object' && typeof err.status === 'number' && typeof err.message === 'string' && err.name === 'PublicError')
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Request body reading
 // ---------------------------------------------------------------------------

@@ -21,6 +21,7 @@ import {
 } from '../../server/payments-core.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
@@ -57,4 +58,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Short-lived: this drives a live poll and must not be cached.
   res.setHeader('Cache-Control', 'no-store, max-age=0');
   return res.status(200).json({ ok: true, order: status });
+  } catch (err: any) {
+    console.error('[payment-status] unhandled error', err);
+    if (res.headersSent) return;
+    const status = typeof err?.status === 'number' ? err.status : 500;
+    return res.status(status).json({ ok: false, error: status === 500 ? 'Payment status failed' : err.message });
+  }
 }

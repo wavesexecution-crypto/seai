@@ -14,6 +14,7 @@ import {
   PublicError,
   bodyErrorResponse,
   callPaymentsApi,
+  isPublicError,
   normaliseOrderInput,
   readJsonBody,
   resolvePaymentsConfig,
@@ -21,6 +22,7 @@ import {
 } from '../../server/payments-core.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
@@ -36,10 +38,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     input = normaliseOrderInput(body.value);
   } catch (err) {
-    if (err instanceof PublicError) {
-      return res.status(err.status).json({ ok: false, error: err.message });
+    if (isPublicError(err)) {
+      return res.status((err as PublicError).status).json({ ok: false, error: (err as PublicError).message });
     }
-    throw err;
+    console.error('[payment-order] validation error', err);
+    return res.status(400).json({ ok: false, error: 'Invalid order request' });
   }
 
   const { paymentApiBase, serviceKey } = resolvePaymentsConfig();
@@ -74,4 +77,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   return res.status(200).json({ ok: true, order: checkout });
+  } catch (err: any) {
+    console.error('[payment-order] unhandled error', err);
+    if (res.headersSent) return;
+    const status = typeof err?.status === 'number' ? err.status : 500;
+    return res.status(status).json({ ok: false, error: status === 500 ? 'Payment order failed' : err.message });
+  }
 }

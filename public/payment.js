@@ -318,6 +318,21 @@
     setText("success-plan", (order.planName || order.planId || "Plan") + " — " + formatInr(order.amountPaise));
     setText("success-email", formData.email || "your email");
 
+    const title = document.getElementById("success-title");
+    if (title) title.textContent = "Payment confirmed. Your website is in motion.";
+    const message = successEl.querySelector(".success-message");
+    if (message) {
+      message.textContent =
+        "We have confirmed your payment and received your brief. Our team will review it and start building. A confirmation and payment receipt will also be sent to " +
+        (formData.email || "your email") +
+        ".";
+    }
+    const primaryCta = successEl.querySelector(".success-actions .btn-dark");
+    if (primaryCta) {
+      primaryCta.textContent = "Back to home";
+      primaryCta.setAttribute("href", "/");
+    }
+
     const ref = [];
     if (order.orderId) ref.push("Order: " + order.orderId);
     if (payment && payment.id) ref.push("Payment: " + payment.id);
@@ -397,8 +412,19 @@
       await loadRazorpayScript();
       const razorpayResponse = await openRazorpayCheckout(order, formData);
 
+      let verification = null;
       showLoading(submitBtn, "Verifying payment…");
-      const verification = await verifyPayment(razorpayResponse);
+      try {
+        verification = await verifyPayment(razorpayResponse);
+      } catch (verifyErr) {
+        // A transient verify error is not proof of failure. The webhook may
+        // already have recorded the payment, or may still be on the way.
+        showLoading(submitBtn, "Confirming with your bank…");
+        const confirmed = await confirmOrder(order.orderId);
+        hideLoading(submitBtn);
+        showPaymentSuccess({ order: confirmed, payment: null, formData });
+        return;
+      }
 
       // Verification succeeded but the order is not `paid` until the webhook
       // lands. Confirm before showing a receipt.

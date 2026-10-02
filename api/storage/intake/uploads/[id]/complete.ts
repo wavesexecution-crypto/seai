@@ -23,6 +23,7 @@ import {
 } from '../../../../../server/storage-core.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
@@ -71,5 +72,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ok: false,
       error: status === 503 ? 'Uploads are temporarily unavailable' : 'Could not complete upload',
     });
+  }
+  } catch (err: any) {
+    console.error('[storage-complete] unhandled error', err);
+    if (res.headersSent) return;
+    const status = err?.statusCode === 503 ? 503 : 500;
+    return res.status(status).json({ ok: false, error: status === 503 ? 'Uploads are temporarily unavailable' : 'Could not complete upload' });
   }
 }
