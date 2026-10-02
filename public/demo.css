@@ -990,17 +990,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 .property-meta, .rental-meta { display: flex; gap: 16px; margin-top: 14px; font-variant-numeric: tabular-nums; }
 .property-actions, .rental-actions { display: flex; gap: 10px; padding: 0 clamp(20px, 2.2vw, 28px) clamp(20px, 2.2vw, 28px); }
 .property-actions .btn, .rental-actions .btn { flex: 1; }
-.case-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
-.case-metrics span, .insight-category { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; padding: 4px 9px; border: var(--hair) solid var(--d-line); border-radius: 999px; color: var(--d-sub); }
-.case-media { aspect-ratio: 16 / 9; overflow: hidden; background: var(--d-fill-2); margin: 0 0 20px; border-radius: var(--d-radius) var(--d-radius) 0 0; }
+.case-metrics { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 36px; }
+.case-metrics span, .insight-category { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; padding: 5px 11px; border: var(--hair) solid var(--d-line); border-radius: 999px; color: var(--d-sub); }
+.case-media { aspect-ratio: 16 / 9; overflow: hidden; background: var(--d-fill-2); margin: 0 0 28px; border-radius: var(--d-radius) var(--d-radius) 0 0; }
 .case-media img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.001); transition: transform 900ms var(--ease); }
 .case-card:hover .case-media img { transform: scale(1.045); }
 
 /* case card content spacing — editorial rhythm */
-.case-card { padding: 0 0 clamp(24px, 2.8vw, 36px); }
-.case-card .case-tag { display: block; margin-bottom: 14px; }
-.case-card .case-title { margin-bottom: 16px; }
-.case-card .case-desc { margin-top: 0; margin-bottom: 20px; line-height: 1.75; }
+.case-card { padding: 0 clamp(20px, 2.4vw, 32px) clamp(32px, 3.2vw, 44px); }
+.case-card .case-tag { display: block; margin-bottom: 20px; }
+.case-card .case-title { margin-bottom: 24px; line-height: 1.22; }
+.case-card .case-desc { margin-top: 0; margin-bottom: 28px; line-height: 1.8; }
 .step-number { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: var(--hair) solid var(--d-line); color: var(--d-ink); margin-bottom: 16px; }
 .process-step { padding: clamp(24px, 3vw, 34px); }
 .process-step .step-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
