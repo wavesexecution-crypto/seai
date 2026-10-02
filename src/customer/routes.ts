@@ -17,7 +17,7 @@ function formatInr(amountPaise: number, currency: string): string {
 // categories qualify; verification uses privileged service reads.
 const ADOPTABLE_CATEGORIES = ['logo', 'image', 'brand_asset', 'document', 'intake_attachment'];
 
-async function adoptIntakeFiles(
+export async function adoptIntakeFiles(
   userId: string,
   websiteId: string,
   fileIds: string[],

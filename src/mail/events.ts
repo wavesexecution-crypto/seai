@@ -7,6 +7,7 @@ import { dispatchEmail, isValidRecipient, type DispatchResult } from './dispatch
 import { listTemplates, type EmailCategory } from './registry.js';
 import { changeStatusLabel } from './templates/change.js';
 import { websiteUrl } from './urls.js';
+import { provisionPaidOrder } from '../payments/provision.js';
 
 // Server-to-server intake for authoritative events (seai.payments, SEAI ops,
 // deployment tooling). This is the ONLY path allowed to claim that a payment
@@ -132,6 +133,40 @@ mailEventsRouter.post('/events', async (req: Request, res: Response) => {
   if (!String(variables.status ?? '').trim()) {
     const derived = statusFromEvent(event.name, template);
     if (derived) variables.status = derived;
+  }
+
+  // A paid-payment event first provisions the CDF customer/website record.
+  // Without this, the payment row lives in seai.payments but the customer has
+  // no dashboard-visible purchase/entitlement to sign in to.
+  if (event.name === 'payment.successful') {
+    const storageFileIds = String(variables.storage_file_ids ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const recipientForProvisioning = String(event.recipient ?? variables.email ?? variables.recipient ?? '').trim();
+    if (!recipientForProvisioning) {
+      res.status(400).json({ ok: false, error: 'No recipient for this event' });
+      return;
+    }
+    const provision = await provisionPaidOrder({
+      orderId: String(variables.order_id ?? ''),
+      paymentId: String(variables.payment_id ?? ''),
+      customerId: event.customerId ?? null,
+      email: recipientForProvisioning,
+      businessName: String(variables.business_name ?? ''),
+      planName: String(variables.plan_name ?? ''),
+      amountPaise: Number(variables.amount_paise ?? 0) || undefined,
+      currency: String(variables.currency ?? 'INR'),
+      purchaseConfirmedAt: String(variables.purchased_at ?? ''),
+      intakeSessionId: String(variables.intake_session_id ?? variables.intake_session ?? ''),
+      storageFileIds,
+    });
+    if (!provision.ok) {
+      res.status(502).json({ ok: false, error: provision.reason });
+      return;
+    }
+    variables.provisioned = true;
+    variables.provisioning_repeated = provision.repeated;
   }
 
   // A ready/deployed/domain-connected event must carry the real recorded domain.
