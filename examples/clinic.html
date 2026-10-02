@@ -481,6 +481,27 @@ table { border-collapse: collapse; width: 100%; }
 /* an entire card is one link — keep the hit area honest */
 .card__link::after { content: ""; position: absolute; inset: 0; }
 
+/* icon card variant — for feature grids with icon + text, no media image */
+.card--icon { padding: 0; }
+.card--icon .card__body { padding: clamp(28px, 3vw, 44px); flex: 1; display: flex; flex-direction: column; }
+.card--icon .card__icon {
+  width: 56px; height: 56px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: var(--hair) solid var(--d-line); border-radius: var(--d-radius-lg);
+  background: var(--d-fill);
+  color: var(--d-ink);
+  margin-bottom: 22px;
+  flex: 0 0 auto;
+  transition: border-color var(--t-med) var(--ease), background-color var(--t-med) var(--ease);
+}
+.card--icon:hover .card__icon {
+  border-color: color-mix(in srgb, var(--d-ink) 35%, transparent);
+  background: var(--d-fill-2);
+}
+.card--icon .card__icon svg { width: 28px; height: 28px; stroke-width: 1.5; }
+.card--icon .card__title { font-size: clamp(20px, 1.6vw, 23px); }
+.card--icon .card__desc { margin-top: 12px; font-size: 15px; line-height: 1.7; }
+
 /* data list — the workhorse for "information is part of the design" */
 .datalist { border-top: var(--hair) solid var(--d-line); }
 .datalist__row {
@@ -2018,60 +2039,72 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
     </div>
   </section>
 
-  <section class="demo-section" id="patient-portal" aria-labelledby="portal-title">
-    <div class="container demo-container">
-      <header class="section-header text-center">
+  <section class="section" id="patient-portal" aria-labelledby="portal-title">
+    <div class="container">
+      <header class="section-head">
         <p class="section-tag">Patient Portal</p>
-        <h2 id="portal-title">Your Health. In Your Hands.</h2>
-        <p class="section-sub">Secure access to records, reports, prescriptions, and appointments. Anytime, anywhere.</p>
+        <h2 class="display display--l" id="portal-title">Your Health. In Your Hands.</h2>
+        <p class="lede">Secure access to records, reports, prescriptions, and appointments. Anytime, anywhere.</p>
       </header>
-      <div class="portal-features">
-        <article class="portal-card">
-          <div class="portal-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <div class="grid grid--3">
+        <article class="card card--icon rv rv-1">
+          <div class="card__body">
+            <div class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <h3 class="card__title">Medical Records</h3>
+            <p class="card__desc">View visit summaries, diagnoses, immunization history, and discharge summaries.</p>
           </div>
-          <h3>Medical Records</h3>
-          <p>View visit summaries, diagnoses, immunization history, and discharge summaries.</p>
         </article>
-        <article class="portal-card">
-          <div class="portal-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <article class="card card--icon rv rv-2">
+          <div class="card__body">
+            <div class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h3 class="card__title">Lab Reports</h3>
+            <p class="card__desc">Access blood tests, imaging reports, ECGs, and pathology results with doctor notes.</p>
           </div>
-          <h3>Lab Reports</h3>
-          <p>Access blood tests, imaging reports, ECGs, and pathology results with doctor notes.</p>
         </article>
-        <article class="portal-card">
-          <div class="portal-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6L12 13L2 6"/></svg>
+        <article class="card card--icon rv rv-3">
+          <div class="card__body">
+            <div class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6L12 13L2 6"/></svg>
+            </div>
+            <h3 class="card__title">Prescriptions</h3>
+            <p class="card__desc">Digital prescriptions with dosage instructions. Pharmacy integration for home delivery.</p>
           </div>
-          <h3>Prescriptions</h3>
-          <p>Digital prescriptions with dosage instructions. Pharmacy integration for home delivery.</p>
         </article>
-        <article class="portal-card">
-          <div class="portal-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <article class="card card--icon rv rv-1">
+          <div class="card__body">
+            <div class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <h3 class="card__title">Appointments</h3>
+            <p class="card__desc">Book, reschedule, or cancel appointments. Automated reminders via SMS & WhatsApp.</p>
           </div>
-          <h3>Appointments</h3>
-          <p>Book, reschedule, or cancel appointments. Automated reminders via SMS & WhatsApp.</p>
         </article>
-        <article class="portal-card">
-          <div class="portal-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <article class="card card--icon rv rv-2">
+          <div class="card__body">
+            <div class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3 class="card__title">Family Access</h3>
+            <p class="card__desc">Manage health records for dependents — children, elderly parents — with permission controls.</p>
           </div>
-          <h3>Family Access</h3>
-          <p>Manage health records for dependents -- children, elderly parents -- with permission controls.</p>
         </article>
-        <article class="portal-card">
-          <div class="portal-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <article class="card card--icon rv rv-3">
+          <div class="card__body">
+            <div class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3 class="card__title">Secure Messaging</h3>
+            <p class="card__desc">Direct encrypted communication with your care team for non-urgent questions.</p>
           </div>
-          <h3>Secure Messaging</h3>
-          <p>Direct encrypted communication with your care team for non-urgent questions.</p>
         </article>
       </div>
-      <div class="portal-cta text-center">
-        <a class="btn btn-primary" href="#appointment">Access Portal / Register</a>
-        <p class="portal-note">New patients: Register at front desk or call +91 22 4000 7777</p>
+      <div class="portal-cta" style="text-align:center; margin-top:clamp(48px,6vw,88px)">
+        <a class="btn btn--primary btn--lg" href="#appointment">Access Portal / Register</a>
+        <p style="margin-top:18px; font-family:var(--f-mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--d-faint)">New patients: Register at front desk or call +91 22 4000 7777</p>
       </div>
     </div>
   </section>

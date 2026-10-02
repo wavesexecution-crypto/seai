@@ -466,6 +466,27 @@ table { border-collapse: collapse; width: 100%; }
 /* an entire card is one link — keep the hit area honest */
 .card__link::after { content: ""; position: absolute; inset: 0; }
 
+/* icon card variant — for feature grids with icon + text, no media image */
+.card--icon { padding: 0; }
+.card--icon .card__body { padding: clamp(28px, 3vw, 44px); flex: 1; display: flex; flex-direction: column; }
+.card--icon .card__icon {
+  width: 56px; height: 56px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: var(--hair) solid var(--d-line); border-radius: var(--d-radius-lg);
+  background: var(--d-fill);
+  color: var(--d-ink);
+  margin-bottom: 22px;
+  flex: 0 0 auto;
+  transition: border-color var(--t-med) var(--ease), background-color var(--t-med) var(--ease);
+}
+.card--icon:hover .card__icon {
+  border-color: color-mix(in srgb, var(--d-ink) 35%, transparent);
+  background: var(--d-fill-2);
+}
+.card--icon .card__icon svg { width: 28px; height: 28px; stroke-width: 1.5; }
+.card--icon .card__title { font-size: clamp(20px, 1.6vw, 23px); }
+.card--icon .card__desc { margin-top: 12px; font-size: 15px; line-height: 1.7; }
+
 /* data list — the workhorse for "information is part of the design" */
 .datalist { border-top: var(--hair) solid var(--d-line); }
 .datalist__row {
