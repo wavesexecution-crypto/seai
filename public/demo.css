@@ -487,6 +487,52 @@ table { border-collapse: collapse; width: 100%; }
 .card--icon .card__title { font-size: clamp(20px, 1.6vw, 23px); }
 .card--icon .card__desc { margin-top: 12px; font-size: 15px; line-height: 1.7; }
 
+/* article card variant — for editorial content grids with category, read time, title, excerpt, link */
+.card--article { padding: 0; }
+.card--article .card__body { padding: clamp(24px, 2.8vw, 36px); display: flex; flex-direction: column; }
+.card--article .card__meta-row {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.card--article .card__category {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--d-ink);
+  background: var(--d-fill); border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius); padding: 4px 10px;
+}
+.card--article .card__read-time {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--d-faint);
+}
+.card--article .card__title {
+  font-size: clamp(20px, 1.7vw, 24px); font-weight: 500;
+  letter-spacing: -0.018em; line-height: 1.22; text-wrap: balance;
+}
+.card--article .card__desc {
+  margin-top: 12px; font-size: 15px; line-height: 1.7; color: var(--d-sub);
+  text-wrap: pretty; flex: 1 1 auto;
+}
+.card--article .card__link {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 18px; padding-bottom: 3px;
+  font-size: 14px; font-weight: 500; color: var(--d-ink);
+  position: relative;
+}
+.card--article .card__link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: currentColor; opacity: 0.28;
+  transform-origin: left; transform: scaleX(1);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+}
+.card--article .card__link:hover::after { opacity: 1; transform: scaleX(0.999); }
+.card--article .card__link .arr { transition: transform var(--t-med) var(--ease); }
+.card--article .card__link:hover .arr { transform: translateX(3px); }
+.card--article:hover {
+  border-color: color-mix(in srgb, var(--d-ink) 22%, transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 48px -28px rgba(11, 11, 12, 0.4);
+}
+
 /* data list — the workhorse for "information is part of the design" */
 .datalist { border-top: var(--hair) solid var(--d-line); }
 .datalist__row {

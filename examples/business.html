@@ -481,6 +481,73 @@ table { border-collapse: collapse; width: 100%; }
 /* an entire card is one link — keep the hit area honest */
 .card__link::after { content: ""; position: absolute; inset: 0; }
 
+/* icon card variant — for feature grids with icon + text, no media image */
+.card--icon { padding: 0; }
+.card--icon .card__body { padding: clamp(28px, 3vw, 44px); flex: 1; display: flex; flex-direction: column; }
+.card--icon .card__icon {
+  width: 56px; height: 56px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: var(--hair) solid var(--d-line); border-radius: var(--d-radius-lg);
+  background: var(--d-fill);
+  color: var(--d-ink);
+  margin-bottom: 22px;
+  flex: 0 0 auto;
+  transition: border-color var(--t-med) var(--ease), background-color var(--t-med) var(--ease);
+}
+.card--icon:hover .card__icon {
+  border-color: color-mix(in srgb, var(--d-ink) 35%, transparent);
+  background: var(--d-fill-2);
+}
+.card--icon .card__icon svg { width: 28px; height: 28px; stroke-width: 1.5; }
+.card--icon .card__title { font-size: clamp(20px, 1.6vw, 23px); }
+.card--icon .card__desc { margin-top: 12px; font-size: 15px; line-height: 1.7; }
+
+/* article card variant — for editorial content grids with category, read time, title, excerpt, link */
+.card--article { padding: 0; }
+.card--article .card__body { padding: clamp(24px, 2.8vw, 36px); display: flex; flex-direction: column; }
+.card--article .card__meta-row {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.card--article .card__category {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--d-ink);
+  background: var(--d-fill); border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius); padding: 4px 10px;
+}
+.card--article .card__read-time {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--d-faint);
+}
+.card--article .card__title {
+  font-size: clamp(20px, 1.7vw, 24px); font-weight: 500;
+  letter-spacing: -0.018em; line-height: 1.22; text-wrap: balance;
+}
+.card--article .card__desc {
+  margin-top: 12px; font-size: 15px; line-height: 1.7; color: var(--d-sub);
+  text-wrap: pretty; flex: 1 1 auto;
+}
+.card--article .card__link {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 18px; padding-bottom: 3px;
+  font-size: 14px; font-weight: 500; color: var(--d-ink);
+  position: relative;
+}
+.card--article .card__link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: currentColor; opacity: 0.28;
+  transform-origin: left; transform: scaleX(1);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+}
+.card--article .card__link:hover::after { opacity: 1; transform: scaleX(0.999); }
+.card--article .card__link .arr { transition: transform var(--t-med) var(--ease); }
+.card--article .card__link:hover .arr { transform: translateX(3px); }
+.card--article:hover {
+  border-color: color-mix(in srgb, var(--d-ink) 22%, transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 48px -28px rgba(11, 11, 12, 0.4);
+}
+
 /* data list — the workhorse for "information is part of the design" */
 .datalist { border-top: var(--hair) solid var(--d-line); }
 .datalist__row {
@@ -1909,71 +1976,83 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
     </div>
   </section>
 
-  <section class="demo-section" id="insights" aria-labelledby="insights-title">
-    <div class="container demo-container">
-      <header class="section-header">
+  <section class="section" id="insights" aria-labelledby="insights-title">
+    <div class="container">
+      <header class="section-head">
         <p class="section-tag">Thinking</p>
-        <h2 id="insights-title">Insights & Frameworks</h2>
-        <p class="section-sub">Original thinking we share with our community. No fluff, all signal.</p>
+        <h2 class="display display--l" id="insights-title">Insights & Frameworks</h2>
+        <p class="lede">Original thinking we share with our community. No fluff, all signal.</p>
       </header>
-      <div class="insight-grid">
-        <article class="insight-card">
-          <div class="insight-meta">
-            <span class="insight-category">Fundraising</span>
-            <span class="insight-read">8 min read</span>
+      <div class="grid grid--3">
+        <article class="card card--article rv rv-1">
+          <div class="card__body">
+            <div class="card__meta-row">
+              <span class="card__category">Fundraising</span>
+              <span class="card__read-time">8 min read</span>
+            </div>
+            <h3 class="card__title">The Series A Metrics That Matter in 2026</h3>
+            <p class="card__desc">Investors have shifted focus. Here are the 7 metrics every SaaS founder must hit before Series A conversations.</p>
+            <a class="card__link" href="#insights">Read Article <span class="arr" aria-hidden="true">→</span></a>
           </div>
-          <h3 class="insight-title">The Series A Metrics That Matter in 2026</h3>
-          <p class="insight-excerpt">Investors have shifted focus. Here are the 7 metrics every SaaS founder must hit before Series A conversations.</p>
-          <span class="insight-link">Read Article -></a>
         </article>
-        <article class="insight-card">
-          <div class="insight-meta">
-            <span class="insight-category">Operations</span>
-            <span class="insight-read">6 min read</span>
+        <article class="card card--article rv rv-2">
+          <div class="card__body">
+            <div class="card__meta-row">
+              <span class="card__category">Operations</span>
+              <span class="card__read-time">6 min read</span>
+            </div>
+            <h3 class="card__title">RevOps for Early-Stage: Build Before You Need It</h3>
+            <p class="card__desc">Most founders wait until chaos. Here is the minimum viable RevOps stack for pre-Series A companies.</p>
+            <a class="card__link" href="#insights">Read Article <span class="arr" aria-hidden="true">→</span></a>
           </div>
-          <h3 class="insight-title">RevOps for Early-Stage: Build Before You Need It</h3>
-          <p class="insight-excerpt">Most founders wait until chaos. Here is the minimum viable RevOps stack for pre-Series A companies.</p>
-          <span class="insight-link">Read Article -></a>
         </article>
-        <article class="insight-card">
-          <div class="insight-meta">
-            <span class="insight-category">Strategy</span>
-            <span class="insight-read">10 min read</span>
+        <article class="card card--article rv rv-3">
+          <div class="card__body">
+            <div class="card__meta-row">
+              <span class="card__category">Strategy</span>
+              <span class="card__read-time">10 min read</span>
+            </div>
+            <h3 class="card__title">Pricing as a Growth Lever: The Framework</h3>
+            <p class="card__desc">Pricing is not a one-time decision. A systematic approach to packaging, discounting, and expansion revenue.</p>
+            <a class="card__link" href="#insights">Read Article <span class="arr" aria-hidden="true">→</span></a>
           </div>
-          <h3 class="insight-title">Pricing as a Growth Lever: The Framework</h3>
-          <p class="insight-excerpt">Pricing is not a one-time decision. A systematic approach to packaging, discounting, and expansion revenue.</p>
-          <span class="insight-link">Read Article -></a>
         </article>
-        <article class="insight-card">
-          <div class="insight-meta">
-            <span class="insight-category">M&A</span>
-            <span class="insight-read">7 min read</span>
+        <article class="card card--article rv rv-1">
+          <div class="card__body">
+            <div class="card__meta-row">
+              <span class="card__category">M&A</span>
+              <span class="card__read-time">7 min read</span>
+            </div>
+            <h3 class="card__title">Preparing for Exit: The 12-Month Checklist</h3>
+            <p class="card__desc">The best exits are planned years ahead. Here is what strategic buyers actually diligence.</p>
+            <a class="card__link" href="#insights">Read Article <span class="arr" aria-hidden="true">→</span></a>
           </div>
-          <h3 class="insight-title">Preparing for Exit: The 12-Month Checklist</h3>
-          <p class="insight-excerpt">The best exits are planned years ahead. Here is what strategic buyers actually diligence.</p>
-          <span class="insight-link">Read Article -></a>
         </article>
-        <article class="insight-card">
-          <div class="insight-meta">
-            <span class="insight-category">Leadership</span>
-            <span class="insight-read">5 min read</span>
+        <article class="card card--article rv rv-2">
+          <div class="card__body">
+            <div class="card__meta-row">
+              <span class="card__category">Leadership</span>
+              <span class="card__read-time">5 min read</span>
+            </div>
+            <h3 class="card__title">Hiring Your First VP Sales: The Scorecard</h3>
+            <p class="card__desc">Do not hire for pedigree. Hire for stage-fit. The rubric we use with every portfolio company.</p>
+            <a class="card__link" href="#insights">Read Article <span class="arr" aria-hidden="true">→</span></a>
           </div>
-          <h3 class="insight-title">Hiring Your First VP Sales: The Scorecard</h3>
-          <p class="insight-excerpt">Do not hire for pedigree. Hire for stage-fit. The rubric we use with every portfolio company.</p>
-          <span class="insight-link">Read Article -></a>
         </article>
-        <article class="insight-card">
-          <div class="insight-meta">
-            <span class="insight-category">Finance</span>
-            <span class="insight-read">9 min read</span>
+        <article class="card card--article rv rv-3">
+          <div class="card__body">
+            <div class="card__meta-row">
+              <span class="card__category">Finance</span>
+              <span class="card__read-time">9 min read</span>
+            </div>
+            <h3 class="card__title">Unit Economics Deep-Dive: Beyond LTV/CAC</h3>
+            <p class="card__desc">Payback period, gross margin per cohort, expansion revenue. The metrics sophisticated investors track.</p>
+            <a class="card__link" href="#insights">Read Article <span class="arr" aria-hidden="true">→</span></a>
           </div>
-          <h3 class="insight-title">Unit Economics Deep-Dive: Beyond LTV/CAC</h3>
-          <p class="insight-excerpt">Payback period, gross margin per cohort, expansion revenue. The metrics sophisticated investors track.</p>
-          <span class="insight-link">Read Article -></a>
         </article>
       </div>
-      <div class="text-center" style="margin-top: 40px;">
-        <span class="btn btn-secondary">View All Insights -></span>
+      <div class="insights-cta" style="text-align:center; margin-top:clamp(48px,6vw,88px)">
+        <a class="tlink" href="#insights">View All Insights <span class="arr" aria-hidden="true">→</span></a>
       </div>
     </div>
   </section>
