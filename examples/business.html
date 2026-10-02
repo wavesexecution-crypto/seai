@@ -1005,11 +1005,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 .property-meta, .rental-meta { display: flex; gap: 16px; margin-top: 14px; font-variant-numeric: tabular-nums; }
 .property-actions, .rental-actions { display: flex; gap: 10px; padding: 0 clamp(20px, 2.2vw, 28px) clamp(20px, 2.2vw, 28px); }
 .property-actions .btn, .rental-actions .btn { flex: 1; }
-.case-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.case-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
 .case-metrics span, .insight-category { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; padding: 4px 9px; border: var(--hair) solid var(--d-line); border-radius: 999px; color: var(--d-sub); }
-.case-media { aspect-ratio: 16 / 9; overflow: hidden; background: var(--d-fill-2); margin: 0 0 16px; border-radius: var(--d-radius) var(--d-radius) 0 0; }
+.case-media { aspect-ratio: 16 / 9; overflow: hidden; background: var(--d-fill-2); margin: 0 0 20px; border-radius: var(--d-radius) var(--d-radius) 0 0; }
 .case-media img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.001); transition: transform 900ms var(--ease); }
 .case-card:hover .case-media img { transform: scale(1.045); }
+
+/* case card content spacing — editorial rhythm */
+.case-card { padding: 0 0 clamp(24px, 2.8vw, 36px); }
+.case-card .case-tag { display: block; margin-bottom: 14px; }
+.case-card .case-title { margin-bottom: 16px; }
+.case-card .case-desc { margin-top: 0; margin-bottom: 20px; line-height: 1.75; }
 .step-number { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: var(--hair) solid var(--d-line); color: var(--d-ink); margin-bottom: 16px; }
 .process-step { padding: clamp(24px, 3vw, 34px); }
 .process-step .step-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
@@ -1858,9 +1864,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 <main id="main">
 
   <section class="demo-hero" id="top" aria-labelledby="hero-title">
-    <div class="hero-bg" aria-hidden="true">
-      <img src="/assets/demos/business/hero-tower-night.jpg" width="3000" height="2000" loading="eager" decoding="async" alt="Mumbai skyline at night with BKC towers illuminated" />
-    </div>
+    <div class="hero-bg" aria-hidden="true"></div>
     <div class="container demo-container">
       <div class="hero-content">
         <p class="hero-tag" aria-hidden="true">BKC, Mumbai | Remote-First</p>
@@ -2090,7 +2094,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
       <div class="team-grid">
         <article class="team-card">
           <div class="team-img" aria-hidden="true">
-            <img src="/assets/demos/business/detail-1-principal.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Rahul Krishnan, Founding Partner" />
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=1500&fit=crop&crop=face" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Rahul Krishnan, Founding Partner" />
           </div>
           <div class="team-info">
             <h3 class="team-name">Rahul Krishnan</h3>
@@ -2105,7 +2109,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
         </article>
         <article class="team-card">
           <div class="team-img" aria-hidden="true">
-            <img src="/assets/demos/business/space-1-reception.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Meera Venkatesh, Partner Growth & Operations" />
+            <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=1200&h=1500&fit=crop&crop=face" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Meera Venkatesh, Partner Growth & Operations" />
           </div>
           <div class="team-info">
             <h3 class="team-name">Meera Venkatesh</h3>
@@ -2120,7 +2124,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
         </article>
         <article class="team-card">
           <div class="team-img" aria-hidden="true">
-            <img src="/assets/demos/business/space-2-studio-floor.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Arjun Patel, Partner Strategy & Finance" />
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=1200&h=1500&fit=crop&crop=face" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Arjun Patel, Partner Strategy & Finance" />
           </div>
           <div class="team-info">
             <h3 class="team-name">Arjun Patel</h3>
@@ -2135,7 +2139,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
         </article>
         <article class="team-card">
           <div class="team-img" aria-hidden="true">
-            <img src="/assets/demos/business/space-3-council-room.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Priya Nambiar, Partner Talent & Organization" />
+            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=1200&h=1500&fit=crop&crop=face" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Priya Nambiar, Partner Talent & Organization" />
           </div>
           <div class="team-info">
             <h3 class="team-name">Priya Nambiar</h3>
