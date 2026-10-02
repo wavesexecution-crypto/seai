@@ -932,8 +932,10 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 /* -- hero -- */
 .demo-hero { position: relative; padding: clamp(80px, 10vw, 150px) 0 clamp(56px, 7vw, 104px); overflow: hidden; }
-.hero-bg { position: absolute; inset: 0; background: var(--d-ink); opacity: 0.025; pointer-events: none; }
-.demo-gym .hero-bg { opacity: 0.05; }
+.hero-bg { position: absolute; inset: 0; z-index: -2; }
+.hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+.hero-bg::after { content: ""; position: absolute; inset: 0; background: var(--d-ink); opacity: 0.025; pointer-events: none; }
+.demo-gym .hero-bg::after { opacity: 0.05; }
 .hero-content { position: relative; text-align: center; max-width: 900px; margin-inline: auto; }
 .hero-tag { display: block; margin-bottom: 20px; }
 .demo-hero h1 { font-family: var(--d-display); font-weight: var(--d-display-weight); letter-spacing: var(--d-display-tracking); line-height: 0.98; font-size: clamp(2.4rem, 6.4vw, 5.25rem); text-wrap: balance; }
@@ -969,8 +971,12 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   border-color: color-mix(in srgb, var(--d-ink) 26%, transparent); transform: translateY(-3px);
 }
 .coach-img, .team-img, .doctor-img, .agent-img, .property-img, .rental-img, .gallery-item, .about-img-placeholder {
-  aspect-ratio: 4 / 5; background: var(--d-fill-2);
+  aspect-ratio: 4 / 5; background: var(--d-fill-2); overflow: hidden;
 }
+.coach-img img, .team-img img, .doctor-img img, .agent-img img, .property-img img, .rental-img img {
+  width: 100%; height: 100%; object-fit: cover; transform: scale(1.001); transition: transform 1s var(--ease);
+}
+.coach:hover .coach-img img, .team-card:hover .team-img img, .doctor:hover .doctor-img img, .agent:hover .agent-img img { transform: scale(1.035); }
 .coach-info, .team-info, .doctor-info, .agent-info, .property-info, .rental-info { padding: clamp(20px, 2.2vw, 28px); }
 .coach-name, .team-name, .doctor-name, .agent-name, .program-name, .service-name,
 .membership-name, .property-name, .rental-name, .insight-title, .case-title, .wine-name, .item-name {
@@ -1001,6 +1007,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 .property-actions .btn, .rental-actions .btn { flex: 1; }
 .case-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .case-metrics span, .insight-category { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; padding: 4px 9px; border: var(--hair) solid var(--d-line); border-radius: 999px; color: var(--d-sub); }
+.case-media { aspect-ratio: 16 / 9; overflow: hidden; background: var(--d-fill-2); margin: 0 0 16px; border-radius: var(--d-radius) var(--d-radius) 0 0; }
+.case-media img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.001); transition: transform 900ms var(--ease); }
+.case-card:hover .case-media img { transform: scale(1.045); }
 .step-number { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: var(--hair) solid var(--d-line); color: var(--d-ink); margin-bottom: 16px; }
 .process-step { padding: clamp(24px, 3vw, 34px); }
 .process-step .step-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
@@ -1849,7 +1858,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 <main id="main">
 
   <section class="demo-hero" id="top" aria-labelledby="hero-title">
-    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-bg" aria-hidden="true">
+      <img src="/assets/demos/business/hero-tower-night.jpg" width="3000" height="2000" loading="eager" decoding="async" alt="Mumbai skyline at night with BKC towers illuminated" />
+    </div>
     <div class="container demo-container">
       <div class="hero-content">
         <p class="hero-tag" aria-hidden="true">BKC, Mumbai | Remote-First</p>
@@ -2066,7 +2077,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
       </header>
       <div class="team-grid">
         <article class="team-card">
-          <div class="team-img" aria-hidden="true"></div>
+          <div class="team-img" aria-hidden="true">
+            <img src="/assets/demos/business/detail-1-principal.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Rahul Krishnan, Founding Partner" />
+          </div>
           <div class="team-info">
             <h3 class="team-name">Rahul Krishnan</h3>
             <p class="team-title">Founding Partner</p>
@@ -2079,7 +2092,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
         </article>
         <article class="team-card">
-          <div class="team-img" aria-hidden="true"></div>
+          <div class="team-img" aria-hidden="true">
+            <img src="/assets/demos/business/space-1-reception.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Meera Venkatesh, Partner Growth & Operations" />
+          </div>
           <div class="team-info">
             <h3 class="team-name">Meera Venkatesh</h3>
             <p class="team-title">Partner, Growth & Operations</p>
@@ -2092,7 +2107,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
         </article>
         <article class="team-card">
-          <div class="team-img" aria-hidden="true"></div>
+          <div class="team-img" aria-hidden="true">
+            <img src="/assets/demos/business/space-2-studio-floor.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Arjun Patel, Partner Strategy & Finance" />
+          </div>
           <div class="team-info">
             <h3 class="team-name">Arjun Patel</h3>
             <p class="team-title">Partner, Strategy & Finance</p>
@@ -2105,7 +2122,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
         </article>
         <article class="team-card">
-          <div class="team-img" aria-hidden="true"></div>
+          <div class="team-img" aria-hidden="true">
+            <img src="/assets/demos/business/space-3-council-room.jpg" width="1200" height="1500" loading="lazy" decoding="async" alt="Portrait of Priya Nambiar, Partner Talent & Organization" />
+          </div>
           <div class="team-info">
             <h3 class="team-name">Priya Nambiar</h3>
             <p class="team-title">Partner, Talent & Organization</p>
@@ -2130,6 +2149,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
       </header>
       <div class="case-grid">
         <article class="case-card">
+          <div class="case-media" aria-hidden="true">
+            <img src="/assets/demos/business/work-1-engagement.jpg" width="1880" height="1253" loading="lazy" decoding="async" alt="Team in a strategy working session" />
+          </div>
           <div class="case-tag">SaaS / Series B</div>
           <h3 class="case-title">Scaling RevOps: $15M - $45M ARR in 18 Months</h3>
           <p class="case-desc">Redesigned sales motion, implemented MEDDIC, built outbound engine, hired 12 AEs. CAC payback improved from 18 to 9 months.</p>
@@ -2140,6 +2162,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
         </article>
         <article class="case-card">
+          <div class="case-media" aria-hidden="true">
+            <img src="/assets/demos/business/work-2-working-session.jpg" width="1880" height="1253" loading="lazy" decoding="async" alt="Founders reviewing documents in a meeting" />
+          </div>
           <div class="case-tag">FinTech / Series A</div>
           <h3 class="case-title">Fundraise & GTM: $8M Series A at 40x ARR Multiple</h3>
           <p class="case-desc">Reframed narrative around regulatory moat, built investor data room, ran competitive process. 4 term sheets in 3 weeks.</p>
@@ -2150,6 +2175,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           </div>
         </article>
         <article class="case-card">
+          <div class="case-media" aria-hidden="true">
+            <img src="/assets/demos/business/work-3-desk-work.jpg" width="1880" height="1253" loading="lazy" decoding="async" alt="Professional at desk analyzing data" />
+          </div>
           <div class="case-tag">EdTech / Exit</div>
           <h3 class="case-title">Strategic Sale to Public Co: 8.5x Revenue Multiple</h3>
           <p class="case-desc">Ran dual-track process (fundraise + sale). Identified 3 strategic buyers. Managed diligence, negotiated earnout structure.</p>
