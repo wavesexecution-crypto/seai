@@ -1225,13 +1225,13 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 /* -- Appointment Booking: professional healthcare form -------------------- */
 .demo-clinic .booking-form-wrapper {
-  max-width: 720px;
+  max-width: 760px;
   margin-inline: auto;
 }
 
 .demo-clinic .booking-header {
   text-align: center;
-  margin-bottom: clamp(40px, 5vw, 64px);
+  margin-bottom: clamp(48px, 6vw, 80px);
 }
 
 .demo-clinic .booking-header .section-tag {
@@ -1264,46 +1264,96 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   padding: clamp(32px, 4vw, 48px);
 }
 
-.demo-clinic .booking-step {
+/* Step progress indicator */
+.demo-clinic .booking-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
   margin-bottom: clamp(32px, 4vw, 48px);
-  padding-bottom: clamp(24px, 3vw, 40px);
+  padding-bottom: clamp(24px, 3vw, 32px);
   border-bottom: var(--hair) solid var(--d-line-soft);
 }
 
-.demo-clinic .booking-step:last-of-type {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.demo-clinic .booking-step__head {
+.demo-clinic .booking-progress__step {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: clamp(20px, 2.5vw, 28px);
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 120px;
 }
 
-.demo-clinic .booking-step__num {
-  flex: 0 0 auto;
+.demo-clinic .booking-progress__num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border: var(--hair) solid var(--d-line);
   border-radius: 50%;
   font-family: var(--f-mono);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--d-faint);
   background: var(--d-fill);
+  transition: all var(--t-med) var(--ease);
 }
 
-.demo-clinic .booking-step__title {
-  font-size: clamp(16px, 1.4vw, 18px);
-  font-weight: 500;
-  letter-spacing: -0.015em;
+.demo-clinic .booking-progress__label {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d-faint);
+  text-align: center;
+  line-height: 1.3;
+  transition: color var(--t-med) var(--ease);
+}
+
+.demo-clinic .booking-progress__step.is-active .booking-progress__num {
+  border-color: var(--d-ink);
+  background: var(--d-ink);
+  color: var(--d-on-accent);
+}
+
+.demo-clinic .booking-progress__step.is-active .booking-progress__label {
   color: var(--d-ink);
+}
+
+.demo-clinic .booking-progress__step.is-complete .booking-progress__num {
+  border-color: var(--d-ink);
+  background: var(--d-ink);
+  color: var(--d-on-accent);
+}
+
+.demo-clinic .booking-progress__step.is-complete .booking-progress__num::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+.demo-clinic .booking-progress__connector {
+  display: none;
+  flex: 1;
+  height: 1px;
+  background: var(--d-line);
+  margin-top: 17px;
+}
+
+@media (min-width: 560px) {
+  .demo-clinic .booking-progress__connector {
+    display: block;
+  }
+}
+
+.demo-clinic .booking-step {
+  display: none;
+}
+
+.demo-clinic .booking-step.is-active {
+  display: block;
+  animation: panelIn var(--t-med) var(--ease) both;
 }
 
 .demo-clinic .booking-step__fields {
@@ -1312,7 +1362,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   grid-template-columns: 1fr;
 }
 
-@media (min-width: 680px) {
+@media (min-width: 640px) {
   .demo-clinic .booking-step__fields {
     grid-template-columns: 1fr 1fr;
   }
@@ -1334,8 +1384,6 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   font-weight: 450;
   color: var(--d-ink);
 }
-
-
 
 .demo-clinic .booking-field input,
 .demo-clinic .booking-field select,
@@ -1382,34 +1430,62 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   color: var(--d-faint);
 }
 
-.demo-clinic .booking-actions {
+.demo-clinic .booking-nav {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: clamp(8px, 1vw, 16px);
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: clamp(24px, 3vw, 32px);
   padding-top: clamp(20px, 2.5vw, 28px);
   border-top: var(--hair) solid var(--d-line-soft);
 }
 
-.demo-clinic .booking-actions .btn {
-  width: 100%;
-  height: 52px;
-  font-size: 15.5px;
+.demo-clinic .booking-nav .btn {
+  height: 50px;
+  padding: 0 28px;
+  font-size: 14.5px;
   font-weight: 500;
+  min-width: 140px;
+}
+
+.demo-clinic .booking-nav .btn--primary {
+  margin-left: auto;
+}
+
+.demo-clinic .btn--ghost {
+  background: transparent;
+  color: var(--d-ink);
+  border-color: var(--d-line);
+}
+.demo-clinic .btn--ghost:hover {
+  border-color: var(--d-ink);
+}
+.demo-clinic .btn--ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .demo-clinic .booking-reassurance {
   margin: 0;
+  padding-top: 16px;
   font-family: var(--f-mono);
-  font-size: 11.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--d-faint);
   text-align: center;
   line-height: 1.5;
+  border-top: var(--hair) solid var(--d-line-soft);
 }
 
 .demo-clinic .booking-confirm {
+  display: grid;
+  gap: 20px;
+  justify-items: center;
+  text-align: center;
+  padding: clamp(40px, 5vw, 64px);
+  border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius-lg);
+  background: var(--d-fill);{
   display: grid;
   gap: 20px;
   justify-items: start;
@@ -2408,13 +2484,29 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
           <h2 id="appointment-title">Book Your Visit</h2>
           <p class="section-sub">Choose your visit details and preferred appointment time.</p>
         </header>
+
+        <!-- Progress indicator -->
+        <div class="booking-progress" aria-label="Booking progress" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3">
+          <div class="booking-progress__step is-active" data-step="1">
+            <span class="booking-progress__num">1</span>
+            <span class="booking-progress__label">Appointment Details</span>
+          </div>
+          <span class="booking-progress__connector" aria-hidden="true"></span>
+          <div class="booking-progress__step" data-step="2">
+            <span class="booking-progress__num">2</span>
+            <span class="booking-progress__label">Your Details</span>
+          </div>
+          <span class="booking-progress__connector" aria-hidden="true"></span>
+          <div class="booking-progress__step" data-step="3">
+            <span class="booking-progress__num">3</span>
+            <span class="booking-progress__label">Additional Info</span>
+          </div>
+        </div>
+
         <form class="booking-form" id="appointment-form" novalidate data-form data-success="apt-success" data-reset="apt-reset">
           <!-- Step 1: Appointment Details -->
-          <fieldset class="booking-step" aria-labelledby="step1-title">
-            <div class="booking-step__head">
-              <span class="booking-step__num" aria-hidden="true">1</span>
-              <h3 class="booking-step__title" id="step1-title">Appointment Details</h3>
-            </div>
+          <div class="booking-step is-active" data-step="1" role="group" aria-labelledby="step1-title">
+            <h3 id="step1-title" class="visually-hidden">Appointment Details</h3>
             <div class="booking-step__fields">
               <div class="booking-field">
                 <label for="apt-type">Visit Type</label>
@@ -2439,16 +2531,16 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
                   <option value="diagnostics">Diagnostics / Lab</option>
                 </select>
               </div>
-              <div class="booking-field">
+              <div class="booking-field booking-field--full">
                 <label for="apt-doctor">Preferred Doctor</label>
                 <select id="apt-doctor" name="doctor">
                   <option value="">No preference (assigned by specialty)</option>
-                  <option value="rajesh">Dr. Rajesh Mehta - Family Medicine</option>
-                  <option value="anjali">Dr. Anjali Shah - Internal Medicine</option>
-                  <option value="vikram">Dr. Vikram Patel - Pediatrics</option>
-                  <option value="sunita">Dr. Sunita Rao - Gynecology</option>
-                  <option value="amit">Dr. Amit Joshi - Cardiology</option>
-                  <option value="priya">Dr. Priya Nair - Dermatology</option>
+                  <option value="rajesh">Dr. Rajesh Mehta — Family Medicine</option>
+                  <option value="anjali">Dr. Anjali Shah — Internal Medicine</option>
+                  <option value="vikram">Dr. Vikram Patel — Pediatrics</option>
+                  <option value="sunita">Dr. Sunita Rao — Gynecology</option>
+                  <option value="amit">Dr. Amit Joshi — Cardiology</option>
+                  <option value="priya">Dr. Priya Nair — Dermatology</option>
                 </select>
               </div>
               <div class="booking-field">
@@ -2456,7 +2548,7 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
                 <select id="apt-urgency" name="urgency">
                   <option value="routine">Routine (Within 3 days)</option>
                   <option value="soon">Soon (Within 24 hours)</option>
-                  <option value="urgent">Urgent (Same day - call us)</option>
+                  <option value="urgent">Urgent (Same day — call us)</option>
                 </select>
               </div>
               <div class="booking-field">
@@ -2484,14 +2576,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
                 </select>
               </div>
             </div>
-          </fieldset>
+
+            <!-- Navigation -->
+            <div class="booking-nav">
+              <button type="button" class="btn btn-ghost btn-prev" disabled>Back</button>
+              <button type="button" class="btn btn-primary btn-next">Continue</button>
+            </div>
+          </div>
 
           <!-- Step 2: Your Details -->
-          <fieldset class="booking-step" aria-labelledby="step2-title">
-            <div class="booking-step__head">
-              <span class="booking-step__num" aria-hidden="true">2</span>
-              <h3 class="booking-step__title" id="step2-title">Your Details</h3>
-            </div>
+          <div class="booking-step" data-step="2" role="group" aria-labelledby="step2-title">
+            <h3 id="step2-title" class="visually-hidden">Your Details</h3>
             <div class="booking-step__fields">
               <div class="booking-field">
                 <label for="apt-name">Patient Name</label>
@@ -2506,14 +2601,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
                 <input type="email" id="apt-email" name="email" required autocomplete="email" placeholder="email@example.com" />
               </div>
             </div>
-          </fieldset>
+
+            <!-- Navigation -->
+            <div class="booking-nav">
+              <button type="button" class="btn btn-ghost btn-prev">Back</button>
+              <button type="button" class="btn btn-primary btn-next">Continue</button>
+            </div>
+          </div>
 
           <!-- Step 3: Additional Information -->
-          <fieldset class="booking-step" aria-labelledby="step3-title">
-            <div class="booking-step__head">
-              <span class="booking-step__num" aria-hidden="true">3</span>
-              <h3 class="booking-step__title" id="step3-title">Additional Information</h3>
-            </div>
+          <div class="booking-step" data-step="3" role="group" aria-labelledby="step3-title">
+            <h3 id="step3-title" class="visually-hidden">Additional Information</h3>
             <div class="booking-step__fields">
               <div class="booking-field booking-field--full">
                 <label for="apt-reason">Reason for Visit</label>
@@ -2525,14 +2623,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
                 <span class="field-hint">Leave blank if paying out of pocket or unsure.</span>
               </div>
             </div>
-          </fieldset>
 
-          <!-- Actions -->
-          <div class="booking-actions">
-            <button type="submit" class="btn btn-primary btn--lg">Request Appointment</button>
+            <!-- Navigation -->
+            <div class="booking-nav">
+              <button type="button" class="btn btn-ghost btn-prev">Back</button>
+              <button type="submit" class="btn btn-primary">Request Appointment</button>
+            </div>
+
             <p class="booking-reassurance">We will confirm within 2 hours. For emergencies, call <a href="tel:+912240007777" style="color: inherit; text-decoration: underline;">+91 22 4000 7777</a> (24/7).</p>
           </div>
         </form>
+
         <div class="booking-confirm" id="apt-success" hidden>
           <div class="booking-confirm__mark" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
@@ -2659,6 +2760,89 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
       const today = new Date().toISOString().split('T')[0];
       dateInput.setAttribute('min', today);
     }
+  })();
+
+  // Booking form step navigation
+  (() => {
+    const form = document.getElementById('appointment-form');
+    if (!form) return;
+
+    const steps = form.querySelectorAll('.booking-step');
+    const progressSteps = document.querySelectorAll('.booking-progress__step');
+    const progressBar = document.querySelector('.booking-progress');
+    const prevButtons = form.querySelectorAll('.btn-prev');
+    const nextButtons = form.querySelectorAll('.btn-next');
+
+    let currentStep = 1;
+
+    function updateStep(step, direction) {
+      const prevStepEl = form.querySelector('.booking-step.is-active');
+      const nextStepEl = form.querySelector(`.booking-step[data-step="${step}"]`);
+
+      if (!nextStepEl) return;
+
+      // Validate current step before moving forward
+      if (direction === 'forward') {
+        const requiredFields = prevStepEl.querySelectorAll('[required]');
+        let valid = true;
+        requiredFields.forEach(field => {
+          if (!field.checkValidity()) {
+            valid = false;
+            field.reportValidity();
+          }
+        });
+        if (!valid) return;
+      }
+
+      // Update step visibility
+      prevStepEl.classList.remove('is-active');
+      nextStepEl.classList.add('is-active');
+
+      // Update progress indicator
+      progressSteps.forEach((ps, i) => {
+        const stepNum = i + 1;
+        ps.classList.remove('is-active', 'is-complete');
+        if (stepNum < step) {
+          ps.classList.add('is-complete');
+        } else if (stepNum === step) {
+          ps.classList.add('is-active');
+        }
+      });
+
+      // Update progress bar aria
+      if (progressBar) {
+        progressBar.setAttribute('aria-valuenow', step);
+      }
+
+      currentStep = step;
+
+      // Scroll to form top smoothly
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    prevButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (currentStep > 1) updateStep(currentStep - 1, 'backward');
+      });
+    });
+
+    nextButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (currentStep < steps.length) updateStep(currentStep + 1, 'forward');
+      });
+    });
+
+    // Keyboard navigation: Enter on focused button
+    form.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.classList.contains('btn-next')) {
+        e.preventDefault();
+        if (currentStep < steps.length) updateStep(currentStep + 1, 'forward');
+      }
+      if (e.key === 'Enter' && e.target.classList.contains('btn-prev') && !e.target.disabled) {
+        e.preventDefault();
+        if (currentStep > 1) updateStep(currentStep - 1, 'backward');
+      }
+    });
   })();
 </script>
 <script type="module" src="/demo.js"></script>
