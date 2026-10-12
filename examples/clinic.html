@@ -1223,6 +1223,81 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
    the business demo.
    ======================================================================== */
 
+/* -- Header & Navigation: spacious, clean healthcare aesthetic -------- */
+.demo-clinic .demo-header .demo-container {
+  height: 80px;
+}
+.demo-clinic .site-nav {
+  gap: 40px;
+}
+.demo-clinic .site-nav a {
+  font-size: 14.5px;
+  font-weight: 450;
+}
+.demo-clinic .header-actions {
+  gap: 16px;
+}
+.demo-clinic .demo-nav-cta {
+  height: 44px;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* -- Section spacing: generous vertical rhythm ------------------------ */
+.demo-clinic .demo-section,
+.demo-clinic .section {
+  padding-block: clamp(100px, 12vw, 220px);
+}
+.demo-clinic .demo-section-alt {
+  padding-block: clamp(100px, 12vw, 220px);
+}
+
+/* -- Hero: generous breathing room ------------------------------------ */
+.demo-clinic .demo-hero {
+  padding: clamp(100px, 12vw, 180px) 0 clamp(80px, 10vw, 140px);
+}
+
+/* -- Buttons: clinic-specific refinements ----------------------------- */
+.demo-clinic .btn--primary {
+  background: var(--d-accent);
+  color: var(--d-on-accent);
+  border-color: var(--d-accent);
+  box-shadow: 0 1px 2px rgba(13, 27, 36, 0.08);
+}
+.demo-clinic .btn--primary:hover {
+  background: var(--d-ink);
+  border-color: var(--d-ink);
+  box-shadow: 0 4px 12px rgba(13, 27, 36, 0.15);
+  transform: translateY(-1px);
+}
+.demo-clinic .btn--primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(13, 27, 36, 0.08);
+}
+.demo-clinic .btn--ghost {
+  background: transparent;
+  color: var(--d-ink);
+  border-color: var(--d-line);
+}
+.demo-clinic .btn--ghost:hover {
+  border-color: var(--d-ink);
+  background: var(--d-fill);
+}
+.demo-clinic .btn--ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.demo-clinic .btn--secondary {
+  background: transparent;
+  color: var(--d-ink);
+  border-color: var(--d-line);
+}
+.demo-clinic .btn--secondary:hover {
+  border-color: var(--d-ink);
+  background: var(--d-fill);
+}
+
 /* -- Appointment Booking: professional healthcare form -------------------- */
 .demo-clinic .booking-form-wrapper {
   max-width: 760px;
@@ -1231,12 +1306,12 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 .demo-clinic .booking-header {
   text-align: center;
-  margin-bottom: clamp(48px, 6vw, 80px);
+  margin-bottom: clamp(56px, 7vw, 96px);
 }
 
 .demo-clinic .booking-header .section-tag {
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .demo-clinic .booking-header h2 {
@@ -1244,14 +1319,14 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   font-weight: var(--d-display-weight);
   letter-spacing: var(--d-display-tracking);
   line-height: 1.02;
-  font-size: clamp(1.9rem, 4.4vw, 3.4rem);
+  font-size: clamp(2rem, 4.8vw, 3.6rem);
   color: var(--d-ink);
 }
 
 .demo-clinic .booking-header .section-sub {
-  margin-top: 18px;
-  font-size: 1.0625rem;
-  line-height: 1.6;
+  margin-top: 24px;
+  font-size: 1.125rem;
+  line-height: 1.65;
   color: var(--d-sub);
   max-width: 54ch;
   margin-inline: auto;
@@ -1261,16 +1336,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   background: var(--d-surface);
   border: var(--hair) solid var(--d-line);
   border-radius: var(--d-radius-lg);
-  padding: clamp(32px, 4vw, 48px);
+  padding: clamp(40px, 5vw, 64px);
+  box-shadow: var(--d-shadow);
 }
 
 /* Step progress indicator */
 .demo-clinic .booking-progress {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: clamp(32px, 4vw, 48px);
-  padding-bottom: clamp(24px, 3vw, 32px);
+  gap: 16px;
+  margin-bottom: clamp(40px, 5vw, 64px);
+  padding-bottom: clamp(32px, 4vw, 48px);
   border-bottom: var(--hair) solid var(--d-line-soft);
 }
 
@@ -1278,21 +1354,21 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex: 1;
-  max-width: 120px;
+  max-width: 140px;
 }
 
 .demo-clinic .booking-progress__num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: var(--hair) solid var(--d-line);
   border-radius: 50%;
   font-family: var(--f-mono);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--d-faint);
   background: var(--d-fill);
@@ -1301,12 +1377,12 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 .demo-clinic .booking-progress__label {
   font-family: var(--f-mono);
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--d-faint);
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.4;
   transition: color var(--t-med) var(--ease);
 }
 
@@ -1328,17 +1404,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 .demo-clinic .booking-progress__step.is-complete .booking-progress__num::after {
   content: "";
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") center/contain no-repeat;
 }
 
 .demo-clinic .booking-progress__connector {
   display: none;
   flex: 1;
-  height: 1px;
-  background: var(--d-line);
-  margin-top: 17px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--d-line) 0%, var(--d-line-soft) 50%, var(--d-line) 100%);
+  margin-top: 21px;
 }
 
 @media (min-width: 560px) {
@@ -1358,20 +1434,21 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 .demo-clinic .booking-step__fields {
   display: grid;
-  gap: 18px;
+  gap: 24px;
   grid-template-columns: 1fr;
 }
 
 @media (min-width: 640px) {
   .demo-clinic .booking-step__fields {
     grid-template-columns: 1fr 1fr;
+    gap: 28px;
   }
 }
 
 .demo-clinic .booking-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -1380,8 +1457,8 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 }
 
 .demo-clinic .booking-field label {
-  font-size: 13.5px;
-  font-weight: 450;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--d-ink);
 }
 
@@ -1389,8 +1466,8 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 .demo-clinic .booking-field select,
 .demo-clinic .booking-field textarea {
   width: 100%;
-  height: 50px;
-  padding: 0 15px;
+  height: 56px;
+  padding: 0 18px;
   background: var(--d-surface);
   color: var(--d-ink);
   border: var(--hair) solid var(--d-line);
@@ -1400,10 +1477,10 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 .demo-clinic .booking-field textarea {
   height: auto;
-  min-height: 120px;
-  padding: 14px 15px;
+  min-height: 140px;
+  padding: 16px 18px;
   resize: vertical;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .demo-clinic .booking-field input::placeholder,
@@ -1426,25 +1503,25 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 }
 
 .demo-clinic .booking-field .field-hint {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--d-faint);
 }
 
 .demo-clinic .booking-nav {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  margin-top: clamp(24px, 3vw, 32px);
-  padding-top: clamp(20px, 2.5vw, 28px);
+  gap: 20px;
+  margin-top: clamp(32px, 4vw, 48px);
+  padding-top: clamp(28px, 3.5vw, 40px);
   border-top: var(--hair) solid var(--d-line-soft);
 }
 
 .demo-clinic .booking-nav .btn {
-  height: 50px;
-  padding: 0 28px;
-  font-size: 14.5px;
+  height: 54px;
+  padding: 0 32px;
+  font-size: 15px;
   font-weight: 500;
-  min-width: 140px;
+  min-width: 150px;
 }
 
 .demo-clinic .booking-nav .btn--primary {
@@ -1466,9 +1543,9 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 .demo-clinic .booking-reassurance {
   margin: 0;
-  padding-top: 16px;
+  padding-top: 24px;
   font-family: var(--f-mono);
-  font-size: 11px;
+  font-size: 11.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--d-faint);
@@ -1479,51 +1556,42 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 .demo-clinic .booking-confirm {
   display: grid;
-  gap: 20px;
+  gap: 24px;
   justify-items: center;
   text-align: center;
-  padding: clamp(40px, 5vw, 64px);
-  border: var(--hair) solid var(--d-line);
-  border-radius: var(--d-radius-lg);
-  background: var(--d-fill);{
-  display: grid;
-  gap: 20px;
-  justify-items: start;
-  padding: clamp(30px, 4vw, 52px);
+  padding: clamp(48px, 6vw, 80px);
   border: var(--hair) solid var(--d-line);
   border-radius: var(--d-radius-lg);
   background: var(--d-fill);
   animation: panelIn var(--t-med) var(--ease) both;
-  text-align: center;
-  width: 100%;
 }
 
 .demo-clinic .booking-confirm__mark {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border: var(--hair) solid var(--d-line);
   border-radius: 50%;
 }
 
 .demo-clinic .booking-confirm__title {
-  font-size: clamp(20px, 1.7vw, 24px);
+  font-size: clamp(22px, 2vw, 28px);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--d-ink);
 }
 
 .demo-clinic .booking-confirm__desc {
-  font-size: 15.5px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.7;
   color: var(--d-sub);
   max-width: 52ch;
 }
 
 .demo-clinic .booking-confirm__ref {
   font-family: var(--f-mono);
-  font-size: 11px;
+  font-size: 11.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--d-faint);
