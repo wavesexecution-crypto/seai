@@ -502,6 +502,52 @@ table { border-collapse: collapse; width: 100%; }
 .card--icon .card__title { font-size: clamp(20px, 1.6vw, 23px); }
 .card--icon .card__desc { margin-top: 12px; font-size: 15px; line-height: 1.7; }
 
+/* article card variant — for editorial content grids with category, read time, title, excerpt, link */
+.card--article { padding: 0; }
+.card--article .card__body { padding: clamp(24px, 2.8vw, 36px); display: flex; flex-direction: column; }
+.card--article .card__meta-row {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.card--article .card__category {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--d-ink);
+  background: var(--d-fill); border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius); padding: 4px 10px;
+}
+.card--article .card__read-time {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--d-faint);
+}
+.card--article .card__title {
+  font-size: clamp(20px, 1.7vw, 24px); font-weight: 500;
+  letter-spacing: -0.018em; line-height: 1.22; text-wrap: balance;
+}
+.card--article .card__desc {
+  margin-top: 12px; font-size: 15px; line-height: 1.7; color: var(--d-sub);
+  text-wrap: pretty; flex: 1 1 auto;
+}
+.card--article .card__link {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 18px; padding-bottom: 3px;
+  font-size: 14px; font-weight: 500; color: var(--d-ink);
+  position: relative;
+}
+.card--article .card__link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: currentColor; opacity: 0.28;
+  transform-origin: left; transform: scaleX(1);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+}
+.card--article .card__link:hover::after { opacity: 1; transform: scaleX(0.999); }
+.card--article .card__link .arr { transition: transform var(--t-med) var(--ease); }
+.card--article .card__link:hover .arr { transform: translateX(3px); }
+.card--article:hover {
+  border-color: color-mix(in srgb, var(--d-ink) 22%, transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 48px -28px rgba(11, 11, 12, 0.4);
+}
+
 /* data list — the workhorse for "information is part of the design" */
 .datalist { border-top: var(--hair) solid var(--d-line); }
 .datalist__row {
@@ -886,8 +932,10 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
 /* -- hero -- */
 .demo-hero { position: relative; padding: clamp(80px, 10vw, 150px) 0 clamp(56px, 7vw, 104px); overflow: hidden; }
-.hero-bg { position: absolute; inset: 0; background: var(--d-ink); opacity: 0.025; pointer-events: none; }
-.demo-gym .hero-bg { opacity: 0.05; }
+.hero-bg { position: absolute; inset: 0; z-index: -2; }
+.hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+.hero-bg::after { content: ""; position: absolute; inset: 0; background: var(--d-ink); opacity: 0.025; pointer-events: none; }
+.demo-gym .hero-bg::after { opacity: 0.05; }
 .hero-content { position: relative; text-align: center; max-width: 900px; margin-inline: auto; }
 .hero-tag { display: block; margin-bottom: 20px; }
 .demo-hero h1 { font-family: var(--d-display); font-weight: var(--d-display-weight); letter-spacing: var(--d-display-tracking); line-height: 0.98; font-size: clamp(2.4rem, 6.4vw, 5.25rem); text-wrap: balance; }
@@ -923,8 +971,12 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   border-color: color-mix(in srgb, var(--d-ink) 26%, transparent); transform: translateY(-3px);
 }
 .coach-img, .team-img, .doctor-img, .agent-img, .property-img, .rental-img, .gallery-item, .about-img-placeholder {
-  aspect-ratio: 4 / 5; background: var(--d-fill-2);
+  aspect-ratio: 4 / 5; background: var(--d-fill-2); overflow: hidden;
 }
+.coach-img img, .team-img img, .doctor-img img, .agent-img img, .property-img img, .rental-img img {
+  width: 100%; height: 100%; object-fit: cover; transform: scale(1.001); transition: transform 1s var(--ease);
+}
+.coach:hover .coach-img img, .team-card:hover .team-img img, .doctor:hover .doctor-img img, .agent:hover .agent-img img { transform: scale(1.035); }
 .coach-info, .team-info, .doctor-info, .agent-info, .property-info, .rental-info { padding: clamp(20px, 2.2vw, 28px); }
 .coach-name, .team-name, .doctor-name, .agent-name, .program-name, .service-name,
 .membership-name, .property-name, .rental-name, .insight-title, .case-title, .wine-name, .item-name {
@@ -953,8 +1005,17 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 .property-meta, .rental-meta { display: flex; gap: 16px; margin-top: 14px; font-variant-numeric: tabular-nums; }
 .property-actions, .rental-actions { display: flex; gap: 10px; padding: 0 clamp(20px, 2.2vw, 28px) clamp(20px, 2.2vw, 28px); }
 .property-actions .btn, .rental-actions .btn { flex: 1; }
-.case-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.case-metrics span, .insight-category { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; padding: 4px 9px; border: var(--hair) solid var(--d-line); border-radius: 999px; color: var(--d-sub); }
+.case-metrics { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 36px; }
+.case-metrics span, .insight-category { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; padding: 5px 11px; border: var(--hair) solid var(--d-line); border-radius: 999px; color: var(--d-sub); }
+.case-media { aspect-ratio: 16 / 9; overflow: hidden; background: var(--d-fill-2); margin: 0 0 28px; border-radius: var(--d-radius) var(--d-radius) 0 0; }
+.case-media img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.001); transition: transform 900ms var(--ease); }
+.case-card:hover .case-media img { transform: scale(1.045); }
+
+/* case card content spacing — editorial rhythm */
+.case-card { padding: 0 clamp(20px, 2.4vw, 32px) clamp(32px, 3.2vw, 44px); }
+.case-card .case-tag { display: block; margin-bottom: 20px; }
+.case-card .case-title { margin-bottom: 24px; line-height: 1.22; }
+.case-card .case-desc { margin-top: 0; margin-bottom: 28px; line-height: 1.8; }
 .step-number { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: var(--hair) solid var(--d-line); color: var(--d-ink); margin-bottom: 16px; }
 .process-step { padding: clamp(24px, 3vw, 34px); }
 .process-step .step-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
@@ -1161,6 +1222,239 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
    Scoped to .demo-clinic because .service-card / .doctor-card are still used by
    the business demo.
    ======================================================================== */
+
+/* -- Appointment Booking: professional healthcare form -------------------- */
+.demo-clinic .booking-form-wrapper {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.demo-clinic .booking-header {
+  text-align: center;
+  margin-bottom: clamp(40px, 5vw, 64px);
+}
+
+.demo-clinic .booking-header .section-tag {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.demo-clinic .booking-header h2 {
+  font-family: var(--d-display);
+  font-weight: var(--d-display-weight);
+  letter-spacing: var(--d-display-tracking);
+  line-height: 1.02;
+  font-size: clamp(1.9rem, 4.4vw, 3.4rem);
+  color: var(--d-ink);
+}
+
+.demo-clinic .booking-header .section-sub {
+  margin-top: 18px;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--d-sub);
+  max-width: 54ch;
+  margin-inline: auto;
+}
+
+.demo-clinic .booking-form {
+  background: var(--d-surface);
+  border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius-lg);
+  padding: clamp(32px, 4vw, 48px);
+}
+
+.demo-clinic .booking-step {
+  margin-bottom: clamp(32px, 4vw, 48px);
+  padding-bottom: clamp(24px, 3vw, 40px);
+  border-bottom: var(--hair) solid var(--d-line-soft);
+}
+
+.demo-clinic .booking-step:last-of-type {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.demo-clinic .booking-step__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: clamp(20px, 2.5vw, 28px);
+}
+
+.demo-clinic .booking-step__num {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: var(--hair) solid var(--d-line);
+  border-radius: 50%;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--d-faint);
+  background: var(--d-fill);
+}
+
+.demo-clinic .booking-step__title {
+  font-size: clamp(16px, 1.4vw, 18px);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--d-ink);
+}
+
+.demo-clinic .booking-step__fields {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 680px) {
+  .demo-clinic .booking-step__fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.demo-clinic .booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.demo-clinic .booking-field--full {
+  grid-column: 1 / -1;
+}
+
+.demo-clinic .booking-field label {
+  font-size: 13.5px;
+  font-weight: 450;
+  color: var(--d-ink);
+}
+
+.demo-clinic .booking-field .required-mark {
+  color: #c0392b;
+  margin-left: 2px;
+}
+
+.demo-clinic .booking-field input,
+.demo-clinic .booking-field select,
+.demo-clinic .booking-field textarea {
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  background: var(--d-surface);
+  color: var(--d-ink);
+  border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius);
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.demo-clinic .booking-field textarea {
+  height: auto;
+  min-height: 120px;
+  padding: 14px 15px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.demo-clinic .booking-field input::placeholder,
+.demo-clinic .booking-field textarea::placeholder {
+  color: var(--d-faint);
+}
+
+.demo-clinic .booking-field input:focus,
+.demo-clinic .booking-field select:focus,
+.demo-clinic .booking-field textarea:focus {
+  outline: none;
+  border-color: var(--d-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-ink) 12%, transparent);
+}
+
+.demo-clinic .booking-field input:invalid:not(:placeholder-shown),
+.demo-clinic .booking-field select:invalid:not([value=""]),
+.demo-clinic .booking-field textarea:invalid:not(:placeholder-shown) {
+  border-color: #c0392b;
+}
+
+.demo-clinic .booking-field .field-hint {
+  font-size: 12px;
+  color: var(--d-faint);
+}
+
+.demo-clinic .booking-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: clamp(8px, 1vw, 16px);
+  padding-top: clamp(20px, 2.5vw, 28px);
+  border-top: var(--hair) solid var(--d-line-soft);
+}
+
+.demo-clinic .booking-actions .btn {
+  width: 100%;
+  height: 52px;
+  font-size: 15.5px;
+  font-weight: 500;
+}
+
+.demo-clinic .booking-reassurance {
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d-faint);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.demo-clinic .booking-confirm {
+  display: grid;
+  gap: 20px;
+  justify-items: start;
+  padding: clamp(30px, 4vw, 52px);
+  border: var(--hair) solid var(--d-line);
+  border-radius: var(--d-radius-lg);
+  background: var(--d-fill);
+  animation: panelIn var(--t-med) var(--ease) both;
+  text-align: center;
+  width: 100%;
+}
+
+.demo-clinic .booking-confirm__mark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: var(--hair) solid var(--d-line);
+  border-radius: 50%;
+}
+
+.demo-clinic .booking-confirm__title {
+  font-size: clamp(20px, 1.7vw, 24px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--d-ink);
+}
+
+.demo-clinic .booking-confirm__desc {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--d-sub);
+  max-width: 52ch;
+}
+
+.demo-clinic .booking-confirm__ref {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--d-faint);
+}
 
 /* -- Medical services: an index you can actually read --------------------- */
 .care-list {
@@ -2111,123 +2405,146 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
 
   <section class="demo-section demo-section-alt" id="appointment" aria-labelledby="appointment-title">
     <div class="container demo-container">
-      <header class="section-header text-center">
-        <p class="section-tag">Appointments</p>
-        <h2 id="appointment-title">Book Your Visit</h2>
-        <p class="section-sub">Choose specialty, doctor, and time. Same-day slots available for urgent needs.</p>
-      </header>
-      <form class="appointment-form" id="appointment-form" novalidate>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="apt-type">Visit Type *</label>
-            <select id="apt-type" name="type" required>
-              <option value="">Select visit type</option>
-              <option value="in-person">In-Person Consultation</option>
-              <option value="video">Video Consultation</option>
-              <option value="home-visit">Home Visit (Select Areas)</option>
-              <option value="diagnostics">Diagnostics Only (Lab/Imaging)</option>
-            </select>
+      <div class="booking-form-wrapper">
+        <header class="booking-header">
+          <p class="section-tag">Appointments</p>
+          <h2 id="appointment-title">Book Your Visit</h2>
+          <p class="section-sub">Choose your visit details and preferred appointment time.</p>
+        </header>
+        <form class="booking-form" id="appointment-form" novalidate data-form data-success="apt-success" data-reset="apt-reset">
+          <!-- Step 1: Appointment Details -->
+          <fieldset class="booking-step" aria-labelledby="step1-title">
+            <div class="booking-step__head">
+              <span class="booking-step__num" aria-hidden="true">1</span>
+              <h3 class="booking-step__title" id="step1-title">Appointment Details</h3>
+            </div>
+            <div class="booking-step__fields">
+              <div class="booking-field">
+                <label for="apt-type">Visit Type <span class="required-mark" aria-hidden="true">*</span></label>
+                <select id="apt-type" name="type" required>
+                  <option value="">Select visit type</option>
+                  <option value="in-person">In-Person Consultation</option>
+                  <option value="video">Video Consultation</option>
+                  <option value="home-visit">Home Visit (Select Areas)</option>
+                  <option value="diagnostics">Diagnostics Only (Lab/Imaging)</option>
+                </select>
+              </div>
+              <div class="booking-field">
+                <label for="apt-specialty">Specialty <span class="required-mark" aria-hidden="true">*</span></label>
+                <select id="apt-specialty" name="specialty" required>
+                  <option value="">Select specialty</option>
+                  <option value="family">Family Medicine</option>
+                  <option value="internal">Internal Medicine</option>
+                  <option value="pediatrics">Pediatrics</option>
+                  <option value="gynecology">Gynecology & Obstetrics</option>
+                  <option value="cardiology">Cardiology (Tue/Thu)</option>
+                  <option value="dermatology">Dermatology (Sat)</option>
+                  <option value="diagnostics">Diagnostics / Lab</option>
+                </select>
+              </div>
+              <div class="booking-field">
+                <label for="apt-doctor">Preferred Doctor</label>
+                <select id="apt-doctor" name="doctor">
+                  <option value="">No preference (assigned by specialty)</option>
+                  <option value="rajesh">Dr. Rajesh Mehta - Family Medicine</option>
+                  <option value="anjali">Dr. Anjali Shah - Internal Medicine</option>
+                  <option value="vikram">Dr. Vikram Patel - Pediatrics</option>
+                  <option value="sunita">Dr. Sunita Rao - Gynecology</option>
+                  <option value="amit">Dr. Amit Joshi - Cardiology</option>
+                  <option value="priya">Dr. Priya Nair - Dermatology</option>
+                </select>
+              </div>
+              <div class="booking-field">
+                <label for="apt-urgency">Urgency</label>
+                <select id="apt-urgency" name="urgency">
+                  <option value="routine">Routine (Within 3 days)</option>
+                  <option value="soon">Soon (Within 24 hours)</option>
+                  <option value="urgent">Urgent (Same day - call us)</option>
+                </select>
+              </div>
+              <div class="booking-field">
+                <label for="apt-date">Preferred Date <span class="required-mark" aria-hidden="true">*</span></label>
+                <input type="date" id="apt-date" name="date" required />
+              </div>
+              <div class="booking-field">
+                <label for="apt-time">Preferred Time <span class="required-mark" aria-hidden="true">*</span></label>
+                <select id="apt-time" name="time" required>
+                  <option value="">Select time</option>
+                  <option value="09:00">9:00 AM</option>
+                  <option value="09:30">9:30 AM</option>
+                  <option value="10:00">10:00 AM</option>
+                  <option value="10:30">10:30 AM</option>
+                  <option value="11:00">11:00 AM</option>
+                  <option value="11:30">11:30 AM</option>
+                  <option value="12:00">12:00 PM</option>
+                  <option value="14:00">2:00 PM</option>
+                  <option value="14:30">2:30 PM</option>
+                  <option value="15:00">3:00 PM</option>
+                  <option value="15:30">3:30 PM</option>
+                  <option value="16:00">4:00 PM</option>
+                  <option value="16:30">4:30 PM</option>
+                  <option value="17:00">5:00 PM</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Step 2: Your Details -->
+          <fieldset class="booking-step" aria-labelledby="step2-title">
+            <div class="booking-step__head">
+              <span class="booking-step__num" aria-hidden="true">2</span>
+              <h3 class="booking-step__title" id="step2-title">Your Details</h3>
+            </div>
+            <div class="booking-step__fields">
+              <div class="booking-field">
+                <label for="apt-name">Patient Name <span class="required-mark" aria-hidden="true">*</span></label>
+                <input type="text" id="apt-name" name="name" required autocomplete="name" placeholder="Full name" />
+              </div>
+              <div class="booking-field">
+                <label for="apt-phone">Phone Number <span class="required-mark" aria-hidden="true">*</span></label>
+                <input type="tel" id="apt-phone" name="phone" required autocomplete="tel" placeholder="+91 98765 43210" />
+              </div>
+              <div class="booking-field booking-field--full">
+                <label for="apt-email">Email Address <span class="required-mark" aria-hidden="true">*</span></label>
+                <input type="email" id="apt-email" name="email" required autocomplete="email" placeholder="email@example.com" />
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Step 3: Additional Information -->
+          <fieldset class="booking-step" aria-labelledby="step3-title">
+            <div class="booking-step__head">
+              <span class="booking-step__num" aria-hidden="true">3</span>
+              <h3 class="booking-step__title" id="step3-title">Additional Information</h3>
+            </div>
+            <div class="booking-step__fields">
+              <div class="booking-field booking-field--full">
+                <label for="apt-reason">Reason for Visit <span class="required-mark" aria-hidden="true">*</span></label>
+                <textarea id="apt-reason" name="reason" required rows="4" placeholder="Describe symptoms, concerns, or reason for visit"></textarea>
+              </div>
+              <div class="booking-field booking-field--full">
+                <label for="apt-insurance">Insurance Provider (Optional)</label>
+                <input type="text" id="apt-insurance" name="insurance" placeholder="e.g., Star Health, Max Bupa, Company Policy" />
+                <span class="field-hint">Leave blank if paying out of pocket or unsure.</span>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Actions -->
+          <div class="booking-actions">
+            <button type="submit" class="btn btn-primary btn--lg">Request Appointment</button>
+            <p class="booking-reassurance">We will confirm within 2 hours. For emergencies, call <a href="tel:+912240007777" style="color: inherit; text-decoration: underline;">+91 22 4000 7777</a> (24/7).</p>
           </div>
-          <div class="form-field">
-            <label for="apt-specialty">Specialty *</label>
-            <select id="apt-specialty" name="specialty" required>
-              <option value="">Select specialty</option>
-              <option value="family">Family Medicine</option>
-              <option value="internal">Internal Medicine</option>
-              <option value="pediatrics">Pediatrics</option>
-              <option value="gynecology">Gynecology & Obstetrics</option>
-              <option value="cardiology">Cardiology (Tue/Thu)</option>
-              <option value="dermatology">Dermatology (Sat)</option>
-              <option value="diagnostics">Diagnostics / Lab</option>
-            </select>
+        </form>
+        <div class="booking-confirm" id="apt-success" hidden>
+          <div class="booking-confirm__mark" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
           </div>
+          <h3 class="booking-confirm__title">Appointment Requested</h3>
+          <p class="booking-confirm__desc">Thank you! Our team will confirm your appointment shortly.</p>
+          <button type="button" class="btn btn-secondary" id="apt-reset">Book Another</button>
+          <p class="booking-confirm__ref">This is a demo. No real appointment has been booked.</p>
         </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="apt-doctor">Preferred Doctor</label>
-            <select id="apt-doctor" name="doctor">
-              <option value="">No preference (assigned by specialty)</option>
-              <option value="rajesh">Dr. Rajesh Mehta - Family Medicine</option>
-              <option value="anjali">Dr. Anjali Shah - Internal Medicine</option>
-              <option value="vikram">Dr. Vikram Patel - Pediatrics</option>
-              <option value="sunita">Dr. Sunita Rao - Gynecology</option>
-              <option value="amit">Dr. Amit Joshi - Cardiology</option>
-              <option value="priya">Dr. Priya Nair - Dermatology</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="apt-urgency">Urgency</label>
-            <select id="apt-urgency" name="urgency">
-              <option value="routine">Routine (Within 3 days)</option>
-              <option value="soon">Soon (Within 24 hours)</option>
-              <option value="urgent">Urgent (Same day - call us)</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="apt-date">Preferred Date *</label>
-            <input type="date" id="apt-date" name="date" required />
-          </div>
-          <div class="form-field">
-            <label for="apt-time">Preferred Time *</label>
-            <select id="apt-time" name="time" required>
-              <option value="">Select time</option>
-              <option value="09:00">9:00 AM</option>
-              <option value="09:30">9:30 AM</option>
-              <option value="10:00">10:00 AM</option>
-              <option value="10:30">10:30 AM</option>
-              <option value="11:00">11:00 AM</option>
-              <option value="11:30">11:30 AM</option>
-              <option value="12:00">12:00 PM</option>
-              <option value="14:00">2:00 PM</option>
-              <option value="14:30">2:30 PM</option>
-              <option value="15:00">3:00 PM</option>
-              <option value="15:30">3:30 PM</option>
-              <option value="16:00">4:00 PM</option>
-              <option value="16:30">4:30 PM</option>
-              <option value="17:00">5:00 PM</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="apt-name">Patient Name *</label>
-            <input type="text" id="apt-name" name="name" required autocomplete="name" placeholder="Full name" />
-          </div>
-          <div class="form-field">
-            <label for="apt-phone">Phone *</label>
-            <input type="tel" id="apt-phone" name="phone" required autocomplete="tel" placeholder="+91 98765 43210" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field full-width">
-            <label for="apt-email">Email *</label>
-            <input type="email" id="apt-email" name="email" required autocomplete="email" placeholder="email@example.com" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field full-width">
-            <label for="apt-reason">Reason for Visit *</label>
-            <textarea id="apt-reason" name="reason" required rows="3" placeholder="Describe symptoms, concerns, or reason for visit"></textarea>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field full-width">
-            <label for="apt-insurance">Insurance Provider (Optional)</label>
-            <input type="text" id="apt-insurance" name="insurance" placeholder="e.g., Star Health, Max Bupa, Company Policy" />
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary btn-full">Request Appointment</button>
-        <p class="form-note">We will confirm within 2 hours. For emergencies, call +91 22 4000 7777 (24/7).</p>
-      </form>
-      <div class="form-success" id="apt-success" hidden>
-        <div class="success-icon" aria-hidden="true">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
-        </div>
-        <h3>Appointment Requested</h3>
-        <p>Thank you! Our team will confirm your appointment shortly.</p>
-        <button type="button" class="btn btn-secondary" id="apt-reset">Book Another</button>
       </div>
     </div>
   </section>
@@ -2338,6 +2655,15 @@ body.menu-open .demo-mobile-nav { opacity: 1; visibility: visible; transform: no
   </div>
 </footer>
 
+<script>
+  (() => {
+    const dateInput = document.getElementById('apt-date');
+    if (dateInput) {
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.setAttribute('min', today);
+    }
+  })();
+</script>
 <script type="module" src="/demo.js"></script>
 </body>
 </html>
