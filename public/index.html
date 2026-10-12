@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SEAI</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b; --bg-soft:#111113; --bg-panel:#0f0f12;
+  --ink:#f4f4f5; --sub:#a1a1aa; --faint:#5c5c66; --line:rgba(255,255,255,.08); --line-soft:rgba(255,255,255,.06);
+  --fill:rgba(255,255,255,.04); --fill-hover:rgba(255,255,255,.07);
+  --acc:#f4f4f5; --ring:rgba(255,255,255,.18);
+  --good:#7fb685; --warn:#d2a24a; --bad:#e0605e;
+  --font:"Inter", system-ui, -apple-system, sans-serif; --mono: ui-monospace, Menlo, monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+.skip{position:absolute;left:-999px}
+.skip:focus{left:8px;top:8px;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:6px;z-index:1000}
+
+/* layout */
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{border-right:1px solid var(--line-soft);background:var(--bg);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:24px 16px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px;margin-bottom:28px}
+.brand img{width:26px;height:26px;border-radius:6px;display:block}
+.brand .name{font-weight:600;letter-spacing:.04em;font-size:16px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:var(--sub);font-weight:500;font-size:13.5px}
+.nav a:hover{background:var(--fill);color:var(--ink)}
+.nav a.active{background:var(--fill-hover);color:var(--ink);border-left:2px solid var(--ink);padding-left:8px}
+.nav .rule{height:1px;background:var(--line-soft);margin:18px 8px 12px}
+.sidefoot{margin-top:auto;display:flex;flex-direction:column;gap:2px}
+.sidefoot .who{font-size:12px;color:var(--faint);padding:4px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.main{display:flex;flex-direction:column;min-width:0;background:var(--bg-soft)}
+.topbar{height:56px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:16px;padding:0 20px;background:var(--bg)}
+.ctx{font-size:12px;color:var(--sub);padding:6px 10px;border:1px solid var(--line-soft);border-radius:6px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar .spacer{flex:1}
+.topbar .actions{display:flex;align-items:center;gap:8px}
+.iconbtn{height:32px;min-width:32px;padding:0 8px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--sub);display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:12.5px}
+.iconbtn:hover{background:var(--fill);color:var(--ink)}
+.content{padding:28px 32px 80px;max-width:1400px}
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 12px}
+.h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0 0 6px}
+.lede{color:var(--sub);margin:0 0 28px;max-width:70ch}
+
+/* cards / tables */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{grid-column:span 12;background:var(--bg-panel);border:1px solid var(--line-soft);border-radius:10px;padding:16px}
+@media(min-width:900px){.card.span6{grid-column:span 6}.card.span4{grid-column:span 4}.card.span8{grid-column:span 8}}
+.table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-soft);font-weight:600}
+.table td{padding:12px;border-bottom:1px solid var(--line-soft);color:var(--sub);vertical-align:top}
+.table tr:hover td{background:var(--fill)}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;border:1px solid var(--line-soft);color:var(--sub)}
+.badge.live{background:var(--good);border-color:transparent;color:#00110a}
+.badge.warn{background:var(--warn);border-color:transparent;color:#1a1200}
+.badge.bad{background:var(--bad);border-color:transparent;color:#140000}
+.badge.gray{background:var(--fill);color:var(--sub)}
+
+/* feed / composer */
+.feeditem{border:1px solid var(--line-soft);border-radius:10px;padding:14px 16px;margin-bottom:12px;background:var(--bg-panel);cursor:pointer}
+.feeditem:hover{border-color:var(--line)}
+.feeditem .meta{font-size:12px;color:var(--faint);margin-top:8px;display:flex;gap:12px;flex-wrap:wrap}
+.msg{border-left:2px solid var(--line);padding:8px 12px;margin:12px 0}
+.msg.seai{border-color:var(--good)}
+.msg .who{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.msg p{margin:6px 0 0;color:var(--ink)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.thumbs img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line-soft)}
+.filechip{font-size:12px;color:var(--sub);border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tab{font-size:12.5px;padding:6px 12px;border-radius:20px;border:1px solid var(--line-soft);color:var(--sub);cursor:pointer;background:transparent}
+.tab.active{background:var(--fill-hover);color:var(--ink);border-color:var(--line)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.chip{font-size:12.5px;padding:6px 12px;border-radius:20px;border:1px solid var(--line-soft);color:var(--sub);cursor:pointer;background:transparent}
+.chip.active{background:var(--fill-hover);color:var(--ink);border-color:var(--line)}
+
+/* forms */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px}
+.input,textarea,select{width:100%;background:var(--bg-panel);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:8px;font:inherit;font-size:13.5px}
+.input:focus,textarea:focus,select:focus{outline:none;border-color:var(--sub);box-shadow:0 0 0 3px var(--ring)}
+.btn{appearance:none;background:var(--ink);color:var(--bg);border:1px solid var(--ink);padding:10px 16px;border-radius:8px;font-weight:600;font-size:13.5px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--bad);font-size:13px;margin:8px 0}
+
+/* states */
+.empty{padding:40px;text-align:center;color:var(--faint)}
+.conn{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.conn:last-child{border-bottom:none}
+.conn .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex-shrink:0}
+.conn .dot.on{background:var(--good)}
+
+/* mobile: hamburger drawer is the ONLY navigation control (no bottom nav) */
+.mbrand{display:none;align-items:center;gap:8px;font-weight:600;letter-spacing:.04em;font-size:15px}
+.mbrand img{width:22px;height:22px;border-radius:6px;display:block}
+.scrim{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5)}
+.scrim.show{display:block}
+/* The drawer trigger exists only below the sidebar breakpoint. On desktop the
+   persistent sidebar is the navigation, so the button is not rendered at all
+   and leaves no margin/padding placeholder behind. */
+.topbar .menu{display:none}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;z-index:50;inset:0 auto 0 0;width:260px;transform:translateX(-100%);transition:.2s}
+  .sidebar.open{transform:none}
+  .content{padding:20px 16px 80px}
+  .card{overflow:hidden}
+  .table{display:block;overflow-x:auto}
+  .ctx{display:none}
+  .mbrand{display:inline-flex}
+  .topbar .menu{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;margin-left:auto}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><img src="/logo.svg" alt="SEAI" /><div class="name">SEAI</div></div>
+    <nav class="nav" aria-label="Primary">
+      <a href="/overview" data-nav="overview">Overview</a>
+      <a href="/modify" data-nav="modify">Modify</a>
+      <a href="/maintenance" data-nav="maintenance">Maintenance</a>
+      <div class="rule"></div>
+    </nav>
+    <div class="sidefoot">
+      <div class="who" id="sideWho">Account</div>
+      <nav class="nav"><a href="#" id="signoutLink">Sign out</a></nav>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="mbrand"><img src="/logo.svg" alt="SEAI" />SEAI</div>
+      <button class="iconbtn menu" id="menuBtn" aria-label="Menu">☰</button>
+      <div class="ctx" id="ctxName">SEAI</div>
+      <div class="spacer"></div>
+      <div class="actions">
+        <button class="iconbtn" id="openSiteBtn" style="display:none">Open website →</button>
+      </div>
+    </header>
+    <div class="scrim" id="scrim"></div>
+    <main id="content" class="content"></main>
+  </div>
+</div>
+<script>
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path, opts={}){
+  const r = await fetch('/api/customer'+path, {credentials:'same-origin', headers:{'Content-Type':'application/json'}, ...opts});
+  let d={}; try{d=await r.json();}catch{}
+  if(!r.ok) throw Object.assign(new Error(d.error||'Request failed'), {status:r.status});
+  return d;
+}
+// Storage proxy (seai.storage). Same-origin session auth; the browser only
+// ever sees signed URLs and file IDs — never service credentials.
+async function sapi(path, opts={}){
+  const r = await fetch('/api/storage'+path, {credentials:'same-origin', ...opts});
+  let d={}; try{d=await r.json();}catch{}
+  if(!r.ok) throw new Error(d.error||'Request failed');
+  return d;
+}
+const inr = n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const fdate = s=>{ if(!s) return '—'; try{return new Date(s).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});}catch{return '—';} };
+const STATUS_LABEL={submitted:'Submitted',reviewing:'Reviewing',in_progress:'In progress',waiting_for_client:'Waiting for client',completed:'Completed'};
+const STATUS_BADGE={submitted:'gray',reviewing:'warn',in_progress:'warn',waiting_for_client:'warn',completed:'live'};
+const PRI_LABEL={normal:'Normal',important:'Important',urgent:'Urgent'};
+const CONN_LABEL={ga4:'Google Analytics 4',search_console:'Search Console',pagespeed:'PageSpeed Insights',gbp:'Google Business Profile'};
+const CONN_DESC={ga4:'Website traffic: users, sessions, page views, sources, devices.',search_console:'Search performance: clicks, impressions, CTR, position, queries.',pagespeed:'Site health: performance, accessibility, SEO, Core Web Vitals.',gbp:'Local presence data where relevant.'};
+const PERIODS=[['7d','7 days'],['30d','30 days'],['90d','90 days'],['12m','12 months']];
+let cache={overview:null,perf:{},requests:null,maintenance:null};
+function section(){ const p=location.pathname; if(p==='/modify'||p==='/changes') return 'modify'; if(p==='/maintenance') return 'maintenance'; return 'overview'; }
+function tab(){ return new URLSearchParams(location.search).get('tab'); }
+function setActiveNav(){
+  const s=section();
+  $$('[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===s));
+}
+function setHeader(w){
+  const label = w? ('SEAI · '+w.site_name) : 'SEAI';
+  $('#ctxName').textContent = label;
+  $('#sideWho').textContent = w? w.site_name : 'Account';
+  const b=$('#openSiteBtn');
+  if(w&&w.domain){ b.style.display=''; b.onclick=()=>window.open('https://'+w.domain,'_blank','noopener'); }
+  else b.style.display='none';
+}
+async function overview(){
+  if(!cache.overview) cache.overview=await api('/overview');
+  return cache.overview;
+}
+function connMap(o){ const m={}; (o.connections||[]).forEach(c=>m[c.provider]=c); return m; }
+function go(path){ history.pushState(null,'',path); render(); }
+function render(){
+  const s=section();
+  setActiveNav();
+  setDrawer(false);
+  const el=$('#content');
+  if(s==='modify') return renderModify(el);
+  if(s==='maintenance') return renderMaintenance(el);
+  return renderOverview(el);
+}
+
+/* ================= OVERVIEW ================= */
+let perfPeriod='30d';
+async function renderOverview(el){
+  const t=tab()||'website';
+  el.innerHTML='<p class="eyebrow">Overview</p><h1 class="h1">Is my website live and how is it performing?</h1><div class="tabs" role="tablist">'
+    +[['website','Website'],['performance','Performance'],['analytics','Analytics']].map(([v,l])=>`<button class="tab${v===t?' active':''}" data-tab="${v}">${l}</button>`).join('')
+    +'</div><div id="panel"><div class="empty">Loading…</div></div>';
+  el.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>go('/overview?tab='+b.dataset.tab)));
+  let o; try{ o=await overview(); }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  setHeader(o.website);
+  if(t==='performance') return renderPerfPanel($('#panel'),o);
+  if(t==='analytics') return renderAnalyticsPanel($('#panel'),o);
+  return renderWebsitePanel($('#panel'),o);
+}
+function renderWebsitePanel(el,o){
+  const w=o.website, conns=connMap(o), m=o.maintenance||{}, plan=o.plan||{};
+  const active=(o.recentRequests||[]).filter(r=>r.status!=='completed');
+  el.innerHTML = `<div class="card" style="margin-bottom:16px"><p class="eyebrow">Website</p>
+    ${w?`<h1 class="h1">${esc(w.site_name)}</h1>
+    <p class="lede" style="margin-bottom:12px">${esc(w.domain)} &nbsp;<span class="badge ${String(w.deployment_status).toLowerCase()==='live'?'live':'gray'}">${esc(w.deployment_status||'unknown')}</span></p>
+    <button class="btn" id="openBtn">Open website →</button>
+    <p style="color:var(--sub);font-size:13px;margin:12px 0 0">Deployment: ${esc(w.deployment_status||'unknown')} · Last deployment: ${esc(w.last_deployment_at?fdate(w.last_deployment_at):'—')} · SSL: ${esc(w.ssl_status||'unknown')}</p>`
+    :`<h1 class="h1">No website linked yet</h1><p class="lede">Link your purchased website so the dashboard can show its status.</p>
+    <form id="linkForm"><div class="field"><label>Website name</label><input class="input" id="lwName" required maxlength="120" /></div>
+    <div class="field"><label>Domain</label><input class="input" id="lwDomain" required maxlength="253" placeholder="examplebusiness.com" /></div>
+    <button class="btn" type="submit">Link website</button><p class="err" id="lwErr"></p></form>`}
+  </div>
+  <div class="grid">
+    <div class="card span4"><p class="eyebrow">Performance</p>
+      ${conns.ga4&&conns.ga4.status==='connected'?'Real analytics connected.':'<p style="color:var(--sub)">Analytics not connected.</p>'}
+      <p style="margin:12px 0 0"><button class="btn ghost" id="toPerf" style="padding:8px 14px">View performance</button></p></div>
+    <div class="card span4"><p class="eyebrow">Changes</p>
+      <p style="color:var(--sub)">${active.length? active.length+' active request'+(active.length>1?'s':'') : 'No active requests.'}</p>
+      ${(o.recentRequests||[]).slice(0,2).map(r=>`<p style="margin:8px 0 0">${esc(r.title)} <span class="badge ${STATUS_BADGE[r.status]||'gray'}">${esc(STATUS_LABEL[r.status]||r.status)}</span></p>`).join('')}
+      <p style="margin:12px 0 0"><button class="btn ghost" id="toMod" style="padding:8px 14px">Open Modify</button></p></div>
+    <div class="card span4"><p class="eyebrow">Maintenance</p>
+      <p style="font-size:20px;font-weight:600;margin:0">${esc(inr(plan.priceInr))} <span style="font-size:13px;color:var(--sub);font-weight:400">/ month</span></p>
+      <p style="margin:6px 0 0"><span class="badge ${m.status==='active'?'live':m.status==='pending_payment'?'warn':'gray'}">${esc((m.status||'not_subscribed').replace(/_/g,' ').toUpperCase())}</span></p>
+      ${m.next_billing_date?`<p style="color:var(--sub);font-size:13px">Next billing: ${esc(fdate(m.next_billing_date))}</p>`:''}
+      <p style="margin:12px 0 0"><button class="btn ghost" id="toMain" style="padding:8px 14px">Manage maintenance</button></p></div>
+  </div>`;
+  const ob=$('#openBtn'); if(ob&&w) ob.addEventListener('click',()=>window.open('https://'+w.domain,'_blank','noopener'));
+  const tp=$('#toPerf'); if(tp) tp.addEventListener('click',()=>go('/overview?tab=performance'));
+  const tm=$('#toMod'); if(tm) tm.addEventListener('click',()=>go('/modify'));
+  const tn=$('#toMain'); if(tn) tn.addEventListener('click',()=>go('/maintenance'));
+  const lf=$('#linkForm');
+  if(lf) lf.addEventListener('submit', async e=>{
+    e.preventDefault();
+    try{
+      const d=await api('/website',{method:'PUT',body:JSON.stringify({siteName:$('#lwName').value.trim(),domain:$('#lwDomain').value.trim()})});
+      cache.overview=null; setHeader(d.website); render();
+    }catch(err){ $('#lwErr').textContent=err.message; }
+  });
+}
+async function perfData(){
+  if(!cache.perf[perfPeriod]) cache.perf[perfPeriod]=await api('/performance?period='+encodeURIComponent(perfPeriod));
+  return cache.perf[perfPeriod];
+}
+async function renderPerfPanel(el,o){
+  el.innerHTML='<div class="chips">'+PERIODS.map(([v,l])=>`<button class="chip${v===perfPeriod?' active':''}" data-period="${v}">${l}</button>`).join('')+'</div><div class="empty">Loading performance…</div>';
+  el.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{perfPeriod=b.dataset.period;cache.perf={};render();}));
+  let d; try{ d=await perfData(); }catch(e){ el.insertAdjacentHTML('beforeend','<div class="card"><p class="err">'+esc(e.message)+'</p></div>'); return; }
+  const snaps=d.snapshots||[];
+  const box=el.querySelector('.empty'); if(box) box.remove();
+  const secs=[
+    ['Users','ga4','Users, sessions, page views, new vs returning for the selected range.'],
+    ['Sessions','ga4','Sessions for the selected range.'],
+    ['Page views','ga4','Page views for the selected range.'],
+    ['Traffic sources','ga4','Organic Search, Direct, Referral, Social, Other — as returned by the source.'],
+    ['Top pages','ga4','Page, views, users, average engagement.'],
+    ['Search performance','search_console','Clicks, impressions, CTR, average position, top queries and pages.'],
+    ['Site health','pagespeed','Performance, accessibility, best practices, SEO, Core Web Vitals with source and timestamp.'],
+  ];
+  el.insertAdjacentHTML('beforeend','<div class="grid">'+secs.map(([t,p,desc])=>{
+    const rows=snaps.filter(s=>s.provider===p);
+    if(!rows.length) return `<div class="card span6"><p class="eyebrow">${t}</p><p style="color:var(--sub)">${p==='ga4'?'Analytics not connected. Connect Google Analytics to start receiving website data.':p==='search_console'?'Search Console not connected.':'Not connected.'}</p></div>`;
+    return `<div class="card span6"><p class="eyebrow">${t}</p><p style="color:var(--faint);font-size:12.5px">${esc(desc)}</p><pre style="white-space:pre-wrap;font-family:var(--mono);font-size:12px;color:var(--sub)">${esc(JSON.stringify(rows.map(r=>({metric:r.metric,period:r.period,data:r.data,collected_at:r.collected_at})),null,2))}</pre></div>`;
+  }).join('')+'</div>');
+}
+async function renderAnalyticsPanel(el,o){
+  const m=connMap(o);
+  el.innerHTML='<div class="card"><p class="eyebrow">Analytics connections</p>'+Object.keys(CONN_LABEL).map(p=>{
+    const c=m[p], on=c&&c.status==='connected';
+    return `<div class="conn"><span class="dot${on?' on':''}"></span><div style="flex:1"><b>${CONN_LABEL[p]}</b><div style="color:var(--sub);font-size:13px">${CONN_DESC[p]}</div>${on&&c.last_synced_at?`<div style="color:var(--faint);font-size:12px">Last synced: ${esc(fdate(c.last_synced_at))}</div>`:''}</div><span class="badge ${on?'live':'gray'}">${on?'Connected':'Not connected'}</span> ${on?'':`<button class="btn ghost" data-conn="${p}" style="padding:6px 12px">Connect</button>`}</div>`;
+  }).join('')+'</div>';
+  el.querySelectorAll('[data-conn]').forEach(b=>b.addEventListener('click',async()=>{
+    const provider=b.dataset.conn;
+    const ext=prompt('Enter the '+CONN_LABEL[provider]+' identifier for your website (e.g. measurement ID / property / URL):','');
+    if(ext===null) return;
+    try{ await api('/connections',{method:'POST',body:JSON.stringify({provider,status:'connected',externalId:ext||undefined})}); cache.perf={}; cache.overview=null; render(); }
+    catch(e){ alert(e.message); }
+  }));
+}
+
+/* ================= MODIFY ================= */
+async function renderModify(el){
+  const q=new URLSearchParams(location.search).get('id');
+  if(q) return renderModifyDetail(el,q);
+  const t=tab()||'requests';
+  el.innerHTML='<p class="eyebrow">Modify</p><h1 class="h1">Request any website change</h1><p class="lede">This is a request to change your website. Each request keeps its own conversation and status.</p><div class="tabs">'
+    +[['requests','Requests'],['new','New request'],['completed','Completed']].map(([v,l])=>`<button class="tab${v===t?' active':''}" data-tab="${v}">${l}</button>`).join('')
+    +'</div><div id="panel"><div class="empty">Loading…</div></div>';
+  el.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>go('/modify?tab='+b.dataset.tab)));
+  if(t==='new') return renderComposer($('#panel'));
+  let list; try{ list=(await api('/requests')).requests||[]; }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  const rows = t==='completed'? list.filter(r=>r.status==='completed') : list.filter(r=>r.status!=='completed');
+  const recent = list.slice(0,5);
+  if(t==='requests'){
+    $('#panel').innerHTML = `<div class="card" style="margin-bottom:16px"><p class="eyebrow">Recent activity</p>${recent.length? recent.map(r=>`<p style="margin:6px 0">${esc(r.title)} <span class="badge ${STATUS_BADGE[r.status]||'gray'}">${esc(STATUS_LABEL[r.status]||r.status)}</span></p>`).join('') : '<p style="color:var(--faint)">No activity yet.</p>'}</div><div id="feed"></div>`;
+  } else {
+    $('#panel').innerHTML='<div id="feed"></div>';
+  }
+  const f=$('#feed');
+  if(!rows.length){ f.innerHTML='<div class="card"><p class="empty">'+(t==='completed'?'No completed requests yet.':'No active requests. Create one under New request.')+'</p></div>'; return; }
+  f.innerHTML=rows.map(r=>`<div class="feeditem" data-id="${r.id}"><b>${esc(r.title)}</b> <span class="badge ${STATUS_BADGE[r.status]||'gray'}">${esc(STATUS_LABEL[r.status]||r.status)}</span> <span class="badge gray">${esc(PRI_LABEL[r.priority]||r.priority)}</span><div class="meta"><span>${esc(r.page||'—')}</span><span>Created ${esc(fdate(r.created_at))}</span><span>Updated ${esc(fdate(r.updated_at))}</span></div><p style="color:var(--sub);font-size:13.5px;margin:8px 0 0">${esc(r.description.slice(0,140))}${r.description.length>140?'…':''}</p></div>`).join('');
+  f.querySelectorAll('.feeditem').forEach(n=>n.addEventListener('click',()=>go('/modify?id='+n.dataset.id)));
+}
+function renderComposer(el){
+  el.innerHTML=`<div class="card"><p class="eyebrow">New request</p><form id="crForm"><div class="field"><label>Title</label><input class="input" id="crTitle" maxlength="160" required placeholder="Change the hero image" /></div><div class="field"><label>Page</label><input class="input" id="crPage" maxlength="253" placeholder="Homepage" /></div><div class="field"><label>Change description</label><textarea id="crDesc" rows="4" required placeholder="Describe exactly what should change…"></textarea></div><div class="field"><label>Priority</label><select id="crPri"><option value="normal">Normal</option><option value="important">Important</option><option value="urgent">Urgent</option></select></div><div class="field"><label>Attachments (images, PDF, documents — 5MB max each)</label><input type="file" id="crFiles" multiple /><div class="thumbs" id="crPrev"></div></div><button class="btn" type="submit">Submit request</button><p class="err" id="crErr"></p></form></div>`;
+  const files=[];
+  $('#crFiles').addEventListener('change',e=>{
+    files.length=0; $('#crPrev').innerHTML='';
+    [...e.target.files].slice(0,5).forEach(f=>{
+      if(f.size>5*1024*1024){ alert(f.name+': over 5MB, skipped.'); return; }
+      files.push({file:f,filename:f.name,mimeType:f.type||'application/octet-stream',sizeBytes:f.size});
+      if((f.type||'').startsWith('image/')){ const r=new FileReader(); r.onload=()=>{ $('#crPrev').insertAdjacentHTML('beforeend','<img src="'+r.result+'" alt="" />'); }; r.readAsDataURL(f); }
+      else $('#crPrev').insertAdjacentHTML('beforeend','<span class="filechip">'+esc(f.name)+'</span>');
+    });
+  });
+  // Storage-backed upload: bytes go to seai.storage, the change request
+  // stores only the file ID (never inline data URLs). When storage is not
+  // configured (503), falls back to the legacy inline endpoint so existing
+  // behavior is preserved.
+  async function uploadAttachmentFile(a){
+    const category=a.mimeType.startsWith('image/')?'image':(a.mimeType==='application/pdf'?'document':'intake_attachment');
+    const up=await sapi('/uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({originalFilename:a.filename,mimeType:a.mimeType,sizeBytes:a.sizeBytes,category})});
+    const fileId=up.file.storage_file_id;
+    // Production (S3/R2): PUT bytes directly to the presigned upload URL —
+    // the same-origin relay only serves memory/local providers (the storage
+    // API rejects relayed bytes on s3). Fall back to the relay in dev.
+    let direct=null;
+    try{ direct=await fetch(up.upload.uploadUrl,{method:'PUT',headers:{'Content-Type':a.mimeType},body:a.file}); }catch(e){ direct=null; }
+    if(!direct||!direct.ok){
+      await sapi('/uploads/'+encodeURIComponent(fileId)+'/bytes',{method:'PUT',headers:{'Content-Type':'application/octet-stream'},body:a.file});
+    }
+    const done=await sapi('/uploads/'+encodeURIComponent(fileId)+'/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    return done.object.id;
+  }
+  async function legacyAttachment(requestId, a){
+    const r=new FileReader();
+    const dataUrl=await new Promise((resolve,reject)=>{ r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(a.file); });
+    await api('/requests/'+requestId+'/attachments',{method:'POST',body:JSON.stringify({filename:a.filename,mimeType:a.mimeType,sizeBytes:a.sizeBytes,dataUrl})});
+  }
+  $('#crForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    try{
+      const d=await api('/requests',{method:'POST',body:JSON.stringify({title:$('#crTitle').value.trim(),description:$('#crDesc').value.trim(),page:$('#crPage').value.trim(),priority:$('#crPri').value})});
+      for(const a of files){
+        try{
+          const fileId=await uploadAttachmentFile(a);
+          await api('/requests/'+d.request.id+'/attachments/storage',{method:'POST',body:JSON.stringify({fileId})});
+        }catch(uerr){
+          if(uerr && uerr.status===503){ await legacyAttachment(d.request.id, a); }
+          else throw uerr;
+        }
+      }
+      cache.requests=null; go('/modify?id='+d.request.id);
+    }catch(err){ $('#crErr').textContent=err.message; }
+  });
+}
+async function renderModifyDetail(el,id){
+  el.innerHTML='<p><a href="/modify" data-navlink>← All requests</a></p><div class="empty">Loading request…</div>';
+  el.querySelector('[data-navlink]').addEventListener('click',e=>{e.preventDefault();go('/modify');});
+  let d; try{ d=await api('/requests/'+encodeURIComponent(id)); }catch(e){ el.innerHTML='<p><a href="/modify" data-navlink2>← All requests</a></p><div class="card"><p class="err">'+esc(e.message)+'</p></div>'; el.querySelector('[data-navlink2]').addEventListener('click',ev=>{ev.preventDefault();go('/modify');}); return; }
+  const r=d.request;
+  el.innerHTML=`<p><a href="/modify" id="backLink">← All requests</a></p>
+  <h1 class="h1">${esc(r.title)}</h1>
+  <p><span class="badge ${STATUS_BADGE[r.status]||'gray'}">${esc(STATUS_LABEL[r.status]||r.status)}</span> <span class="badge gray">${esc(PRI_LABEL[r.priority]||r.priority)}</span></p>
+  <div class="card"><p class="eyebrow">Request</p><p>${esc(r.description)}</p><p style="color:var(--sub);font-size:13px">Page: ${esc(r.page||'—')} · Created ${esc(fdate(r.created_at))} · Updated ${esc(fdate(r.updated_at))}</p>
+  ${(d.attachments||[]).length?'<div class="thumbs">'+d.attachments.map(a=>'<span class="filechip">'+esc(a.filename)+'</span>').join('')+'</div>':''}</div>
+  <div class="card" style="margin-top:16px"><p class="eyebrow">Conversation</p><div id="msgs">${(d.messages||[]).map(m=>`<div class="msg ${m.author_role==='seai'?'seai':''}"><span class="who">${m.author_role==='seai'?'SEAI':'You'} · ${esc(fdate(m.created_at))}</span><p>${esc(m.body)}</p></div>`).join('')||'<p style="color:var(--faint)">No replies yet.</p>'}</div>
+  <form id="rpForm" style="margin-top:12px"><div class="field"><label>Reply</label><textarea id="rpBody" rows="3" required></textarea></div><button class="btn" type="submit">Send reply</button><p class="err" id="rpErr"></p></form></div>`;
+  $('#backLink').addEventListener('click',e=>{e.preventDefault();go('/modify');});
+  $('#rpForm').addEventListener('submit',async e=>{ e.preventDefault(); try{ await api('/requests/'+encodeURIComponent(id)+'/messages',{method:'POST',body:JSON.stringify({body:$('#rpBody').value.trim()})}); render(); }catch(err){ $('#rpErr').textContent=err.message; } });
+}
+
+/* ================= MAINTENANCE ================= */
+async function renderMaintenance(el){
+  const t=tab()||'plan';
+  el.innerHTML='<p class="eyebrow">Maintenance</p><h1 class="h1">Website maintenance</h1><div class="tabs">'
+    +[['plan','Plan'],['billing','Billing'],['requests','Requests']].map(([v,l])=>`<button class="tab${v===t?' active':''}" data-tab="${v}">${l}</button>`).join('')
+    +'</div><div id="panel"><div class="empty">Loading…</div></div>';
+  el.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>go('/maintenance?tab='+b.dataset.tab)));
+  let d; try{ d=await api('/maintenance'); }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  const plan=d.plan, s=d.subscription;
+  const badge=s?(s.status==='active'?'live':s.status==='pending_payment'?'warn':'gray'):'gray';
+  const label=s? s.status.replace(/_/g,' ') : 'not subscribed';
+  if(t==='billing'){
+    $('#panel').innerHTML=`<div class="card"><p class="eyebrow">Billing</p>
+      <p style="font-size:20px;font-weight:600;margin:0">${esc(inr(plan.priceInr))} <span style="font-size:13px;color:var(--sub);font-weight:400">/ month</span></p>
+      <p style="margin:8px 0"><span class="badge ${badge}">${esc(label.toUpperCase())}</span></p>
+      ${s&&s.next_billing_date?`<p style="color:var(--sub)">Next billing: ${esc(fdate(s.next_billing_date))}</p>`:'<p style="color:var(--sub)">Next billing: —</p>'}
+      ${s?`<p style="color:var(--sub);font-size:13px">Payment: ${esc(s.payment_status||'—')} · Renewal: ${esc(s.renewal_status||'—')}</p>`:'<p style="color:var(--sub);font-size:13px">Maintenance is not active.</p>'}
+      ${!s||s.status==='not_subscribed'?'<button class="btn" id="actBtn">Activate maintenance</button><p class="err" id="actErr"></p>':''}
+      ${s&&s.status==='pending_payment'?'<p style="color:var(--warn)">Pending payment — activation completes after payment. Nothing has been charged.</p>':''}</div>`;
+  } else if(t==='requests'){
+    let recent=[]; try{ recent=((await api('/requests')).requests||[]).slice(0,5); }catch{}
+    $('#panel').innerHTML=`<div class="card"><p class="eyebrow">Maintenance requests</p><p style="margin:12px 0"><button class="btn" id="reqBtn">Request a maintenance change</button></p>${recent.length?recent.map(r=>`<p style="margin:6px 0">${esc(r.title)} <span class="badge ${STATUS_BADGE[r.status]||'gray'}">${esc(STATUS_LABEL[r.status]||r.status)}</span></p>`).join(''):'<p style="color:var(--faint)">No requests yet.</p>'}</div>`;
+    $('#reqBtn').addEventListener('click',()=>go('/modify?tab=new'));
+    return;
+  } else {
+    $('#panel').innerHTML=`<div class="card" style="margin-bottom:16px"><p class="eyebrow">Current plan</p>
+      <p style="font-size:24px;font-weight:600;margin:0">${esc(inr(plan.priceInr))} <span style="font-size:13px;color:var(--sub);font-weight:400">/ month</span></p>
+      <p style="margin:8px 0"><span class="badge ${badge}">${esc(label.toUpperCase())}</span></p>
+      ${!s||s.status==='not_subscribed'?'<p style="color:var(--sub)">Maintenance is not active.</p><button class="btn" id="actBtn">Activate maintenance</button><p class="err" id="actErr"></p>':''}
+      ${s&&s.status==='pending_payment'?'<p style="color:var(--warn)">Activation requested. Complete payment to activate.</p>':''}</div>
+    <div class="card"><p class="eyebrow">What maintenance includes</p>
+      <p style="color:var(--sub);font-size:13.5px;margin:4px 0">· Content updates · Image replacements · Minor website changes · Technical fixes · Broken-link checks · Deployment support</p></div>`;
+  }
+  const b=$('#actBtn');
+  if(b) b.addEventListener('click',async()=>{ try{ await api('/maintenance/activate',{method:'POST',body:'{}'}); render(); }catch(e){ $('#actErr').textContent=e.message; } });
+}
+
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-nav]');
+  if(a){e.preventDefault();history.pushState(null,'',a.getAttribute('href'));render();}
+});
+window.addEventListener('popstate',render);
+function setDrawer(open){
+  document.querySelector('.sidebar').classList.toggle('open',open);
+  document.querySelector('#scrim').classList.toggle('show',open);
+}
+$('#menuBtn').addEventListener('click',e=>{ e.stopPropagation(); setDrawer(!document.querySelector('.sidebar').classList.contains('open')); });
+$('#scrim').addEventListener('click',()=>setDrawer(false));
+document.addEventListener('click',e=>{
+  const sb=document.querySelector('.sidebar');
+  if(sb.classList.contains('open') && !sb.contains(e.target) && !e.target.closest('#menuBtn')) setDrawer(false);
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') setDrawer(false); });
+$('#signoutLink').addEventListener('click',async e=>{ e.preventDefault(); try{await fetch('/api/auth/sign-out',{method:'POST',credentials:'same-origin'});}catch{} location.href='/sign-in'; });
+(async()=>{ try{ const o=await overview(); setHeader(o.website); }catch{} })();
+render();
+</script>
+</body>
+</html>

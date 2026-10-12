@@ -1,0 +1,115 @@
+﻿import { cta, heading, infoBlock, note, paragraph, statusBadge } from '../design.js';
+import { dashboardUrl } from '../urls.js';
+import type { EmailTemplateDef } from '../types.js';
+import { DEFAULT_REASON } from '../types.js';
+
+export const paymentTemplates: EmailTemplateDef[] = [
+  {
+    name: 'payment.successful',
+    category: 'payment',
+    subject: 'Your payment was successful',
+    preheader: 'Payment received.',
+    reason: DEFAULT_REASON,
+    trigger: 'Authoritative payment.succeeded event from the payment service.',
+    required: ['amount', 'status'],
+    optional: ['order_id', 'payment_id', 'purchased_at', 'plan_name', 'currency', 'order_total', 'receipt_id'],
+    wired: true,
+    build: (ctx) => [
+      statusBadge(ctx.status || 'Payment successful', 'positive'),
+      heading('Your payment has been received.'),
+      paragraph('Your SEAI project is now moving forward.'),
+      infoBlock(null, [
+        { label: 'Plan', value: ctx.plan_name },
+        { label: 'Amount', value: ctx.amount },
+        { label: 'Reference', value: ctx.order_id },
+      ]),
+      cta('View project', dashboardUrl()),
+    ],
+  },
+  {
+    name: 'payment.failed',
+    category: 'payment',
+    subject: "Your payment couldn't be completed",
+    preheader: 'Your payment did not go through.',
+    reason: DEFAULT_REASON,
+    trigger: 'Authoritative payment.failed event from the payment service.',
+    required: ['status'],
+    optional: ['amount', 'failure_reason', 'order_id', 'payment_id', 'plan_name'],
+    wired: true,
+    build: (ctx) => [
+      statusBadge(ctx.status || 'Payment failed', 'critical'),
+      heading("Your payment didn't go through."),
+      paragraph("No charge has been confirmed. You can try again whenever you're ready."),
+      infoBlock(null, [
+        { label: 'Amount', value: ctx.amount },
+        { label: 'Reference', value: ctx.order_id },
+        ...(ctx.failure_reason ? [{ label: 'Reason', value: ctx.failure_reason }] : []),
+      ]),
+      cta('Try again', dashboardUrl()),
+    ],
+  },
+  {
+    name: 'payment.pending',
+    category: 'payment',
+    subject: 'Your payment is pending',
+    preheader: "We're waiting for confirmation.",
+    reason: DEFAULT_REASON,
+    trigger: 'Authoritative payment.pending / requires_action event from the payment service.',
+    required: ['status'],
+    optional: ['amount', 'failure_reason', 'order_id', 'payment_id', 'plan_name'],
+    wired: true,
+    build: (ctx) => [
+      statusBadge(ctx.status || 'Payment pending', 'warning'),
+      heading("We're waiting for your payment."),
+      paragraph("You don't need to do anything right now. We'll update you once it's confirmed."),
+      infoBlock(null, [
+        { label: 'Amount', value: ctx.amount },
+        { label: 'Reference', value: ctx.order_id },
+      ]),
+      cta('View payment', dashboardUrl()),
+    ],
+  },
+  {
+    name: 'payment.refunded',
+    category: 'payment',
+    subject: 'Your refund has been processed',
+    preheader: 'Refund processed.',
+    reason: DEFAULT_REASON,
+    trigger: 'Authoritative refund.issued event from the payment service.',
+    required: ['refund_amount', 'status'],
+    optional: ['amount', 'order_id', 'payment_id', 'purchased_at', 'plan_name'],
+    wired: true,
+    build: (ctx) => [
+      statusBadge(ctx.status || 'Refund processed', 'positive'),
+      heading('Your refund has been processed.'),
+      paragraph('It will reach your original payment method within 3â€“5 business days.'),
+      infoBlock(null, [
+        { label: 'Amount', value: ctx.refund_amount },
+        { label: 'Reference', value: ctx.order_id },
+      ]),
+      cta('View project', dashboardUrl()),
+    ],
+  },
+  {
+    name: 'payment.receipt',
+    category: 'payment',
+    subject: 'Your payment receipt',
+    preheader: 'Receipt for your payment.',
+    reason: DEFAULT_REASON,
+    trigger: 'Authoritative receipt request from the payment service or the SEAI dashboard.',
+    required: ['amount', 'order_id', 'purchased_at', 'status'],
+    optional: ['payment_id', 'receipt_id', 'plan_name', 'order_total', 'currency'],
+    wired: true,
+    build: (ctx) => [
+      statusBadge(ctx.status || 'Receipt', 'neutral'),
+      heading('Your payment receipt.'),
+      infoBlock(null, [
+        { label: 'Plan', value: ctx.plan_name },
+        { label: 'Amount paid', value: ctx.amount },
+        { label: 'Reference', value: ctx.receipt_id || ctx.order_id },
+        { label: 'Paid on', value: ctx.purchased_at },
+      ]),
+      note('Questions about this payment? Reply to this email.'),
+    ],
+  },
+];

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verify email — SEAI</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/auth.css" />
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a class="brand" href="/">
+      <img src="/logo.svg" width="26" height="26" alt="SEAI" />
+      <span class="n">SEAI</span>
+    </a>
+
+    <div id="loadingView"><p class="subtitle">Verifying…</p></div>
+
+    <div id="checkView" style="display:none">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+      </div>
+      <h1 class="title">Check your email</h1>
+      <p class="subtitle">We sent a verification link to your email. Click the link to verify your account.</p>
+
+      <div id="state" class="state-msg" style="display:none"></div>
+
+      <div class="field" id="resendField" style="margin-top:12px">
+        <label for="resendEmail">Resend to a different email?</label>
+        <div class="input-wrap">
+          <input id="resendEmail" name="resendEmail" type="email" autocomplete="email" placeholder="you@company.com" />
+        </div>
+        <span id="resendEmail-err" class="err-msg"></span>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="resend">Resend verification email</button>
+
+      <div class="divider">or</div>
+
+      <button type="button" class="btn btn-ghost" onclick="go('/sign-in')">Back to sign in</button>
+    </div>
+
+    <div id="successView" class="success-screen" style="display:none">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h1 class="title">Email verified</h1>
+      <p class="subtitle">Your email has been verified. You can now access your dashboard.</p>
+      <button type="button" class="btn btn-primary" onclick="go('/overview')" style="margin-top:8px">Continue</button>
+    </div>
+
+    <div id="invalidView" style="display:none">
+      <h1 class="title">Link expired</h1>
+      <p class="subtitle">This verification link is invalid or has expired. Sign in to request a new one.</p>
+      <button type="button" class="btn btn-primary" onclick="go('/sign-in')" style="margin-top:8px">Sign in</button>
+    </div>
+  </div>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+(function () {
+  const token = new URLSearchParams(location.search).get('token') || '';
+  const loadingView = document.getElementById('loadingView');
+  const checkView = document.getElementById('checkView');
+  const successView = document.getElementById('successView');
+  const invalidView = document.getElementById('invalidView');
+
+  function show(el) {
+    [loadingView, checkView, successView, invalidView].forEach((e) => { e.style.display = 'none'; });
+    el.style.display = 'block';
+  }
+
+  // If token in URL, verify it
+  if (token) {
+    (async () => {
+      try {
+        await api('/verify-email', { token });
+        show(successView);
+      } catch { show(invalidView); }
+    })();
+  } else {
+    show(checkView);
+  }
+
+  // Resend with 60s cooldown
+  const resendBtn = document.getElementById('resend');
+  const resendEmail = document.getElementById('resendEmail');
+  if (resendBtn) {
+    resendBtn.addEventListener('click', async () => {
+      hideState('state');
+      setField('resendEmail', '');
+      const email = (resendEmail ? resendEmail.value.trim() : '');
+      if (!email) {
+        showState('state', 'error', 'Enter the email for this account');
+        return;
+      }
+      if (!isValidEmail(email)) {
+        setField('resendEmail', 'Enter a valid email');
+        return;
+      }
+      setLoading(resendBtn, true);
+      try {
+        await api('/resend-verification', { email: email });
+        showState('state', 'success', 'Verification email resent. Check your inbox.');
+      } catch (err) {
+        showState('state', 'error', err.message);
+      }
+      setLoading(resendBtn, false);
+      // Cooldown
+      let secs = 60;
+      resendBtn.disabled = true;
+      const interval = setInterval(() => {
+        secs--;
+        if (secs <= 0) {
+          clearInterval(interval);
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend verification email';
+        } else {
+          resendBtn.textContent = `Resend in ${secs}s`;
+        }
+      }, 1000);
+    });
+  }
+})();
+</script>
+</body>
+</html>
