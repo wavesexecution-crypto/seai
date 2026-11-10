@@ -1,6 +1,5 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function health(_req: IncomingMessage, res: ServerResponse) {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ ok: true, service: 'seai' }));
+export default async function health(_req: VercelRequest, res: VercelResponse) {
+  res.status(200).json({ ok: true, service: 'seai' });
 }
