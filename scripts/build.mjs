@@ -11,6 +11,9 @@ if (projectName === 'seai.public' || projectId === 'prj_mmNhoyv3d3SIxifxaeWkGSRk
   console.log('[build] Public site project detected → vite build');
   execSync('npx vite build && node scripts/inline-page-css.mjs', { stdio: 'inherit' });
 } else {
-  console.log('[build] Dashboard project detected → tsc + copy-static');
-  execSync('npx tsc -p tsconfig.json && node scripts/copy-static.cjs', { stdio: 'inherit' });
+  console.log('[build] Dashboard project detected → tsc type-check + emit + copy-static');
+  // Type-check first (noEmit), then emit compiled server JS to dist/
+  execSync('npx tsc -p tsconfig.json --noEmit', { stdio: 'inherit' });
+  execSync('npx tsc -p tsconfig.server.json', { stdio: 'inherit' });
+  execSync('node scripts/copy-static.cjs', { stdio: 'inherit' });
 }
