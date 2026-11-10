@@ -146,7 +146,7 @@ const VAR_PATTERN = /\{\{\s*([a-z0-9_]+)\s*\}\}/gi;
 export function fillVars(template: string, ctx: EmailContext, options: { html?: boolean; escape?: (v: string) => string } = {}): string {
   const raw = String(template ?? '');
   const escaper = options.escape ?? ((v: string) => stripControl(v));
-  return raw.replace(VAR_PATTERN, (match, name: string) => {
+  return raw.replace(VAR_PATTERN, (_match, name: string) => {
     const key = name.toLowerCase() as EmailVariable;
     if (!(key in ctx)) return '';
     const value = ctx[key] ?? '';
@@ -156,8 +156,8 @@ export function fillVars(template: string, ctx: EmailContext, options: { html?: 
 
 export function unresolvedVars(template: string): string[] {
   const found: string[] = [];
-  for (const match of String(template ?? '').matchAll(VAR_PATTERN)) {
-    const name = match[1]!.toLowerCase();
+  for (const _match of String(template ?? '').matchAll(VAR_PATTERN)) {
+    const name = _match[1]!.toLowerCase();
     if (!found.includes(name)) found.push(name);
   }
   return found;

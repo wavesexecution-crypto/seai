@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { db } from '../db/db.js';
 import { createUser, findUserByEmail } from '../auth/service.js';
 import { adoptIntakeFiles } from '../customer/routes.js';
-import { dispatchEmail } from '../mail/dispatch.js';
+import { } from '../mail/dispatch.js';
 
 export interface PaymentProvisionInput {
   orderId?: string;

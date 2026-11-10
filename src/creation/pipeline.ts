@@ -13,7 +13,7 @@ import { Strategies } from '../stores/strategies.js';
 import { Memory } from '../memory/store.js';
 import { recordDecision } from '../brain/writer.js';
 import { slotForShop } from '../stores/registry.js';
-import { compileBlueprint, getBlueprint } from '../blueprint/compiler.js';
+import { compileBlueprint } from '../blueprint/compiler.js';
 import { runReadiness, type ReadinessReport } from './readiness.js';
 import { ShopService, ProductService } from '../shopify/services.js';
 

@@ -78,6 +78,7 @@ function publicUser(user: User) {
     fullName: user.full_name,
     email: user.email,
     emailVerified: user.email_verified,
+    role: user.role ?? 'customer',
   };
 }
 

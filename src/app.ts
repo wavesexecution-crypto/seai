@@ -9,13 +9,13 @@ import { randomUUID } from 'node:crypto';
 import { config, configuredKeyCount } from './config.js';
 import { db } from './db/db.js';
 import { authRouter } from './auth/routes.js';
-import { requireAuthRedirect, requireAuth, requireStaffOrCron } from './auth/middleware.js';
+import { requireAuthRedirect, requireAuth, requireStaffOrCron, staffOnly, requireStaffRedirect } from './auth/middleware.js';
 import { purgeDeadPasswordResets } from './auth/service.js';
 import { aiGateway } from './ai/gateway.js';
 import { runAgent } from './agent/loop.js';
 import { listTools } from './agent/tools.js';
+import { PERMISSION_REGISTRY, validateRegistry } from './shopify/permissions.js';
 import { scopeReasons, validateScopes } from './shopify/scopes.js';
-import { PERMISSION_REGISTRY, requiredScopes, validateRegistry } from './shopify/permissions.js';
 import { saveSession, getAccessToken } from './shopify/sessions.js';
 import { ShopService } from './shopify/services.js';
 import { shopify } from './shopify/app.js';
@@ -36,6 +36,8 @@ import { executeTool } from './agent/executor.js';
 import { assertNoSecretsInResponse } from './security/validate.js';
 import { embedRouter } from './routes/embed.js';
 import { customerRouter, customerStaffRouter } from './customer/routes.js';
+import { growthRouter } from './growth/routes.js';
+import { staffRouter } from './growth/staff.js';
 import { storageRouter } from './storage/router.js';
 import { intakeRouter } from './intake/routes.js';
 import { mailEventsRouter } from './mail/events.js';
@@ -122,7 +124,8 @@ app.use((_req, res, next) => {
       // served from 'self'. API JSON responses are unaffected by this directive.
       "script-src 'self' 'unsafe-inline' https://cdn.shopify.com https://shopify-embed.shopifycloud.com",
       // App Bridge loads styles and makes XHR/fetch calls to the shop's admin.
-      "style-src 'self' 'unsafe-inline' https://cdn.shopify.com",
+      "style-src 'self' 'unsafe-inline' https://cdn.shopify.com https://fonts.googleapis.com https://fonts.gstatic.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: https://cdn.shopify.com",
       "connect-src 'self' https://*.myshopify.com https://admin.shopify.com",
     ].join('; ')
@@ -241,12 +244,28 @@ app.use('/api', intakeRouter);
 app.use('/api', (req, res, next) => {
   if (req.path === '/health' || req.path.startsWith('/health/')) return next();
   if (req.path.startsWith('/auth/')) return next();
+  // Public, rate-limited endpoints (pre-auth by design): mounted before the guard
+  // complete instead, see intake/growth inquiry mounting below.
+  if (req.path.startsWith('/intake') || req.path.startsWith('/growth/inquiry')) return next();
   // Staff-authoritative customer operations authenticate with the service key
   // (SEAI_STAFF_API_KEY), not a customer session, so they must be exempt from the
   // session guard. `requireStaff` still gates them, and fails closed when unset.
   if (isStaffPath(req.path)) return next();
+  // Internal operator/console APIs are staff-only. A customer session proves
+  // identity, never privilege — role comes from users.role (RBAC).
+  if (isOperatorPath(req.path)) return staffOnly(req, res, next);
   return requireAuth(req, res, next);
 });
+
+// Operator (internal) API surface — never reachable by customer sessions.
+const OPERATOR_PREFIXES = [
+  '/agent', '/runs', '/decisions', '/experiments', '/tools', '/portfolio',
+  '/strategy', '/onboard', '/blueprint', '/creation', '/admin', '/brain',
+  '/models', '/scopes', '/stores', '/staff',
+];
+function isOperatorPath(path: string): boolean {
+  return OPERATOR_PREFIXES.some((p) => path === p || path.startsWith(p + '/'));
+}
 
 // Match the two staff operations by pattern so the :id segment is honoured.
 function isStaffPath(path: string): boolean {
@@ -262,11 +281,22 @@ function isStaffPath(path: string): boolean {
 app.use('/api/customer', customerStaffRouter);
 app.use('/api/customer', customerRouter);
 
+// Growth system: client-facing routes under /api/growth (session-guarded by
+// the /api guard; /growth/inquiry is exempt there and rate-limited in-router)
+// and the staff API under /api/staff (RBAC: any staff role, capability-checked
+// per route; unreachable by customer sessions via the operator prefix).
+app.use('/api/growth', growthRouter);
+app.use('/api/staff', staffRouter);
+
 // Storage proxy (seai.storage control plane). Behind the /api session guard
 // above; routes re-enforce per-customer scoping. See storage/router.ts and
 // seai.storage docs/INTEGRATION_CONTRACT_FINAL.md.
 app.use('/api/storage', storageRouter);
 
+// Staff command center — staff-only page (customers are redirected to /overview).
+app.get('/staff', requireStaffRedirect, (_req, res) => {
+  res.sendFile(authHtml('staff.html'));
+});
 // Auth page routes — serve auth HTML pages
 function authHtml(filename: string): string {
   for (const p of [join(here, 'public', filename), join(here, '..', 'public', filename)]) {
@@ -281,7 +311,9 @@ for (const p of ['/sign-in', '/create-account', '/sign-up', '/forgot-password', 
   });
 }
 // App Store required legal pages — serve at clean URLs without .html
-for (const p of ['/privacy', '/terms', '/support']) {
+// (support.html is the legacy Shopify-app support page and is no longer
+// exposed at /support — that route now renders the CDF support view.)
+for (const p of ['/privacy', '/terms']) {
   app.get(p, (_req, res) => { res.sendFile(authHtml(p.slice(1) + '.html')); });
 }
 // Customer dashboard root goes through the same auth gate as /overview.
@@ -298,9 +330,11 @@ function shellHtml(): string {
   }
   return join(here, '..', 'public', 'index.html');
 }
-for (const p of ['/overview', '/modify', '/maintenance', '/performance', '/changes', '/projects', '/create', '/templates', '/deployments', '/domains', '/settings', '/command', '/activity', '/provider', '/tools', '/system', '/portfolio', '/creation', '/start']) {
+for (const p of ['/overview', '/modify', '/maintenance', '/performance', '/changes', '/projects', '/services', '/approvals', '/reports', '/billing', '/support', '/create', '/templates', '/deployments', '/domains', '/settings', '/command', '/activity', '/provider', '/tools', '/system', '/portfolio', '/creation', '/start']) {
   app.get(p, requireAuthRedirect, (_req, res) => { res.sendFile(shellHtml()); });
 }
+// Client onboarding — standalone authenticated page (multi-step form).
+app.get('/onboarding', requireAuthRedirect, (_req, res) => { res.sendFile(authHtml('onboarding.html')); });
 app.get('/project/*', requireAuthRedirect, (_req, res) => { res.sendFile(shellHtml()); });
 
 const errSafe = (e: any) => ({ error: String(e?.message ?? e).slice(0, 500), code: e?.code });

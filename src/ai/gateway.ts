@@ -43,7 +43,7 @@ export interface ModelCaps {
 
 export interface GenerateOpts {
   model?: string;
-  timeoutMs?: number;
+  _timeoutMs?: number;
   maxTokens?: number;
   temperature?: number;
   json?: boolean;
@@ -170,17 +170,17 @@ async function recordFailure(keyId: string, errorClass: ErrorClass) {
   await setHealth(h);
 }
 
-async function logRequest(storeId: string | null, keyId: string, model: string, kind: string, latencyMs: number, ok: boolean, errorClass?: string) {
+async function logRequest(_storeId: string | null, keyId: string, model: string, kind: string, latencyMs: number, ok: boolean, errorClass?: string) {
   try {
     await db.insert('ai_requests', {
-      id: randomUUID(), store_id: storeId, key_id: keyId, model, kind, latency_ms: latencyMs, ok, error_class: errorClass ?? null,
+      id: randomUUID(), store_id: _storeId, key_id: keyId, model, kind, latency_ms: latencyMs, ok, error_class: errorClass ?? null,
     });
   } catch { /* ignore */ }
 }
 
-async function doFetch(path: string, key: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+async function doFetch(path: string, key: string, init: RequestInit, _timeoutMs: number): Promise<Response> {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(new Error('timeout')), timeoutMs);
+  const t = setTimeout(() => ctrl.abort(new Error('timeout')), _timeoutMs);
   try {
     return await fetch(`${config.ollamaBaseUrl}${path}`, {
       ...init,
@@ -216,10 +216,10 @@ function requireExperKey(): string {
   return key;
 }
 
-async function doExperFetch(path: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+async function doExperFetch(path: string, init: RequestInit, _timeoutMs: number): Promise<Response> {
   const key = requireExperKey();
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(new Error('timeout')), timeoutMs);
+  const t = setTimeout(() => ctrl.abort(new Error('timeout')), _timeoutMs);
   try {
     return await fetch(`${config.experBaseUrl}${path}`, {
       ...init,
@@ -250,9 +250,9 @@ interface ExperResponse {
  */
 export async function experChat(
   messages: ChatMessage[],
-  opts: { maxTokens?: number; temperature?: number; json?: boolean; timeoutMs?: number }
+  opts: { maxTokens?: number; temperature?: number; json?: boolean; _timeoutMs?: number }
 ): Promise<ExperResponse> {
-  const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
+  const _timeoutMs = opts._timeoutMs ?? config.agentTimeoutMs;
   const body: Record<string, unknown> = {
     model: EXPER_MODEL,
     messages,
@@ -266,7 +266,7 @@ export async function experChat(
   const res = await doExperFetch('/chat/completions', {
     method: 'POST',
     body: JSON.stringify(body),
-  }, timeoutMs);
+  }, _timeoutMs);
   if (!res.ok) throw errWithStatus(`experiential chat failed: ${res.status} ${(await res.text()).slice(0, 300)}`, res.status);
   const j = await parseJsonSafe(res);
   const content: string = j?.choices?.[0]?.message?.content ?? j?.choices?.[0]?.text ?? '';
@@ -281,9 +281,9 @@ export async function experChat(
  */
 async function* experChatStream(
   messages: ChatMessage[],
-  opts: { maxTokens?: number; temperature?: number; timeoutMs?: number; onUsage?: (u: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }) => void }
+  opts: { maxTokens?: number; temperature?: number; _timeoutMs?: number; onUsage?: (u: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }) => void }
 ): AsyncGenerator<string> {
-  const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
+  const _timeoutMs = opts._timeoutMs ?? config.agentTimeoutMs;
   const body: Record<string, unknown> = {
     model: EXPER_MODEL,
     messages,
@@ -293,7 +293,7 @@ async function* experChatStream(
   // The claude-fable-5.1 route only accepts temperature 1.0; omit it to use
   // the route default rather than sending the Ollama-world default of 0.2.
   if (opts.temperature !== undefined) body.temperature = opts.temperature;
-  const res = await doExperFetch('/chat/completions', { method: 'POST', body: JSON.stringify(body) }, timeoutMs);
+  const res = await doExperFetch('/chat/completions', { method: 'POST', body: JSON.stringify(body) }, _timeoutMs);
   if (!res.ok) throw errWithStatus(`experiential stream failed: ${res.status} ${(await res.text()).slice(0, 300)}`, res.status);
   const reader = res.body?.getReader();
   if (!reader) { yield ''; return; }
@@ -321,7 +321,7 @@ async function* experChatStream(
 }
 
 /** Core resilient executor: failover across all 6 keys with backoff. Keys never leave this module. */
-async function execWithFailover<T>(kind: string, model: string, storeId: string | null, timeoutMs: number, fn: (key: string, keyId: string, model: string) => Promise<T>): Promise<T> {
+async function execWithFailover<T>(kind: string, model: string, _storeId: string | null, _timeoutMs: number, fn: (key: string, keyId: string, model: string) => Promise<T>): Promise<T> {
   const keys = await orderedKeys();
   if (!keys.length) {
     const e: any = new Error('SEAI AI_PROVIDER_UNAVAILABLE: no Ollama API keys configured');
@@ -338,13 +338,13 @@ async function execWithFailover<T>(kind: string, model: string, storeId: string 
     try {
       const out = await fn(k.key, k.keyId, model);
       await recordSuccess(k.keyId, Date.now() - start);
-      await logRequest(storeId, k.keyId, model, kind, Date.now() - start, true);
+      await logRequest(_storeId, k.keyId, model, kind, Date.now() - start, true);
       return out;
     } catch (err: any) {
       const status = err?.status ?? null;
       const cls = classifyError(status, err?.message || '');
       await recordFailure(k.keyId, cls);
-      await logRequest(storeId, k.keyId, model, kind, Date.now() - start, false, cls);
+      await logRequest(_storeId, k.keyId, model, kind, Date.now() - start, false, cls);
       lastErr = err;
       // auth errors: try next key (may be per-key quota); rate limit: next key immediately
       // small jittered backoff between keys (not exponential sleep wall)
@@ -382,7 +382,6 @@ const KNOWN_CONTEXT: [RegExp, number][] = [
 ];
 
 export function inferCapabilities(name: string): Omit<ModelCaps, 'availability' | 'health' | 'avgLatencyMs' | 'score'> {
-  const n = name.toLowerCase();
   const toolSupport = /gpt-oss|qwen3|qwen3\.5|llama3\.[123]|mistral-large|mistral-small|qwen2\.5|deepseek|phi4|command-r|firefunction|hermes|tool|nemotron|kimi|glm|minimax|gemma4/i.test(name);
   const reasoning = /deepseek-r1|r1|qwen3|gpt-oss|reasoning|thinking|o1|qwq|nemotron|deepseek-v4|glm|qwen3\.5/i.test(name);
   const vision = /vision|llava|qwen.*vl|gemma3|llama3\.2-vision|multimodal/i.test(name);
@@ -416,11 +415,11 @@ export function scoreModel(m: { toolSupport: boolean; reasoning: boolean; contex
 
 let modelCache: { at: number; models: ModelCaps[] } | null = null;
 
-async function fetchModelNames(key: string, timeoutMs: number): Promise<string[]> {
+async function fetchModelNames(key: string, _timeoutMs: number): Promise<string[]> {
   // Ollama Cloud: GET /api/tags (native API). Host is https://ollama.com.
   for (const path of ['/api/tags', '/v1/models']) {
     try {
-      const res = await doFetch(path, key, { method: 'GET' }, Math.min(timeoutMs, 20000));
+      const res = await doFetch(path, key, { method: 'GET' }, Math.min(_timeoutMs, 20000));
       if (!res.ok) continue;
       const j = await parseJsonSafe(res);
       const names: string[] = [];
@@ -438,15 +437,15 @@ async function fetchModelNames(key: string, timeoutMs: number): Promise<string[]
 // ---- Public gateway interface (ONLY way the rest of SEAI touches Ollama) ----
 
 export const aiGateway = {
-  async listModels(opts: { timeoutMs?: number; refresh?: boolean } = {}): Promise<ModelCaps[]> {
-    const timeoutMs = opts.timeoutMs ?? 20000;
+  async listModels(opts: { _timeoutMs?: number; refresh?: boolean } = {}): Promise<ModelCaps[]> {
+    const _timeoutMs = opts._timeoutMs ?? 20000;
     if (modelCache && !opts.refresh && Date.now() - modelCache.at < 5 * 60_000) return modelCache.models;
     const keys = await orderedKeys();
     if (!keys.length) return [];
     let lastErr: any = null;
     for (const k of keys.slice(0, 3)) {
       try {
-        const names = await fetchModelNames(k.key, timeoutMs);
+        const names = await fetchModelNames(k.key, _timeoutMs);
         if (!names.length) continue;
         const models: ModelCaps[] = names.map((name) => {
           const caps = inferCapabilities(name);
@@ -484,10 +483,10 @@ export const aiGateway = {
   },
 
   /** Select strongest suitable model: prefers tools+reasoning+long context. Optional override via AI_PRIMARY_MODEL. */
-  async selectBestModel(opts: { requireTools?: boolean; timeoutMs?: number } = {}): Promise<string> {
+  async selectBestModel(opts: { requireTools?: boolean; _timeoutMs?: number } = {}): Promise<string> {
     const override = process.env.AI_PRIMARY_MODEL || config.aiPrimaryModel;
     if (override) return override;
-    const models = await this.listModels({ timeoutMs: opts.timeoutMs ?? 20000 });
+    const models = await this.listModels({ _timeoutMs: opts._timeoutMs ?? 20000 });
     if (!models.length) {
       // Sensible default when discovery is unreachable (still resolved dynamically at runtime)
       return 'qwen3:32b';
@@ -501,34 +500,34 @@ export const aiGateway = {
     return pool[0].name;
   },
 
-  async generate(prompt: string, opts: GenerateOpts = {}, storeId: string | null = null): Promise<string> {
-    const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
+  async generate(prompt: string, opts: GenerateOpts = {}, _storeId: string | null = null): Promise<string> {
+    const _timeoutMs = opts._timeoutMs ?? config.agentTimeoutMs;
     const model = opts.model ?? (await this.selectBestModel());
     if (isExperModel(model)) {
       // Single best-effort key for Experiential (the 6-key failover pool is Ollama-specific).
-      const out = await experChat([{ role: 'user', content: prompt }], { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, timeoutMs });
+      const out = await experChat([{ role: 'user', content: prompt }], { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, _timeoutMs });
       return out.content;
     }
-    return execWithFailover('generate', model, storeId, timeoutMs, async (key) => {
+    return execWithFailover('generate', model, _storeId, _timeoutMs, async (key) => {
       const res = await doFetch('/api/generate', key, {
         method: 'POST',
         body: JSON.stringify({ model, prompt, stream: false, options: { temperature: opts.temperature ?? 0.2, num_predict: opts.maxTokens ?? 2000 } }),
-      }, timeoutMs);
+      }, _timeoutMs);
       if (!res.ok) throw errWithStatus(`ollama generate failed: ${res.status} ${(await res.text()).slice(0, 300)}`, res.status);
       const j = await parseJsonSafe(res);
       return j.response ?? j.message?.content ?? j.text ?? '';
     });
   },
 
-  async chat(messages: { role: string; content: string }[], opts: GenerateOpts = {}, storeId: string | null = null): Promise<string> {
-    const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
+  async chat(messages: { role: string; content: string }[], opts: GenerateOpts = {}, _storeId: string | null = null): Promise<string> {
+    const _timeoutMs = opts._timeoutMs ?? config.agentTimeoutMs;
     const model = opts.model ?? (await this.selectBestModel());
     if (isExperModel(model)) {
       // Single best-effort key for Experiential (the 6-key failover pool is Ollama-specific).
-      const out = await experChat(messages, { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, json: opts.json, timeoutMs });
+      const out = await experChat(messages, { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, json: opts.json, _timeoutMs });
       return out.content;
     }
-    return execWithFailover('chat', model, storeId, timeoutMs, async (key) => {
+    return execWithFailover('chat', model, _storeId, _timeoutMs, async (key) => {
       const res = await doFetch('/api/chat', key, {
         method: 'POST',
         body: JSON.stringify({
@@ -536,7 +535,7 @@ export const aiGateway = {
           format: opts.json ? 'json' : undefined,
           options: { temperature: opts.temperature ?? 0.2, num_predict: opts.maxTokens ?? 2000 },
         }),
-      }, timeoutMs);
+      }, _timeoutMs);
       if (!res.ok) throw errWithStatus(`ollama chat failed: ${res.status} ${(await res.text()).slice(0, 300)}`, res.status);
       const j = await parseJsonSafe(res);
       // Reasoning models may return thinking with short/empty content (e.g. token budget spent thinking)
@@ -545,21 +544,21 @@ export const aiGateway = {
   },
 
   /** Structured tool-call: asks the model to emit JSON args for a named tool, validated downstream. */
-  async toolCall(toolName: string, toolDescription: string, inputSchema: unknown, context: string, opts: GenerateOpts = {}, storeId: string | null = null): Promise<unknown> {
+  async toolCall(toolName: string, toolDescription: string, inputSchema: unknown, context: string, opts: GenerateOpts = {}, _storeId: string | null = null): Promise<unknown> {
     const out = await this.chat([
       { role: 'system', content: `You are SEAI, an autonomous commerce operator. Emit ONLY valid JSON args for tool "${toolName}". ${toolDescription}. Schema: ${JSON.stringify(inputSchema)}. No markdown fences.` },
       { role: 'user', content: context },
-    ], { ...opts, json: true }, storeId);
+    ], { ...opts, json: true }, _storeId);
     const cleaned = out.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
     try { return JSON.parse(cleaned); } catch { return { _raw: out }; }
   },
 
-  async *stream(prompt: string, opts: GenerateOpts = {}, storeId: string | null = null): AsyncGenerator<string> {
-    const timeoutMs = opts.timeoutMs ?? config.agentTimeoutMs;
+  async *stream(prompt: string, opts: GenerateOpts = {}, _storeId: string | null = null): AsyncGenerator<string> {
+    const _timeoutMs = opts._timeoutMs ?? config.agentTimeoutMs;
     const model = opts.model ?? (await this.selectBestModel());
     if (isExperModel(model)) {
       requireExperKey();
-      const gen = experChatStream([{ role: 'user', content: prompt }], { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, timeoutMs });
+      const gen = experChatStream([{ role: 'user', content: prompt }], { maxTokens: opts.maxTokens ?? 2000, temperature: opts.temperature, _timeoutMs });
       for await (const part of gen) {
         yield part;
       }
@@ -572,7 +571,7 @@ export const aiGateway = {
       try {
         const res = await doFetch('/api/generate', k.key, {
           method: 'POST', body: JSON.stringify({ model, prompt, stream: true }),
-        }, timeoutMs);
+        }, _timeoutMs);
         if (!res.ok) throw errWithStatus(`stream failed ${res.status}`, res.status);
         await recordSuccess(k.keyId, 300);
         const reader = res.body?.getReader();
@@ -607,7 +606,7 @@ export const aiGateway = {
   },
 
   /** Validate all six keys: returns per-key status without exposing secrets. */
-  async validateKeys(timeoutMs = 12000): Promise<{ keyId: string; configured: boolean; ok: boolean; latencyMs: number; error?: string }[]> {
+  async validateKeys(_timeoutMs = 12000): Promise<{ keyId: string; configured: boolean; ok: boolean; latencyMs: number; error?: string }[]> {
     const out = [];
     for (let i = 0; i < 6; i++) {
       const keyId = `key_${i + 1}`;
@@ -615,7 +614,7 @@ export const aiGateway = {
       if (!key) { out.push({ keyId, configured: false, ok: false, latencyMs: 0, error: 'not configured' }); continue; }
       const start = Date.now();
       try {
-        const names = await fetchModelNames(key, timeoutMs);
+        const names = await fetchModelNames(key, _timeoutMs);
         const h = await getHealth(keyId);
         h.status = 'healthy'; h.lastSuccess = new Date().toISOString(); h.consecutiveFailures = 0;
         h.avgLatencyMs = Date.now() - start; h.cooldownUntil = null;

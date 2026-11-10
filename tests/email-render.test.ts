@@ -24,10 +24,10 @@ import {
 import { dashboardUrl, websiteUrl, changeRequestUrl, supportUrl, privacyUrl, termsUrl } from '../src/mail/urls.js';
 
 describe('template registry', () => {
-  it('exposes 31 templates with unique names and non-empty subjects', () => {
+  it('exposes 32 templates with unique names and non-empty subjects', () => {
     const all = listTemplates();
-    expect(all).toHaveLength(31);
-    expect(new Set(all.map((t) => t.name)).size).toBe(31);
+    expect(all).toHaveLength(32);
+    expect(new Set(all.map((t) => t.name)).size).toBe(32);
     for (const def of all) {
       expect(def.subject.trim(), def.name).not.toBe('');
       expect(def.preheader.trim(), def.name).not.toBe('');
@@ -66,7 +66,7 @@ describe('template registry', () => {
 
   it('rejects an unknown template name', () => {
     expect(() => getTemplate('does.not.exist')).toThrow(EmailRenderError);
-    expect(templateNames()).toHaveLength(31);
+    expect(templateNames()).toHaveLength(32);
     expect(() => renderTemplate('does.not.exist', {})).toThrow(EmailRenderError);
   });
 

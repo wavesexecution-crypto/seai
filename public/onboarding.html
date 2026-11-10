@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SEAI — Client Onboarding</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--panel:#0a0a0a;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.06);--ink:#fff;--sub:#D1D1D1;--faint:#A0A0A0;--good:#fff;--warn:#9a9a9a;--bad:#888888}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:0 18px 80px}
+header.top{position:sticky;top:0;z-index:10;background:rgba(10,10,11,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topin{max-width:880px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:14px}
+.topin b{letter-spacing:.04em}
+.meter{flex:1;height:10px;background:#1a1a1e;border:1px solid var(--line2);border-radius:99px;overflow:hidden}
+.meter>div{height:100%;background:#fff;width:0%;transition:width .4s}
+.pct{font-variant-numeric:tabular-nums;font-weight:700;min-width:48px;text-align:right}
+.ghost{background:transparent;border:1px solid var(--line2);color:var(--sub);border-radius:7px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer;text-decoration:none}
+h1{font-size:24px;margin:26px 0 2px;letter-spacing:-.01em}
+.sub{color:var(--sub);font-size:13px;margin-bottom:18px}
+.banner{border:1px solid var(--line2);border-left:3px solid #fff;background:#101014;border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--sub);margin:14px 0}
+.banner b{color:var(--ink)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:12px 0}
+details[open]{border-color:var(--line2)}
+summary{cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary .n{width:26px;height:26px;border-radius:7px;background:#1f1f24;display:grid;place-items:center;font-size:12px;color:var(--sub);flex:0 0 auto}
+details[open] summary .n{background:#fff;color:#000}
+summary .done{margin-left:auto;font-size:11px;padding:2px 10px;border-radius:99px;border:1px solid var(--line2);color:var(--faint)}
+summary .done.full{color:var(--good);border-color:var(--good)}
+.body{padding:4px 16px 16px;border-top:1px solid var(--line)}
+.intro{color:var(--sub);font-size:12.5px;margin:10px 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.full{grid-column:1/-1}
+label{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px;gap:8px}
+.req{color:#fff;font-size:10px;border:1px solid var(--line2);border-radius:99px;padding:0 8px;white-space:nowrap}
+.opt{color:var(--faint);font-size:10px;border:1px solid var(--line);border-radius:99px;padding:0 8px}
+.why{color:var(--faint);font-size:11px;margin-top:4px}
+input,select,textarea{width:100%;background:#0e0e10;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font:inherit;font-size:13px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#fff}
+textarea{min-height:72px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.btn{background:#fff;color:#000;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.saved{color:var(--good);font-size:12px;opacity:0;transition:.2s}
+.saved.show{opacity:1}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+.panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);margin:0 0 10px}
+.invite{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.invite:last-child{border:0}
+.pill{font-size:10.5px;border:1px solid var(--line2);border-radius:99px;padding:1px 9px;color:var(--sub)}
+.pill.accepted{color:var(--good);border-color:var(--good)}
+.pill.sent{color:var(--warn);border-color:var(--warn)}
+.pill.declined{color:var(--bad);border-color:var(--bad)}
+.asset{display:flex;gap:8px;align-items:center;font-size:12px;padding:6px 0;border-bottom:1px solid var(--line)}
+.asset:last-child{border:0}
+.muted{color:var(--faint);font-size:12px}
+.err{color:var(--bad);font-size:12px;margin-top:8px}
+.okbox{display:none;border:1px solid var(--good);background:#0c1710;border-radius:10px;padding:12px 14px;margin:16px 0;color:#cdeed6;font-size:13px}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><b>SEAI</b> <span class="muted">Client onboarding</span>
+  <div class="meter" aria-hidden="true"><div id="meterFill"></div></div>
+  <div class="pct" id="pctText">0%</div>
+  <a class="ghost" href="/overview">Dashboard</a>
+</div></header>
+<div class="wrap">
+  <h1>Let's set your account up properly.</h1>
+  <p class="sub">Everything SEAI needs to deliver. Mandatory fields are marked <b>Required</b>; optional ones help us move faster. Your answers save as you go — close this page and return any time.</p>
+  <div class="banner"><b>We never ask for passwords or card details.</b> Platform access is via official invites (Meta Business Manager, Google, CRM). Payments happen by invoice through Razorpay — never through this form.</div>
+  <div class="okbox" id="doneBox">Everything required is in — our team will confirm kickoff and your first sprint dates. If anything looks off, reply on your support channel.</div>
+  <div id="app"><div class="muted" style="padding:30px 0">Loading your onboarding…</div></div>
+  <div class="panel" id="invitesPanel" style="display:none"><h2>Platform access (invites)</h2><div id="inviteList"></div><p class="muted">SEAI sends invites to the emails you give us. Accept them inside each platform — never share credentials. Status updates here automatically.</p></div>
+  <div class="panel" id="assetsPanel" style="display:none"><h2>Brand assets</h2><div id="assetList"></div>
+    <div class="row"><input type="file" id="assetFile" accept="image/png,image/jpeg,image/webp,image/svg+xml,application/pdf,video/mp4,application/zip" multiple style="max-width:340px"/><button class="btn" id="assetUploadBtn">Upload</button></div>
+    <p class="muted" style="margin-top:8px">Logo, colours, photos, videos, guidelines, product shots — up to 2 MB per file inline; bigger files: share a Drive link in the section fields instead.</p>
+    <p class="err" id="assetErr"></p>
+  </div>
+</div>
+<script>
+'use strict';
+const $ = (s, r) => (r||document).querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let state = null;
+async function api(path, opts){
+  const r = await fetch('/api/growth' + path, Object.assign({ credentials: 'same-origin', headers: opts?.body ? {'Content-Type':'application/json'} : undefined }, opts));
+  let d = {}; try { d = await r.json(); } catch {}
+  if (!r.ok) throw new Error(d.error || 'Request failed');
+  return d;
+}
+const fieldInput = (sectionKey, f, value) => {
+  const base = `data-section="${esc(sectionKey)}" data-field="${esc(f.key)}"`;
+  const v = value ?? '';
+  if (f.type === 'textarea') return `<textarea ${base} rows="3" placeholder="${esc(f.placeholder ?? '')}">${esc(v)}</textarea>`;
+  if (f.type === 'select') return `<select ${base}><option value="">Select…</option>${(f.options ?? []).map(o => `<option value="${esc(o)}" ${String(v) === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+  if (f.type === 'boolean') return `<select ${base}><option value="">Select…</option><option value="true" ${String(v) === 'true' ? 'selected' : ''}>Yes</option><option value="false" ${String(v) === 'false' ? 'selected' : ''}>No</option></select>`;
+  const type = ['email','tel','url','number'].includes(f.type) ? f.type : 'text';
+  return `<input type="${type}" ${base} value="${esc(v)}" placeholder="${esc(f.placeholder ?? '')}"/>`;
+};
+function renderSection(i, section){
+  const saved = section.saved ?? {};
+  const req = section.fields.filter(f => f.required);
+  const doneReq = req.filter(f => String(saved[f.key] ?? '').trim() !== '').length;
+  const full = req.length > 0 && doneReq === req.length;
+  return `<details ${i === 0 ? 'open' : ''}><summary><span class="n">${i + 1}</span>${esc(section.title)}<span class="done${full ? ' full' : ''}">${full ? 'Complete' : doneReq + '/' + req.length + ' required'}</span></summary>
+    <div class="body"><p class="intro">${esc(section.intro)}</p>
+      <div class="grid">${section.fields.map(f => `<div class="${['textarea'].includes(f.type) ? 'full' : ''}"><label>${esc(f.label)} <span class="${f.required ? 'req' : 'opt'}">${f.required ? 'Required' : 'Optional'}</span></label>${fieldInput(section.key, f, saved[f.key])}<div class="why">${esc(f.why)}</div></div>`).join('')}</div>
+      <div class="row"><button class="btn" data-save="${esc(section.key)}">Save section</button><span class="saved" data-saved="${esc(section.key)}">Saved ✓</span></div>
+      <p class="err" data-err="${esc(section.key)}"></p>
+    </div></details>`;
+}
+async function refresh(){
+  state = await api('/me/onboarding');
+  const p = state.progress ?? { percent: 0, filled: 0, required: 0 };
+  $('#meterFill').style.width = p.percent + '%';
+  $('#pctText').textContent = p.percent + '%';
+  $('#doneBox').style.display = p.percent >= 100 ? 'block' : 'none';
+  $('#app').innerHTML = state.sections.map(renderSection).join('');
+  $('#app').querySelectorAll('[data-save]').forEach(btn => btn.addEventListener('click', () => saveSection(btn.getAttribute('data-save'))));
+  renderInvites(); renderAssets();
+}
+async function saveSection(key){
+  const inputs = $('#app').querySelectorAll(`[data-section="${CSS.escape(key)}"]`);
+  const data = {};
+  inputs.forEach(el => { data[el.getAttribute('data-field')] = el.value; });
+  $('#app').querySelector(`[data-err="${CSS.escape(key)}"]`).textContent = '';
+  try {
+    await api('/me/onboarding/' + encodeURIComponent(key), { method: 'PUT', body: JSON.stringify({ data }) });
+    const tag = $('#app').querySelector(`[data-saved="${CSS.escape(key)}"]`);
+    tag.classList.add('show'); setTimeout(() => tag.classList.remove('show'), 1800);
+    const fresh = await api('/me/onboarding');
+    const p = fresh.progress ?? { percent: 0 };
+    $('#meterFill').style.width = p.percent + '%';
+    $('#pctText').textContent = p.percent + '%';
+    $('#doneBox').style.display = p.percent >= 100 ? 'block' : 'none';
+    // Update the section badge without collapsing the open panel.
+    const section = fresh.sections.find(s => s.key === key);
+    const badge = $('#app').querySelector(`[data-save="${CSS.escape(key)}"]`).closest('details').querySelector('.done');
+    const req = section.fields.filter(f => f.required);
+    const doneReq = req.filter(f => String(section.saved[f.key] ?? '').trim() !== '').length;
+    const full = req.length > 0 && doneReq === req.length;
+    badge.textContent = full ? 'Complete' : doneReq + '/' + req.length + ' required';
+    badge.classList.toggle('full', full);
+  } catch (e) {
+    $('#app').querySelector(`[data-err="${CSS.escape(key)}"]`).textContent = e.message;
+  }
+}
+const PLATFORM_LABEL = { meta_bm: 'Meta Business Manager', meta_page: 'Facebook Page', instagram: 'Instagram', google_ads: 'Google Ads', analytics: 'Google Analytics (GA4)', gtm: 'Google Tag Manager', crm: 'CRM / pipeline', other: 'Other' };
+function renderInvites(){
+  const panel = $('#invitesPanel'), list = $('#inviteList');
+  const invites = state.invites ?? [];
+  if (!invites.length) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  list.innerHTML = invites.map(i => `<div class="invite"><div><b>${esc(PLATFORM_LABEL[i.platform] ?? i.platform)}</b><div class="muted">${esc(i.invited_email ?? '')}</div></div><span class="pill ${esc(i.status)}">${esc(i.status)}</span></div>`).join('');
+}
+function renderAssets(){
+  const panel = $('#assetsPanel'), list = $('#assetList');
+  panel.style.display = 'block';
+  const assets = state.assets ?? [];
+  list.innerHTML = assets.length ? assets.map(a => `<div class="asset"><span>📎</span><div><b>${esc(a.filename)}</b><div class="muted">${esc(a.mime)} · ${esc(a.size_kb)} KB · ${esc(String(a.created_at ?? '').slice(0, 10))}</div></div></div>`).join('') : '<div class="muted">No assets uploaded yet.</div>';
+}
+$('#assetUploadBtn').addEventListener('click', async () => {
+  const input = $('#assetFile');
+  const err = $('#assetErr');
+  err.textContent = '';
+  const files = [...input.files];
+  if (!files.length) { err.textContent = 'Choose at least one file.'; return; }
+  for (const file of files.slice(0, 10)) {
+    if (file.size > 2 * 1024 * 1024) { err.textContent = file.name + ' exceeds 2 MB — share a Drive link instead.'; continue; }
+    const data_url = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
+    try {
+      await api('/me/onboarding/assets', { method: 'POST', body: JSON.stringify({ filename: file.name, mime: file.type || 'application/octet-stream', data_url }) });
+    } catch (e) { err.textContent = file.name + ': ' + e.message; }
+  }
+  input.value = '';
+  refresh();
+});
+refresh().catch(e => { $('#app').innerHTML = '<div class="panel"><h2>Not linked yet</h2><p class="muted">' + esc(e.message) + '</p><p class="muted">If you have purchased with SEAI, sign-up and purchase provisioning link your account automatically. Otherwise contact your SEAI account manager.</p></div>'; });
+</script>
+</body>
+</html>

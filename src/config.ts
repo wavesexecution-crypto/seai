@@ -108,6 +108,11 @@ export const config = {
   storageJwtSecret: need('STORAGE_JWT_SECRET', ''),
   storageTokenTtlSec: Number(need('STORAGE_TOKEN_TTL_SEC', '300')),
   storageProxyMaxBytes: Number(need('STORAGE_PROXY_MAX_BYTES', String(10 * 1024 * 1024))),
+  // seai.payments control plane (server-side only — never expose to browsers).
+  // Recurring retainers are genuine Razorpay SUBSCRIPTIONS created there;
+  // the service key authenticates service-to-service calls (Bearer mode).
+  paymentsApiUrl: need('PAYMENTS_API_URL', 'http://localhost:4101').replace(/\/$/, ''),
+  paymentsServiceKey: need('PAYMENTS_SERVICE_KEY', need('SEAI_SERVICE_KEY', '')),
 };
 
 export function maskKeyId(index: number): string {

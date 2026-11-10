@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -43,7 +43,8 @@ function ollamaBody(url: string, init: any): any {
 }
 
 function shopifyBody(body: any): any {
-  const q: string = body.query;
+  const q: string = body?.query ?? '';
+  if (!q) return {};
   const j = (data: any) => ({ data });
   // Specific mutations first — generic '{ shop' substring-matches mutation bodies
   if (q.includes('productCreate')) {
@@ -78,13 +79,19 @@ function shopifyBody(body: any): any {
   return j({});
 }
 
+const originalFetch = globalThis.fetch;
+
 beforeEach(() => {
   state.products = []; state.collections = 0; state.collectionNames = []; state.pages = 0; state.policies = 0;
   (globalThis as any).fetch = vi.fn(async (url: string, init: any) => {
     const u = String(url);
     if (u.startsWith('https://ollama.com')) return new Response(JSON.stringify(ollamaBody(u, init)), { status: 200 });
-    return new Response(JSON.stringify(shopifyBody(JSON.parse(init.body))), { status: 200 });
+    return new Response(JSON.stringify(shopifyBody(JSON.parse(init?.body ?? '{}'))), { status: 200 });
   });
+});
+
+afterAll(() => {
+  globalThis.fetch = originalFetch;
 });
 
 describe('opportunity research', () => {

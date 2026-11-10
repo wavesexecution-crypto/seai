@@ -10,19 +10,20 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0a0b; --bg-soft:#111113; --bg-panel:#0f0f12;
-  --ink:#f4f4f5; --sub:#a1a1aa; --faint:#5c5c66; --line:rgba(255,255,255,.08); --line-soft:rgba(255,255,255,.06);
-  --fill:rgba(255,255,255,.04); --fill-hover:rgba(255,255,255,.07);
-  --acc:#f4f4f5; --ring:rgba(255,255,255,.18);
-  --good:#7fb685; --warn:#d2a24a; --bad:#e0605e;
+  --tx1:#fff; --tx2:#D1D1D1; --tx3:#A6A6A6; --tx4:#A0A0A0;
+  --bg:#000; --bg-soft:#000; --bg-panel:#0a0a0a;
+  --ink:#fff; --sub:#D1D1D1; --faint:#A0A0A0; --line:rgba(255,255,255,.12); --line-soft:rgba(255,255,255,.06);
+  --fill:rgba(255,255,255,.04); --fill-hover:rgba(255,255,255,.08);
+  --acc:#fff; --ring:rgba(255,255,255,.18);
+  --good:#fff; --warn:#9a9a9a; --bad:#888888;
   --font:"Inter", system-ui, -apple-system, sans-serif; --mono: ui-monospace, Menlo, monospace;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:inherit;text-decoration:none}
 button{font:inherit}
 .skip{position:absolute;left:-999px}
@@ -35,7 +36,7 @@ button{font:inherit}
 .brand img{width:26px;height:26px;border-radius:6px;display:block}
 .brand .name{font-weight:600;letter-spacing:.04em;font-size:16px}
 .nav{display:flex;flex-direction:column;gap:2px}
-.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:var(--sub);font-weight:500;font-size:13.5px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:#e5e5e5;font-weight:500;font-size:14px}
 .nav a:hover{background:var(--fill);color:var(--ink)}
 .nav a.active{background:var(--fill-hover);color:var(--ink);border-left:2px solid var(--ink);padding-left:8px}
 .nav .rule{height:1px;background:var(--line-soft);margin:18px 8px 12px}
@@ -49,22 +50,22 @@ button{font:inherit}
 .iconbtn{height:32px;min-width:32px;padding:0 8px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--sub);display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:12.5px}
 .iconbtn:hover{background:var(--fill);color:var(--ink)}
 .content{padding:28px 32px 80px;max-width:1400px}
-.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 12px}
-.h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0 0 6px}
-.lede{color:var(--sub);margin:0 0 28px;max-width:70ch}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 12px;font-family:var(--mono)}
+.h1{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.lede{color:var(--sub);margin:0 0 28px;max-width:70ch;line-height:1.7}
 
 /* cards / tables */
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-.card{grid-column:span 12;background:var(--bg-panel);border:1px solid var(--line-soft);border-radius:10px;padding:16px}
+.card{grid-column:span 12;background:var(--bg-panel);border:1px solid var(--line-soft);border-radius:12px;padding:24px}
 @media(min-width:900px){.card.span6{grid-column:span 6}.card.span4{grid-column:span 4}.card.span8{grid-column:span 8}}
-.table{width:100%;border-collapse:collapse;font-size:13.5px}
-.table th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-soft);font-weight:600}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-soft);font-weight:600;font-family:var(--mono)}
 .table td{padding:12px;border-bottom:1px solid var(--line-soft);color:var(--sub);vertical-align:top}
 .table tr:hover td{background:var(--fill)}
 .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;border:1px solid var(--line-soft);color:var(--sub)}
-.badge.live{background:var(--good);border-color:transparent;color:#00110a}
-.badge.warn{background:var(--warn);border-color:transparent;color:#1a1200}
-.badge.bad{background:var(--bad);border-color:transparent;color:#140000}
+.badge.live{background:#fff;border-color:transparent;color:#000}
+.badge.warn{background:var(--fill-hover);border-color:transparent;color:#fff}
+.badge.bad{background:transparent;border-color:var(--line);color:var(--sub)}
 .badge.gray{background:var(--fill);color:var(--sub)}
 
 /* feed / composer */
@@ -88,9 +89,9 @@ button{font:inherit}
 /* forms */
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px}
-.input,textarea,select{width:100%;background:var(--bg-panel);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:8px;font:inherit;font-size:13.5px}
+.input,textarea,select{width:100%;background:var(--bg-panel);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:8px;font:inherit;font-size:14px}
 .input:focus,textarea:focus,select:focus{outline:none;border-color:var(--sub);box-shadow:0 0 0 3px var(--ring)}
-.btn{appearance:none;background:var(--ink);color:var(--bg);border:1px solid var(--ink);padding:10px 16px;border-radius:8px;font-weight:600;font-size:13.5px;cursor:pointer}
+.btn{appearance:none;background:var(--ink);color:var(--bg);border:1px solid var(--ink);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .err{color:var(--bad);font-size:13px;margin:8px 0}
@@ -107,9 +108,6 @@ button{font:inherit}
 .mbrand img{width:22px;height:22px;border-radius:6px;display:block}
 .scrim{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5)}
 .scrim.show{display:block}
-/* The drawer trigger exists only below the sidebar breakpoint. On desktop the
-   persistent sidebar is the navigation, so the button is not rendered at all
-   and leaves no margin/padding placeholder behind. */
 .topbar .menu{display:none}
 @media(max-width:900px){
   .app{grid-template-columns:1fr}
@@ -133,6 +131,12 @@ button{font:inherit}
       <a href="/overview" data-nav="overview">Overview</a>
       <a href="/modify" data-nav="modify">Modify</a>
       <a href="/maintenance" data-nav="maintenance">Maintenance</a>
+      <a href="/services" data-nav="services">Services</a>
+      <a href="/projects" data-nav="projects">Projects</a>
+      <a href="/approvals" data-nav="approvals">Approvals</a>
+      <a href="/reports" data-nav="reports">Reports</a>
+      <a href="/billing" data-nav="billing">Billing</a>
+      <a href="/support" data-nav="support">Support</a>
       <div class="rule"></div>
     </nav>
     <div class="sidefoot">
@@ -173,6 +177,15 @@ async function sapi(path, opts={}){
   return d;
 }
 const inr = n=>'₹'+Number(n||0).toLocaleString('en-IN');
+// Growth API helper (client-scoped, session cookie)
+async function gapi(path, opts={}){
+  const r = await fetch('/api/growth'+path, {credentials:'same-origin', headers:{'Content-Type':'application/json'}, ...opts});
+  let d={}; try{d=await r.json();}catch{}
+  if(!r.ok) throw Object.assign(new Error(d.error||'Request failed'), {status:r.status});
+  return d;
+}
+const TASK_BADGE={pending:'gray',in_progress:'warn',blocked:'bad',done:'live',skipped:'gray'};
+const KIND_LABEL={service_fee:'Service fee',ad_budget:'Ad budget (client-funded)',one_time:'One-time project',third_party:'Third-party cost',other:'Other'};
 const fdate = s=>{ if(!s) return '—'; try{return new Date(s).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});}catch{return '—';} };
 const STATUS_LABEL={submitted:'Submitted',reviewing:'Reviewing',in_progress:'In progress',waiting_for_client:'Waiting for client',completed:'Completed'};
 const STATUS_BADGE={submitted:'gray',reviewing:'warn',in_progress:'warn',waiting_for_client:'warn',completed:'live'};
@@ -181,7 +194,7 @@ const CONN_LABEL={ga4:'Google Analytics 4',search_console:'Search Console',pages
 const CONN_DESC={ga4:'Website traffic: users, sessions, page views, sources, devices.',search_console:'Search performance: clicks, impressions, CTR, position, queries.',pagespeed:'Site health: performance, accessibility, SEO, Core Web Vitals.',gbp:'Local presence data where relevant.'};
 const PERIODS=[['7d','7 days'],['30d','30 days'],['90d','90 days'],['12m','12 months']];
 let cache={overview:null,perf:{},requests:null,maintenance:null};
-function section(){ const p=location.pathname; if(p==='/modify'||p==='/changes') return 'modify'; if(p==='/maintenance') return 'maintenance'; return 'overview'; }
+function section(){ const p=location.pathname; if(p==='/modify'||p==='/changes') return 'modify'; if(p==='/maintenance') return 'maintenance'; if(p==='/services') return 'services'; if(p==='/projects') return 'projects'; if(p==='/approvals') return 'approvals'; if(p==='/reports') return 'reports'; if(p==='/billing') return 'billing'; if(p==='/support') return 'support'; return 'overview'; }
 function tab(){ return new URLSearchParams(location.search).get('tab'); }
 function setActiveNav(){
   const s=section();
@@ -208,6 +221,12 @@ function render(){
   const el=$('#content');
   if(s==='modify') return renderModify(el);
   if(s==='maintenance') return renderMaintenance(el);
+  if(s==='services') return renderServices(el);
+  if(s==='projects') return renderProjects(el);
+  if(s==='approvals') return renderApprovals(el);
+  if(s==='reports') return renderReports(el);
+  if(s==='billing') return renderBilling(el);
+  if(s==='support') return renderSupport(el);
   return renderOverview(el);
 }
 
@@ -432,6 +451,158 @@ async function renderMaintenance(el){
   }
   const b=$('#actBtn');
   if(b) b.addEventListener('click',async()=>{ try{ await api('/maintenance/activate',{method:'POST',body:'{}'}); render(); }catch(e){ $('#actErr').textContent=e.message; } });
+}
+
+/* ================= GROWTH: SERVICES ================= */
+async function growthMe(){ if(!cache.growthMe) cache.growthMe=await gapi('/me'); return cache.growthMe; }
+function growthReset(){ cache.growthMe=null; }
+async function renderServices(el){
+  el.innerHTML='<p class="eyebrow">Services</p><h1 class="h1">Your services & onboarding</h1><div id="panel"><div class="empty">Loading…</div></div>';
+  let d; try{ d=await growthMe(); }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  if(!d.client){ $('#panel').innerHTML='<div class="card"><h1 class="h1">No services linked yet</h1><p class="lede">Once SEAI confirms your engagement, your plan, onboarding checklist and projects appear here automatically.</p><p style="color:var(--sub)">Not a client yet? <a href="https://seai.store/contact.html" style="color:var(--ink);text-decoration:underline">Talk to SEAI →</a></p></div>'; return; }
+  const c=d.client, ag=c.agreements||[], proj=c.projects||[];
+  const onboardingPct = 0; // onboarding page computes live; link below
+  $('#panel').innerHTML = `
+    <div class="card" style="margin-bottom:16px"><p class="eyebrow">Account manager</p>
+      <p style="font-size:17px;font-weight:600;margin:0">${esc(c.account_manager_id ? 'Your SEAI account manager' : 'Being assigned')}</p>
+      <p style="color:var(--sub);font-size:13px">Preferred channel: ${esc(c.preferred_channel||'whatsapp')} · ${esc(c.email||'')}</p>
+      <p style="margin:12px 0 0"><a class="btn" href="/onboarding">Continue onboarding →</a></p>
+    </div>
+    <div class="grid">
+      ${ag.map(a=>`<div class="card span6"><p class="eyebrow">${esc(a.plan)}</p>
+        <p style="font-size:19px;font-weight:700;margin:0">${esc(inr(a.monthly_fee_inr))} <span style="font-size:12px;color:var(--sub);font-weight:400">/ month · service fee</span></p>
+        <p style="color:var(--sub);font-size:13px;margin:8px 0">Services: ${esc((JSON.parse(a.services||'[]')||[]).join(', ')||'—')}</p>
+        <p style="color:var(--sub);font-size:13px">Advertising budget (paid by you to platforms, never part of our fee): <b>${a.ad_budget_inr?esc(inr(a.ad_budget_inr)):'not set — add it in onboarding'}</b></p>
+        <p style="color:var(--sub);font-size:13px">Renewal: ${esc(fdate(a.renewal_date))} · ${esc(a.renewal_terms||'')}</p>
+      </div>`).join('') || '<div class="card span12"><p class="empty">No active agreement yet.</p></div>'}
+      <div class="card span6"><p class="eyebrow">Active projects</p><p style="font-size:26px;font-weight:700;margin:0">${proj.filter(p=>p.status==='active').length}</p><p style="color:var(--sub);font-size:13px">See Projects for deliverables and dates.</p><p style="margin:10px 0 0"><button class="btn ghost" id="toProjects" style="padding:8px 14px">Open projects</button></p></div>
+      <div class="card span6"><p class="eyebrow">Pending approvals</p><p style="font-size:26px;font-weight:700;margin:0">${c.pendingApprovals??0}</p><p style="color:var(--sub);font-size:13px">Creatives, captions and campaign material waiting on you.</p><p style="margin:10px 0 0"><button class="btn ghost" id="toApprovals" style="padding:8px 14px">Review approvals</button></p></div>
+    </div>`;
+  const tp=$('#toProjects'); if(tp) tp.addEventListener('click',()=>go('/projects'));
+  const ta=$('#toApprovals'); if(ta) ta.addEventListener('click',()=>go('/approvals'));
+}
+
+/* ================= GROWTH: PROJECTS ================= */
+async function renderProjects(el){
+  el.innerHTML='<p class="eyebrow">Projects</p><h1 class="h1">Your projects & deliverables</h1><div id="panel"><div class="empty">Loading…</div></div>';
+  let d; try{ d=await gapi('/me/projects'); }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  if(!d.projects.length){ $('#panel').innerHTML='<div class="card"><p class="empty">No projects yet — your first sprint appears here once kickoff completes.</p></div>'; return; }
+  $('#panel').innerHTML = d.projects.map(p=>`<div class="card" style="margin-bottom:14px">
+    <div class="row" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+      <div><p class="eyebrow">${esc(p.service_category)}</p><b style="font-size:16px">${esc(p.name)}</b></div>
+      <div><span class="badge ${p.status==='active'?'live':p.status==='completed'?'gray':'warn'}">${esc(p.status)}</span></div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--line-soft);border-radius:99px;height:10px;overflow:hidden;margin:12px 0"><div style="width:${p.progress}%;height:100%;background:var(--ink)"></div></div>
+    <p style="color:var(--sub);font-size:12px">${p.progress}% complete · start ${esc(fdate(p.start_date))} · due ${esc(fdate(p.due_date))}</p>
+    <div style="margin-top:10px">${(p.tasks||[]).map(t=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line-soft);font-size:13px"><span>${t.is_gate?'◆ Gate · ':''}${esc(t.title)}</span><span class="badge ${TASK_BADGE[t.status]||'gray'}">${esc(t.status)}</span></div>`).join('')}</div>
+  </div>`).join('');
+}
+
+/* ================= GROWTH: APPROVALS ================= */
+async function renderApprovals(el){
+  el.innerHTML='<p class="eyebrow">Approvals</p><h1 class="h1">Approve & give feedback</h1><p class="lede">Nothing goes live without your sign-off. Each round keeps its version history.</p><div id="panel"><div class="empty">Loading…</div></div>';
+  let d; try{ d=await gapi('/me/approvals'); }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  const items=d.approvals||[];
+  const pending=items.filter(i=>i.status==='pending');
+  const history=items.filter(i=>i.status!=='pending');
+  $('#panel').innerHTML = (pending.length? pending.map(a=>`<div class="card" style="margin-bottom:12px">
+    <div class="row" style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${esc(a.title)}</b><span class="badge gray">${esc(a.kind)} · v${a.version}</span></div>
+    ${a.preview_url?`<p style="margin:10px 0"><a class="btn ghost" href="${esc(a.preview_url)}" target="_blank" rel="noreferrer" style="padding:8px 14px">Open preview →</a></p>`:''}
+    ${a.caption?`<p style="color:var(--sub);font-size:13px;white-space:pre-wrap">${esc(a.caption)}</p>`:''}
+    <div class="row" style="display:flex;gap:8px;margin-top:12px"><button class="btn" data-approve="${a.id}">Approve</button><button class="btn ghost" data-reject="${a.id}">Request changes</button></div>
+  </div>`).join('') : '<div class="card"><p class="empty">Nothing waiting on you. We will not publish without your approval.</p></div>')
+  + (history.length? '<div class="card" style="margin-top:14px"><p class="eyebrow">History</p>'+history.map(a=>`<p style="margin:6px 0;font-size:13px">${esc(a.title)} <span class="badge ${a.status==='approved'?'live':'bad'}">${esc(a.status)}</span> <span style="color:var(--faint)">v${a.version} · ${esc(fdate(a.reviewed_at))}</span>${a.feedback?`<br/><span style="color:var(--sub)">${esc(a.feedback)}</span>`:''}</p>`).join('')+'</div>' : '');
+  $('#panel').querySelectorAll('[data-approve]').forEach(b=>b.addEventListener('click',()=>reviewApproval(b.dataset.approve,'approved')));
+  $('#panel').querySelectorAll('[data-reject]').forEach(b=>b.addEventListener('click',()=>reviewApproval(b.dataset.reject,'rejected')));
+}
+async function reviewApproval(id,decision){
+  const feedback = decision==='rejected' ? prompt('What needs to change?') : '';
+  if(decision==='rejected' && feedback===null) return;
+  try{ await gapi('/me/approvals/'+id+'/review',{method:'POST',body:JSON.stringify({decision,feedback})}); growthReset(); render(); }
+  catch(e){ alert(e.message); }
+}
+
+/* ================= GROWTH: REPORTS ================= */
+async function renderReports(el){
+  el.innerHTML='<p class="eyebrow">Advertising reports</p><h1 class="h1">What the campaigns are doing</h1><div id="panel"><div class="empty">Loading…</div></div>';
+  let d; try{ d=await gapi('/me/reports'); }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  const note='<div class="card" style="margin-bottom:12px;border-color:var(--warn)"><p class="eyebrow" style="color:var(--warn)">Data source honesty</p><p style="color:var(--sub);font-size:13px;margin:0">Live Meta/Google API sync is not connected yet. Figures below marked <b>manual</b> are entered by your SEAI team from the ad managers — they are real, not estimated, but they are not live-pulled. Nothing is fabricated; unavailable metrics are simply not shown.</p></div>';
+  if(!d.reports.length){ $('#panel').innerHTML=note+'<div class="card"><p class="empty">No campaign reports yet. Your first report arrives after launch week.</p></div>'; return; }
+  const rows=d.reports.map(r=>`<tr><td><b>${esc(r.campaign_name)}</b><br/><span style="color:var(--faint);font-size:12px">${esc(r.platform)} · ${esc(r.status)} · ${esc(r.period_start||'?')} → ${esc(r.period_end||'?')}</span></td><td>${r.spend_inr!=null?esc(inr(r.spend_inr)):'—'}</td><td>${r.reach??'—'}</td><td>${r.impressions??'—'}</td><td>${r.clicks??'—'}</td><td>${r.leads??'—'}</td><td>${r.cost_per_lead_inr!=null?esc(inr(r.cost_per_lead_inr)):'—'}</td><td><span class="badge gray">${esc(r.data_source)}</span></td></tr>`).join('');
+  $('#panel').innerHTML=note+'<div class="card"><div class="table" style="overflow-x:auto"><table class="table"><thead><tr><th>Campaign</th><th>Spend</th><th>Reach</th><th>Impr.</th><th>Clicks</th><th>Leads</th><th>CPL</th><th>Source</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+
+/* ================= GROWTH: BILLING ================= */
+async function renderBilling(el){
+  el.innerHTML='<p class="eyebrow">Billing</p><h1 class="h1">Invoices & subscription</h1><div id="panel"><div class="empty">Loading…</div></div>';
+  let d; try{ d=await gapi('/me/billing'); }catch(e){ $('#panel').innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  const ag=d.agreements||[], inv=d.invoices||[];
+  const outstanding=inv.filter(i=>['sent','overdue'].includes(i.status));
+  const outstandingSum=outstanding.reduce((s,i)=>s+Number(i.total_inr||0),0);
+  const rows=inv.map(i=>`<tr><td><b>${esc(i.number)}</b><br/><span style="color:var(--faint);font-size:12px">${esc(KIND_LABEL[i.kind]||i.kind)}</span></td><td>${esc(fdate(i.issued_at))}</td><td>${esc(fdate(i.due_at))}</td><td>${esc(inr(i.total_inr))}</td><td><span class="badge ${i.status==='paid'?'live':i.status==='overdue'?'bad':i.status==='cancelled'?'gray':'warn'}">${esc(i.status)}</span></td><td><button class="btn ghost" data-inv="${esc(i.number)}" style="padding:6px 12px">Invoice ↓</button></td></tr>`).join('');
+  $('#panel').innerHTML = `<div class="grid" style="margin-bottom:14px">
+      ${ag.map(a=>`<div class="card span6"><p class="eyebrow">Current subscription</p><p style="font-size:19px;font-weight:700;margin:0">${esc(inr(a.monthly_fee_inr))} <span style="font-size:12px;color:var(--sub);font-weight:400">/ month</span></p><p style="color:var(--sub);font-size:13px;margin:6px 0">Next billing: ${esc(fdate(a.renewal_date))} · Status: ${esc(a.status)}</p>${a.razorpay_subscription_id?`<p style="color:var(--good);font-size:12px;margin:4px 0">Razorpay subscription linked: ${esc(a.razorpay_subscription_id)}</p>`:''}${a.ad_budget_inr?`<p style="color:var(--sub);font-size:13px">Ad budget (paid by you to platforms): ${esc(inr(a.ad_budget_inr))}/mo — billed separately, never part of this fee.</p>`:''}<p style="margin-top:12px"><button class="btn" data-autopay="${esc(a.id)}">Set up auto-pay (Razorpay mandate)</button><p style="color:var(--faint);font-size:12px;margin-top:6px">Authorize once with your bank — we charge the monthly fee automatically. Ad budgets are never part of this.</p><p class="err" id="apErr-${esc(a.id)}"></p></div>`).join('')}
+      <div class="card span6"><p class="eyebrow">Outstanding</p><p style="font-size:26px;font-weight:700;margin:0">${esc(inr(outstandingSum))}</p><p style="color:var(--sub);font-size:13px">${outstanding.length} open invoice(s). Late payment pauses work per your Scope of Work.</p></div>
+    </div>
+    <div class="card"><div class="table" style="overflow-x:auto"><table class="table"><thead><tr><th>Invoice</th><th>Issued</th><th>Due</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="empty">No invoices yet. Your first invoice arrives after kickoff.</td></tr>'}</tbody></table></div></div>`;
+  $('#panel').querySelectorAll('[data-inv]').forEach(b=>b.addEventListener('click',()=>window.open('/api/growth/me/invoices/'+encodeURIComponent(b.dataset.inv)+'/download','_blank','noopener')));
+  $('#panel').querySelectorAll('[data-autopay]').forEach(b=>b.addEventListener('click',()=>setupAutopay(b.dataset.autopay)));
+}
+function loadRazorpayScript(){ return new Promise((resolve,reject)=>{ if(window.Razorpay) return resolve(); const s=document.createElement('script'); s.src='https://checkout.razorpay.com/v1/checkout.js'; s.async=true; s.onload=resolve; s.onerror=()=>reject(new Error('Could not load the secure payment window')); document.head.appendChild(s); }); }
+async function setupAutopay(agreementId){
+  const errEl=document.getElementById('apErr-'+agreementId);
+  const showErr=(m)=>{ if(errEl) errEl.textContent=m; else alert(m); };
+  let sub;
+  try{ sub=await gapi('/me/subscriptions/create',{method:'POST',body:JSON.stringify({agreementId})}); }
+  catch(e){ showErr(e.message); return; }
+  if(!sub.razorpaySubscriptionId||!sub.keyId){ showErr('Payments service returned an incomplete response — try again.'); return; }
+  try{ await loadRazorpayScript(); }
+  catch(e){ showErr(e.message); return; }
+  const options={
+    key: sub.keyId,
+    subscription_id: sub.razorpaySubscriptionId,
+    name: 'SEAI',
+    description: 'Monthly service fee — auto-pay mandate. Ad budgets are never included.',
+    prefill: {},
+    theme: { color: '#0a0a0b' },
+    handler: async (response)=>{
+      try{
+        const verified=await gapi('/me/subscriptions/verify',{method:'POST',body:JSON.stringify({razorpayPaymentId:response.razorpay_payment_id,razorpaySubscriptionId:response.razorpay_subscription_id,razorpaySignature:response.razorpay_signature})});
+        alert('Auto-pay activated. Your monthly fee will be charged automatically by Razorpay. Status: '+verified.status);
+        cache.growthMe=null; renderBilling($('#content'));
+      }catch(e){ alert('Mandate sent, but verification failed: '+e.message+'. If charged, your receipt will arrive by email.'); }
+    },
+    modal: { ondismiss: ()=>showErr('Authorisation closed before completing. Nothing was charged.') },
+  };
+  try{ new window.Razorpay(options).open(); }catch(e){ showErr('Could not open the payment window. Please try again.'); }
+}
+
+/* ================= GROWTH: SUPPORT ================= */
+async function renderSupport(el){
+  el.innerHTML='<p class="eyebrow">Support</p><h1 class="h1">Talk to SEAI</h1><div class="grid"><div class="card span4"><p class="eyebrow">New request</p><form id="supForm"><div class="field"><label>Subject</label><input class="input" id="supSubject" maxlength="200" required /></div><div class="field"><label>What do you need?</label><textarea id="supBody" rows="4" required></textarea></div><button class="btn" type="submit">Send to SEAI</button><p class="err" id="supErr"></p></form></div><div class="card span8"><p class="eyebrow">Your requests</p><div id="supList"><div class="empty">Loading…</div></div></div></div>';
+  $('#supForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    try{ await gapi('/me/support',{method:'POST',body:JSON.stringify({subject:$('#supSubject').value.trim(),body:$('#supBody').value.trim()})}); $('#supSubject').value=''; $('#supBody').value=''; loadSupport(); }
+    catch(err){ $('#supErr').textContent=err.message; }
+  });
+  loadSupport();
+}
+async function loadSupport(){
+  const list=$('#supList'); if(!list) return;
+  let d; try{ d=await gapi('/me/support'); }catch(e){ list.innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  const rows=(d.requests||[]).map(r=>`<div class="feeditem" data-id="${r.id}"><b>${esc(r.subject)}</b> <span class="badge ${r.status==='resolved'||r.status==='closed'?'live':r.status==='in_progress'?'warn':'gray'}">${esc(r.status)}</span><div class="meta"><span>${esc(fdate(r.created_at))}</span><span>${(r.messages||[]).length} message(s)</span></div>
+    <div class="msgs" style="display:none;margin-top:10px">${(r.messages||[]).map(m=>`<div class="msg ${m.sender_role==='seai'?'seai':''}"><span class="who">${m.sender_role==='seai'?'SEAI':'You'} · ${esc(fdate(m.created_at))}</span><p>${esc(m.body)}</p></div>`).join('')}
+    <form class="supReply" style="margin-top:10px"><textarea rows="2" placeholder="Write a reply…" required></textarea><button class="btn ghost" style="margin-top:6px" type="submit">Reply</button></form></div></div>`).join('');
+  list.innerHTML=rows||'<p class="empty">No requests yet.</p>';
+  list.querySelectorAll('.feeditem').forEach(item=>{
+    item.addEventListener('click',e=>{ if(e.target.closest('form')) return; const m=item.querySelector('.msgs'); m.style.display=m.style.display==='none'?'block':'none'; });
+    item.querySelector('.supReply').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const ta=e.target.querySelector('textarea');
+      try{ await gapi('/me/support/'+item.dataset.id+'/messages',{method:'POST',body:JSON.stringify({body:ta.value.trim()})}); loadSupport(); }
+      catch(err){ alert(err.message); }
+    });
+  });
 }
 
 document.addEventListener('click',e=>{

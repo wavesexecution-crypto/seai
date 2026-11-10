@@ -6,7 +6,6 @@ import {
   listStaleSendEvents,
   MAX_ATTEMPTS,
   NOT_REAPABLE_TEMPLATES,
-  type EmailEventRecord,
 } from './store.js';
 
 // Recovers transactional email lost to a serverless freeze.

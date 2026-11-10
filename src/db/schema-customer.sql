@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS customer_websites (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_customer_websites_user ON customer_websites(user_id);
-CREATE INDEX IF NOT EXISTS idx_customer_websites_order ON customer_websites(order_id);
 
 -- Additive upgrade path for databases created before the purchase columns.
 ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_id TEXT;
@@ -31,6 +30,7 @@ ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS plan_name TEXT;
 ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_amount_paise INTEGER;
 ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_currency TEXT;
 ALTER TABLE customer_websites ADD COLUMN IF NOT EXISTS order_confirmed_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_customer_websites_order ON customer_websites(order_id);
 CREATE INDEX IF NOT EXISTS idx_customer_websites_order ON customer_websites(order_id);
 
 -- External analytics/health data source connections (real data only)

@@ -233,6 +233,18 @@ export const PREVIEW_FIXTURES: PreviewFixture[] = [
     context: { status: 'Pointed at SEAI' },
   },
   {
+    name: '32-inquiry-report',
+    label: 'New consultation inquiry (internal)',
+    template: 'internal.inquiry_report',
+    context: {
+      website_name: 'Sharma Dental Studio',
+      customer_name: 'Aarav Sharma',
+      email: 'aarav@example.com',
+      request_summary: 'Objective: More leads & enquiries\nServices wanted: advertising, social\nMarketing budget: ₹20k–40k/mo\nPhone: +91 98XXX XXXXX',
+      alert_summary: 'Industry: Clinic\nWebsite: https://sharmadental.example.com\nServices: advertising, social',
+    },
+  },
+  {
     name: '31-cold-outreach',
     label: 'Sales outreach (reserved)',
     template: 'sales.cold_outreach',

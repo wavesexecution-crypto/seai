@@ -1,6 +1,6 @@
-﻿import { escapeAttr, escapeHtml, safeUrl, stripControl, subjectSafe } from './safety.js';
+import { escapeAttr, escapeHtml, safeUrl, stripControl, subjectSafe } from './safety.js';
 import { config } from '../config.js';
-import { dashboardUrl, privacyUrl, supportMailto, termsUrl } from './urls.js';
+import { privacyUrl, supportMailto, termsUrl } from './urls.js';
 
 export type Tone = 'neutral' | 'positive' | 'warning' | 'critical';
 
@@ -36,12 +36,6 @@ const TONE_COLOR: Record<Tone, string> = {
   critical: PALETTE.critical,
 };
 
-const TONE_LABEL: Record<Tone, string> = {
-  neutral: 'STATUS',
-  positive: 'STATUS',
-  warning: 'ACTION NEEDED',
-  critical: 'ACTION NEEDED',
-};
 
 function text(str: unknown): string {
   return stripControl(String(str ?? ''));
@@ -247,7 +241,7 @@ export function preheaderBlock(value: string): Block {
 
 // Brand mark: a text wordmark, never a remote image.
 //
-// A hosted image proved unreliable in real inboxes — mail clients fetch remote
+// A hosted image proved unreliable in real inboxes � mail clients fetch remote
 // images through a proxy that refuses cross-origin-restricted assets, which
 // rendered as a broken-image placeholder. A styled wordmark cannot fail, loads
 // instantly on mobile, and matches the monochrome product identity.
@@ -260,7 +254,6 @@ function logoBlock(): Block {
 
 function footerBlock(): Block {
   const support = config.mailSupportEmail;
-  const year = new Date().getFullYear();
   const html = [
     `<tr><td style="padding:8px 0 0;"><div style="height:1px;line-height:1px;font-size:0;background:${PALETTE.border};">&nbsp;</div></td></tr>`,
     `<tr><td style="padding:22px 0 0;text-align:left;">`,
@@ -271,7 +264,7 @@ function footerBlock(): Block {
   const plain = [
     `Questions? Reply to this email.`,
     '',
-    `SEAI · ${support}`,
+    `SEAI � ${support}`,
     `Privacy: ${privacyUrl()}`,
     `Terms: ${termsUrl()}`,
   ].join('\n');

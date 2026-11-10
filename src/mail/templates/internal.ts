@@ -47,6 +47,30 @@ export const internalTemplates: EmailTemplateDef[] = [
     },
   },
   {
+    name: 'internal.inquiry_report',
+    category: 'internal',
+    subject: 'New SEAI consultation inquiry — {{website_name}}',
+    preheader: 'A business requested a consultation via seai.store.',
+    reason: 'Internal notification: a consultation inquiry was submitted on the public site.',
+    trigger: 'Wired: POST /api/growth/inquiry (public consultation form).',
+    required: ['website_name', 'customer_name', 'request_summary'],
+    optional: ['email', 'alert_summary', 'request_priority'],
+    wired: true,
+    build: (ctx) => {
+      const rows = metricRows(ctx);
+      const blocks = [
+        statusBadge('New inquiry', 'neutral'),
+        heading(`New consultation — ${ctx.website_name}`),
+        paragraph(`${ctx.customer_name}${ctx.email ? ` · ${ctx.email}` : ''} asked SEAI to get in touch.`),
+        paragraph(ctx.request_summary),
+      ];
+      if (rows.length > 0) {
+        blocks.push(infoBlock('Inquiry details', rows.map((r) => ({ label: r.label, value: r.value }))));
+      }
+      return blocks;
+    },
+  },
+  {
     name: 'sales.cold_outreach',
     category: 'internal',
     subject: 'A better website for {{website_name}}',

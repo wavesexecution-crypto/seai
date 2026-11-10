@@ -30,7 +30,7 @@ export class EmbedTicketError extends Error {
   }
 }
 
-const b64url = (value: Buffer) => value.toString('base64url').replaceAll('=', '');
+const b64url = (value: Buffer) => value.toString('base64url').replace(/=/g, '');
 const B64URL_RE = /^[A-Za-z0-9_-]+$/;
 
 function constantTimeEqual(a: string, b: string): boolean {

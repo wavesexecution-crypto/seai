@@ -82,7 +82,7 @@ export async function elicitOpportunities(storeId: string | null, count = 3, bri
 
 /** Trademark screen. No registry access exists at runtime: checks the store's own
  * catalog for collisions and otherwise records an explicit human-review requirement. */
-export async function trademarkScreen(shop: string, brandName: string, existingTitles: string[]): Promise<{ clear: boolean; collision: boolean; note: string }> {
+export async function trademarkScreen(_shop: string, brandName: string, existingTitles: string[]): Promise<{ clear: boolean; collision: boolean; note: string }> {
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
   const hit = existingTitles.find((t) => norm(t).includes(norm(brandName)) || norm(brandName).includes(norm(t)));
   if (hit) return { clear: false, collision: true, note: `Collision inside store catalog: "${hit}". Choose another name.` };

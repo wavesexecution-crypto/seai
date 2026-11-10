@@ -4,6 +4,7 @@ import { validateSession } from './service.js';
 import { getSessionToken } from './routes.js';
 import { config } from '../config.js';
 import type { User } from './service.js';
+import { isStaffRole, normalizeRole } from './roles.js';
 
 // Extend Express Request to include user
 declare global {
@@ -91,6 +92,50 @@ export function requireStaff(req: Request, res: Response, next: NextFunction): v
     return;
   }
   req.isStaff = true;
+  next();
+}
+
+/**
+ * Staff dashboard gate: a valid session whose user carries a staff role
+ * (admin|sales|account_manager|marketing|designer|developer|finance).
+ * Customer sessions get 403 — staff capability is a property of the account,
+ * never of a cookie alone. `roles` narrows further when a route is
+ * role-specific.
+ */
+export function requireStaffRole(...roles: string[]) {
+  const allowed = roles.map((r) => r.toLowerCase());
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const token = getSessionToken(req);
+    const user = await validateSession(token);
+    const role = normalizeRole(user?.role);
+    if (!user) {
+      res.status(401).json({ ok: false, error: 'Authentication required' });
+      return;
+    }
+    if (!isStaffRole(role)) {
+      res.status(403).json({ ok: false, error: 'Staff access required' });
+      return;
+    }
+    if (allowed.length && !allowed.includes(role) && role !== 'admin') {
+      res.status(403).json({ ok: false, error: 'Insufficient role for this resource' });
+      return;
+    }
+    req.user = user;
+    next();
+  };
+}
+
+/** Express-ready instance for the common case (any staff role). */
+export const staffOnly = requireStaffRole();
+
+/** Page guard for /staff: unauthenticated → /sign-in, customers → /overview. */
+export async function requireStaffRedirect(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const token = getSessionToken(req);
+  const user = await validateSession(token);
+  const role = normalizeRole(user?.role);
+  if (!user) { res.redirect('/sign-in'); return; }
+  if (!isStaffRole(role)) { res.redirect('/overview'); return; }
+  req.user = user;
   next();
 }
 

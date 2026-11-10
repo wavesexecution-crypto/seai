@@ -3,7 +3,6 @@ import { config } from '../config.js';
 export type AutonomyLevel = 'OBSERVE' | 'ASSIST' | 'EXECUTE_SAFE' | 'AUTONOMOUS';
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 
-const RANK: Record<AutonomyLevel, number> = { OBSERVE: 0, ASSIST: 1, EXECUTE_SAFE: 2, AUTONOMOUS: 3 };
 
 export interface PolicyVerdict {
   allowed: boolean;

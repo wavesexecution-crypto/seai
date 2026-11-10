@@ -27,7 +27,7 @@ export interface AgentRunResult {
   status: string;
   summary: string;
   iterations: number;
-  model: string;
+  _model: string;
 }
 
 /** Real agent loop: iterative tool calls with max iterations, persisted state, restart-safe. */
@@ -35,13 +35,13 @@ export async function runAgent(input: AgentRunInput): Promise<AgentRunResult> {
   const runId = randomUUID();
   const maxIterations = input.maxIterations ?? config.agentMaxIterations;
   const kind = input.kind ?? 'command';
-  let model = 'heuristic';
-  try { model = await aiGateway.selectBestModel({ requireTools: true }); } catch { /* offline */ }
+  let _model = 'heuristic';
+  try { _model = await aiGateway.selectBestModel({ requireTools: true }); } catch { /* offline */ }
 
   try {
     await db.insert('agent_runs', {
       id: runId, store_id: input.storeId, kind, input: input.prompt.slice(0, 4000),
-      model, status: 'running', autonomy_level: config.autonomyLevel, started_at: new Date().toISOString(),
+      _model, status: 'running', autonomy_level: config.autonomyLevel, started_at: new Date().toISOString(),
     });
   } catch { /* ignore */ }
 
@@ -77,7 +77,7 @@ export async function runAgent(input: AgentRunInput): Promise<AgentRunResult> {
       const p = heuristicPlan[i];
       directive = { tool: p.tool, args: p.args, think: p.think, done: false };
     } else {
-      directive = await nextDirective(system, history, model, input.storeId);
+      directive = await nextDirective(system, history, _model, input.storeId);
     }
     await step(i, 'thought', { think: directive.think, tool: directive.tool });
     if (!directive.tool || directive.done) {
@@ -148,7 +148,7 @@ export async function runAgent(input: AgentRunInput): Promise<AgentRunResult> {
     if (rows[0]) await db.update('agent_runs', runId, { status, ended_at: new Date().toISOString(), summary: finalSummary.slice(0, 4000) });
   } catch { /* ignore */ }
 
-  return { runId, status, summary: finalSummary, iterations, model };
+  return { runId, status, summary: finalSummary, iterations, _model };
 }
 
 function planHeuristic(prompt: string): { tool: string; args: any; think: string }[] {
@@ -168,7 +168,7 @@ function planHeuristic(prompt: string): { tool: string; args: any; think: string
   return base;
 }
 
-async function nextDirective(system: string, history: string[], model: string, storeId: string | null): Promise<{ tool: string | null; args: any; think: string; done: boolean; final?: string }> {
+async function nextDirective(system: string, history: string[], _model: string, storeId: string | null): Promise<{ tool: string | null; args: any; think: string; done: boolean; final?: string }> {
   const convo = fitBudget([system, ...history]);
   try {
     const raw = await aiGateway.chat(

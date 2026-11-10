@@ -34,7 +34,6 @@ export function escapeAttr(value: unknown): string {
 
 const PRIVATE_HOSTS = new Set(['localhost', '0.0.0.0', '::1', '[::1]', '127.0.0.1', 'host.docker.internal']);
 const PREVIEW_HOST_SUFFIXES = ['.vercel.app', '.now.sh', '.ngrok.io', '.trycloudflare.com', '.local', '.localhost', '.internal'];
-const ALLOWED_PROTOCOLS = new Set(['https:', 'mailto:']);
 
 export interface UrlOptions {
   label?: string;

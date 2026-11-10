@@ -1,4 +1,4 @@
-import { writeNote, appendEntry, readNote, noteExists, storeRoot } from './vault.js';
+import { writeNote, appendEntry, readNote, storeRoot } from './vault.js';
 
 // Structured, deterministic memory writes. Every writer enforces the quality bar:
 // conclusions + evidence + reasoning. Raw tool logs and speculation are refused

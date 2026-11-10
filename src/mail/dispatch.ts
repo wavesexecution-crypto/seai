@@ -123,7 +123,6 @@ function correlationOf(input: DispatchInput): string | null {
 export async function dispatchEmail(input: DispatchInput): Promise<DispatchResult> {
   const template = input.template;
   const recipient = normalizeRecipient(input.to);
-  const started = Date.now();
   const dedupeKey = input.dedupeKey ?? buildDedupeKey(input.eventName, input.dedupeParts ?? [input.variables?.order_id, input.variables?.request_id, recipient]);
   const correlationId = correlationOf(input);
 
@@ -174,7 +173,7 @@ export async function dispatchEmail(input: DispatchInput): Promise<DispatchResul
   const attempt = Number(claim.event.attempts ?? 1);
 
   try {
-    return await deliver(input, { eventId, attempt, retried: claim.retried });
+    return await deliver(input, { eventId, attempt });
   } finally {
     releaseEventClaim(claimedDedupeKey);
   }
@@ -183,16 +182,13 @@ export async function dispatchEmail(input: DispatchInput): Promise<DispatchResul
 interface DeliverContext {
   eventId: string;
   attempt: number;
-  retried: boolean;
 }
 
 async function deliver(input: DispatchInput, ctx: DeliverContext): Promise<DispatchResult> {
-  const { eventId, attempt, retried } = ctx;
+  const { eventId, attempt } = ctx;
   const template = input.template;
   const recipient = normalizeRecipient(input.to);
-  const started = Date.now();
   const correlationId = correlationOf(input);
-  const label = `${input.eventName}`;
 
   let rendered: RenderedEmail;
   try {
@@ -213,7 +209,6 @@ async function deliver(input: DispatchInput, ctx: DeliverContext): Promise<Dispa
     });
     await updateDelivery(failed.id, { status: 'failed', error: reason });
     await markEventStatus(eventId, 'failed');
-    log({ event: eventId, name: label, template, to: recipient, status: 'render_failed', reason, attempt, ms: Date.now() - started });
     return { status: 'failed', eventId, deliveryId: failed.id, template, recipient, reason, attempt };
   }
 
@@ -231,7 +226,6 @@ async function deliver(input: DispatchInput, ctx: DeliverContext): Promise<Dispa
   if (dryRun) {
     await updateDelivery(delivery.id, { status: 'sent', provider: 'dry-run', providerResponse: 'dry run: not sent' });
     await markEventStatus(eventId, 'sent');
-    log({ event: eventId, name: label, template, to: recipient, status: 'dry_run', attempt, ms: Date.now() - started });
     return { status: 'sent', eventId, deliveryId: delivery.id, template, recipient, messageId: 'dry-run', attempt };
   }
 
@@ -253,13 +247,11 @@ async function deliver(input: DispatchInput, ctx: DeliverContext): Promise<Dispa
       providerResponse: result.response,
     });
     await markEventStatus(eventId, 'sent');
-    log({ event: eventId, name: label, template, to: recipient, status: retried ? 'sent_on_retry' : 'sent', message_id: result.messageId, response: result.response, attempt, ms: Date.now() - started });
     return { status: 'sent', eventId, deliveryId: delivery.id, template, recipient, messageId: result.messageId, attempt };
   } catch (err) {
     const reason = redactSecrets((err as Error).message, 300);
     await updateDelivery(delivery.id, { status: 'failed', error: reason });
     await markEventStatus(eventId, 'failed');
-    log({ event: eventId, name: label, template, to: recipient, status: 'failed', reason, attempt, ms: Date.now() - started });
     return { status: 'failed', eventId, deliveryId: delivery.id, template, recipient, reason, attempt };
   }
 }

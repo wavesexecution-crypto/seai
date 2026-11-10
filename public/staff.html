@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SEAI — Staff Command Center</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000; --soft:#000; --panel:#0a0a0a; --line:rgba(255,255,255,.12); --line2:rgba(255,255,255,.06);
+  --ink:#fff; --sub:#D1D1D1; --faint:#A0A0A0; --acc:#fff;
+  --good:#fff; --warn:#9a9a9a; --bad:#888888; --blue:#A6A6A6;
+  --mono: ui-monospace, Menlo, monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:225px 1fr;min-height:100vh}
+.side{border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 10px 14px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.brand img{width:26px;height:26px;border-radius:6px}
+.brand b{letter-spacing:.18em;font-size:15px}
+.brand span{display:block;font-size:10px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+.nav button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:transparent;border:0;color:var(--sub);padding:8px 10px;border-radius:7px;font:inherit;font-size:13px;cursor:pointer}
+.nav button:hover{background:rgba(255,255,255,.04);color:var(--ink)}
+.nav button.on{background:rgba(255,255,255,.08);color:var(--ink);font-weight:600}
+.nav button small{margin-left:auto;background:rgba(255,255,255,.1);border-radius:99px;padding:0 8px;font-size:11px}
+.sidefoot{margin-top:auto;padding:10px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+.sidefoot b{color:var(--sub);display:block}
+.topbar{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;background:var(--bg);position:sticky;top:0;z-index:5}
+.crumb{font-size:12px;color:var(--faint)}
+.rolechip{margin-left:auto;font-size:11px;color:#000;background:#fff;border-radius:99px;padding:2px 10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.ghost{background:transparent;border:1px solid var(--line2);color:var(--sub);border-radius:7px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+.ghost:hover{color:var(--ink);border-color:var(--acc)}
+main{padding:22px 26px 80px;max-width:1500px}
+h1{font-size:19px;margin:0 0 4px}
+.sub{color:var(--sub);font-size:12.5px;margin-bottom:18px}
+.grid{display:grid;gap:12px}
+.cards{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card .k{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em}
+.card .v{font-size:26px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.card .d{font-size:11px;color:var(--sub);margin-top:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);margin:0 0 12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.between{justify-content:space-between}
+input,select,textarea{background:#0e0e10;border:1px solid var(--line2);color:var(--ink);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#fff}
+textarea{width:100%;min-height:70px}
+.btn{background:#fff;color:#000;border:0;border-radius:8px;padding:8px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{opacity:.85}
+.btn.sec{background:transparent;border:1px solid var(--line2);color:var(--ink)}
+.btn.danger{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+.btn.small{padding:4px 10px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;user-select:none}
+th.sortable{cursor:pointer}
+tr:hover td{background:rgba(255,255,255,.02)}
+.pill{display:inline-block;font-size:10.5px;border:1px solid var(--line2);color:var(--sub);border-radius:99px;padding:1px 9px;white-space:nowrap}
+.pill.new{color:#fff;border-color:#fff}
+.pill.good{color:var(--good);border-color:var(--good)}
+.pill.warn{color:var(--warn);border-color:var(--warn)}
+.pill.bad{color:var(--bad);border-color:var(--bad)}
+.pill.blue{color:var(--blue);border-color:var(--blue)}
+.muted{color:var(--sub)}
+.foot{color:var(--faint);font-size:11px;margin-top:18px}
+.empty{color:var(--faint);text-align:center;padding:30px 10px;font-size:13px}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(560px,100vw);background:var(--soft);border-left:1px solid var(--line2);z-index:20;display:none;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
+.drawer.open{display:flex}
+.drawer header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer header b{font-size:15px}
+.drawer .body{overflow:auto;padding:16px 18px 40px}
+.drawer .close{margin-left:auto;background:transparent;border:0;color:var(--sub);font-size:22px;cursor:pointer}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:2px 12px;font-size:12.5px;margin:10px 0}
+.kv div:nth-child(odd){color:var(--faint)}
+.act{border-left:2px solid var(--line2);padding:2px 0 2px 10px;margin:8px 0;font-size:12px}
+.act b{color:var(--sub)}
+.act time{color:var(--faint);font-size:11px;margin-left:6px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:6vh 12px}
+.modal.open{display:flex}
+.modal .box{background:var(--soft);border:1px solid var(--line2);border-radius:14px;max-width:560px;width:100%;padding:18px}
+.modal .box h3{margin:0 0 12px;font-size:15px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.formgrid .full{grid-column:1/-1}
+label{display:block;font-size:11px;color:var(--faint);margin:8px 0 4px;text-transform:uppercase;letter-spacing:.06em}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#fff;color:#000;border-radius:8px;padding:10px 16px;font-size:13px;z-index:50;display:none;max-width:480px}
+.funnel{display:flex;gap:6px;flex-wrap:wrap}
+.fstep{border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--sub)}
+.fstep b{color:var(--ink)}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;overflow-x:auto}.brand,.sidefoot{display:none}.nav button{white-space:nowrap}}
+@media print{.side,.topbar,.btn,.ghost,.toast{display:none!important}.app{display:block}main{padding:0}.panel{border:0}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><img src="/logo.svg" alt="SEAI"/><div><b>SEAI</b><span>Command Center</span></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidefoot"><b id="whoName">…</b><span id="whoRole"></span><br/>Internal use only. Client data is confidential.</div>
+  </aside>
+  <div>
+    <div class="topbar"><span class="crumb">SEAI / <b id="crumb">Overview</b></span><span class="rolechip" id="roleChip">staff</span><button class="ghost" id="signOut">Sign out</button></div>
+    <main id="main"><div class="empty">Loading…</div></main>
+  </div>
+</div>
+
+<div class="drawer" id="drawer"><header><b id="drawerTitle">Detail</b><button class="close" id="drawerClose" aria-label="Close">×</button></header><div class="body" id="drawerBody"></div></div>
+<div class="modal" id="modal"><div class="box"><h3 id="modalTitle">New</h3><form id="modalForm"></form><div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" id="modalCancel" type="button">Cancel</button><button class="btn" id="modalSubmit" type="button">Save</button></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="/staff.js" defer></script>
+</body>
+</html>
