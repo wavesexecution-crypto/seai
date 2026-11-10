@@ -1,15 +1,20 @@
-// Copies the SPA shell into dist/ so the serverless bundle is self-contained.
-// Vercel serves all other public/* assets from outputDirectory; the function
-// only needs index.html for SPA-route sendFile. Plain node, no dependencies.
+// Copies the SPA shell and standalone HTML pages into dist/ so the
+// serverless bundle is self-contained. Vercel serves all other public/*
+// assets from outputDirectory. Plain node, no dependencies.
 const { copyFileSync, mkdirSync, existsSync } = require('node:fs');
-const { join, dirname } = require('node:path');
+const { join } = require('node:path');
 
 const root = join(__dirname, '..');
-mkdirSync(join(root, 'dist', 'public'), { recursive: true });
-const src = join(root, 'public', 'index.html');
-if (!existsSync(src)) {
-  console.error('[build] missing public/index.html');
-  process.exit(1);
+const distPublic = join(root, 'dist', 'public');
+mkdirSync(distPublic, { recursive: true });
+
+const pages = ['index.html', 'staff.html', 'onboarding.html'];
+for (const page of pages) {
+  const src = join(root, 'public', page);
+  if (!existsSync(src)) {
+    console.error(`[build] missing public/${page}`);
+    process.exit(1);
+  }
+  copyFileSync(src, join(distPublic, page));
+  console.log(`[build] public/${page} -> dist/public/${page}`);
 }
-copyFileSync(src, join(root, 'dist', 'public', 'index.html'));
-console.log('[build] public/index.html -> dist/public/index.html');
