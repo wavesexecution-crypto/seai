@@ -1,0 +1,480 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEAI Business Blueprint</title>
+<style>
+:root{--bg:#000;--card:#0d0d0d;--card2:#141414;--line:#262626;--txt:#fff;--mut:#9a9a9a;--soft:#cfcfcf;--rad:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+a{color:#fff}
+/* hero */
+header{padding:64px 0 36px;border-bottom:1px solid var(--line);background:#000}
+.logo{display:inline-flex;align-items:center;gap:14px}
+.logo .tile{width:58px;height:58px;background:#000;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center}
+.logo b{font-size:32px;letter-spacing:6px;font-weight:800}
+.tagline{margin-top:12px;font-size:18px;color:var(--soft);font-style:italic}
+.sub{margin-top:10px;color:var(--mut);max-width:680px;font-size:14.5px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:11.5px;color:var(--mut)}
+.chip b{color:#fff}
+/* nav */
+nav{position:sticky;top:0;z-index:50;background:rgba(0,0,0,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+.nav-in{display:flex;gap:6px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+.nav-in::-webkit-scrollbar{display:none}
+nav a{flex:0 0 auto;padding:7px 13px;border-radius:999px;font-size:13px;color:var(--mut);white-space:nowrap}
+nav a:hover{color:#fff;background:#141414}
+nav a.on{color:#000;background:#fff;font-weight:700}
+/* sections */
+section{padding:48px 0;border-bottom:1px solid var(--line)}
+h2{font-size:24px;font-weight:800;display:flex;gap:12px;align-items:center;margin-bottom:6px}
+h2 .n{width:34px;height:34px;border-radius:9px;background:#fff;color:#000;display:grid;place-items:center;font-size:15px;flex:0 0 auto}
+.lede{color:var(--mut);font-size:14px;max-width:800px;margin-bottom:22px}
+h3{font-size:16.5px;margin:22px 0 10px}
+/* cards */
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);padding:16px}
+.card.hi{background:#141414;border-color:#3a3a3a}
+.card h4{font-size:14.5px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.ic{width:22px;height:22px;border-radius:6px;background:#fff;color:#000;display:grid;place-items:center;font-size:11px;flex:0 0 auto}
+ul{list-style:none;margin-top:6px}
+ul li{padding:3px 0 3px 18px;position:relative;font-size:13.5px;color:var(--soft)}
+ul.t li:before{content:"–";position:absolute;left:2px;color:#fff}
+/* badges — monochrome */
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;border-radius:999px;padding:2px 9px;vertical-align:middle}
+.b-live{background:#fff;color:#000}
+.b-prop{border:1px solid #555;color:#bbb}
+.b-tool{border:1px dashed #444;color:#888}
+.b-one{border:1px solid #333;color:#999}
+/* accordion */
+details{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);margin-bottom:10px}
+details[open]{background:#121212}
+summary{cursor:pointer;padding:14px 18px;font-weight:700;font-size:14.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;list-style:none;user-select:none}
+summary::-webkit-details-marker{display:none}
+summary .ar{margin-left:auto;color:var(--mut);font-size:11px;transition:transform .2s}
+details[open] .ar{transform:rotate(180deg)}
+.db{padding:14px 18px 18px;border-top:1px solid var(--line)}
+/* flow */
+.flow{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.fs{flex:1 1 110px;min-width:100px;border:1px solid #333;border-radius:8px;padding:8px 9px;font-size:11.5px;color:var(--soft);text-align:center}
+.fs b{display:block;color:#fff;font-size:12px}
+.fs.a{border-style:dashed;color:#8a8a8a}
+.fs.p{border-color:#fff;font-weight:600}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#141414;font-size:12px;color:#fff}
+td{color:var(--soft)}
+/* kv */
+.kv{font-size:13px;margin-top:8px}
+.kv div{display:grid;grid-template-columns:130px 1fr;gap:2px 10px;padding:4px 0;border-bottom:1px dashed #1e1e1e}
+.kv div:last-child{border:none}
+.kv dt{color:var(--mut)}
+.kv dd{color:var(--soft)}
+/* misc */
+.callout{border-left:2px solid #fff;background:#101010;border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0;font-size:13px;color:var(--soft)}
+.callout b{color:#fff}
+.price{font-size:26px;font-weight:800;color:#fff}
+.price small{font-size:12px;color:var(--mut);font-weight:600}
+.note{font-size:11.5px;color:var(--mut)}
+footer{padding:36px 0 56px;text-align:center;color:var(--mut);font-size:12.5px}
+.top{position:fixed;right:20px;bottom:20px;width:40px;height:40px;border-radius:50%;background:#fff;color:#000;border:none;font-size:16px;cursor:pointer;z-index:60}
+#q{position:fixed;top:52px;right:20px;z-index:70;width:210px;padding:8px 13px;border-radius:999px;border:1px solid #333;background:#0d0d0d;color:#fff;font-size:12.5px;outline:none}
+@media(max-width:640px){.kv div{grid-template-columns:1fr}h2{font-size:20px}}
+@media print{nav,#q,.top{display:none}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">
+      <span class="tile">
+        <svg width="40" height="40" viewBox="0 0 120 120" aria-label="SEAI logo">
+          <g fill="#fff">
+            <path d="M100 16 L46 16 Q18 16 18 36 Q18 56 46 56 L58 56 L64 62 L70 56 L100 56 Z"/>
+            <path d="M20 104 L74 104 Q102 104 102 84 Q102 64 74 64 L58 64 L52 58 L46 64 L20 64 Z"/>
+          </g>
+          <circle cx="112" cy="15" r="5" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <text x="112" y="18" font-size="7" fill="#fff" text-anchor="middle" font-family="Arial">R</text>
+        </svg>
+      </span>
+      <b>SEAI</b>
+    </div>
+    <div class="tagline">“Get Exposed. But in a Good Way.”</div>
+    <p class="sub">Master business blueprint & operating model — what we sell, how we deliver, how we onboard, what we collect, and how SEAI earns recurring revenue.</p>
+    <div class="chips">
+      <span class="chip">v<b>1.0</b> · <b>Oct 2026</b></span>
+      <span class="chip">Internal document</span>
+      <span class="chip">Pricing: <b>proposed</b></span>
+      <span class="chip">No guaranteed results</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap nav-in" id="nav">
+  <a href="#s1" class="on">1 · Brand</a>
+  <a href="#s2">2 · Services</a>
+  <a href="#s3">3 · Industries</a>
+  <a href="#s4">4 · Onboarding</a>
+  <a href="#s5">5 · Client Info</a>
+  <a href="#s6">6 · Delivery</a>
+  <a href="#s7">7 · Retainers</a>
+</div></nav>
+
+<main class="wrap">
+<section id="s1">
+  <h2><span class="n">1</span> Brand & Positioning</h2>
+  <p class="lede">SEAI is a marketing, advertising and business growth company. Central belief: <b style="color:#fff">every business needs exposure</b> — visibility, attention, customers, growth.</p>
+  <div class="grid g3">
+    <div class="card hi"><h4><span class="ic">◆</span> What SEAI is</h4><p style="font-size:13.5px;color:var(--soft)">We make businesses visible: branding, ads, social media, websites, lead generation and follow-up systems — delivered as one monthly service.</p></div>
+    <div class="card"><h4><span class="ic">◆</span> Problem we solve</h4><p style="font-size:13.5px;color:var(--soft)">Good businesses stay invisible: no strategy, inconsistent posting, ads that "don't work", no follow-up on leads, agencies too expensive.</p></div>
+    <div class="card"><h4><span class="ic">◆</span> Brand rule</h4><p style="font-size:13.5px;color:var(--soft)">AI/automation are <b>internal tools only</b> — never the product. We sell marketing, creativity, execution and growth. Clients buy outcomes.</p></div>
+  </div>
+  <h3>Who we serve</h3>
+  <table>
+    <tr><th>Segment</th><th>Profile</th><th>First need</th><th>Our angle</th></tr>
+    <tr><td>Small / local</td><td>Restaurants, gyms, salons, clinics, shops</td><td>Local visibility, social presence</td><td>Affordable retainer + local ads</td></tr>
+    <tr><td>Growing</td><td>Multi-location, scaling e-commerce/services</td><td>Consistent lead flow, funnels</td><td>Full funnel: ads → page → capture → follow-up</td></tr>
+    <tr><td>Established</td><td>Real estate, education, healthcare groups</td><td>Brand overhaul, multi-channel</td><td>Audit → strategy → full execution</td></tr>
+    <tr><td>Startups</td><td>New ventures, first customers</td><td>Identity, landing page, launch</td><td>Lean: brand + one-pager + launch ads</td></tr>
+  </table>
+  <h3>SEAI vs traditional agencies</h3>
+  <table>
+    <tr><th></th><th>Traditional agency</th><th>SEAI</th></tr>
+    <tr><td>Price</td><td>High retainers for big brands</td><td>Accessible monthly plans <span class="badge b-prop">PROPOSED</span></td></tr>
+    <tr><td>Speed</td><td>Slow onboarding & creative cycles</td><td>Days, not weeks — lean internal tooling</td></tr>
+    <tr><td>Transparency</td><td>Jargon, black-box reports</td><td>Plain language; ad spend always separate</td></tr>
+    <tr><td>Scope</td><td>One specialisation</td><td>Full stack: brand → ads → social → web → leads</td></tr>
+    <tr><td>Commitment</td><td>Long lock-ins</td><td>Monthly renewals — earn it every month</td></tr>
+  </table>
+  <div class="callout"><b>Guardrail:</b> lead with marketing outcomes (visibility, leads, growth). Never market "AI services" — internal tooling stays behind the curtain.</div>
+</section>
+
+<section id="s2">
+  <h2><span class="n">2</span> Service Catalogue</h2>
+  <p class="lede"><span class="badge b-live">AVAILABLE</span> = deliverable today · <span class="badge b-prop">PROPOSED</span> = defined here, not yet implemented — never sell as existing.</p>
+
+  <details open><summary>A · Branding & Identity <span class="badge b-prop">PROPOSED</span> <span class="ar">▼</span></summary>
+    <div class="db">
+      <ul class="t"><li><b>Positioning</b> — who it's for, vs whom, the promise</li><li><b>Identity & logo</b> — colours, type, marks (SVG/PNG pack)</li><li><b>Guidelines</b> — short PDF: usage, voice, do/don'ts</li><li><b>Creative direction & strategy</b> — how the brand shows up in campaigns; long-term roadmap</li></ul>
+      <div class="kv">
+        <div><dt>Client provides</dt><dd>Existing brand files, history, values, competitors, references</dd></div>
+        <div><dt>Execution</dt><dd>Interview → research → 2–3 concept routes → client picks → 2 refinement rounds → file pack</dd></div>
+        <div><dt>Tools · Deliverables</dt><dd>Design tools (AI for early exploration only) · logo pack, guidelines PDF, positioning sheet</dd></div>
+        <div><dt>Measured · Model</dt><dd>Client sign-off, consistency across assets · one-time (+ optional monthly direction)</dd></div>
+      </div>
+    </div>
+  </details>
+
+  <details><summary>B · Advertising <span class="badge b-live">AVAILABLE · core offer</span> <span class="ar">▼</span></summary>
+    <div class="db">
+      <ul class="t"><li><b>Meta</b> (FB/IG): traffic, leads, messages, retargeting</li><li><b>Google Ads</b>: Search, Display, PMax · <b>YouTube</b> video ads</li><li><b>Planning → creative → media buying → targeting</b></li><li><b>Optimisation + monthly plain-language reporting</b></li></ul>
+      <div class="kv">
+        <div><dt>Client provides</dt><dd>Ad account access (invites, never passwords), locations, offer, brand assets, <b>monthly ad budget (separate)</b></dd></div>
+        <div><dt>Execution</dt><dd>Audit → audience research → strategy → build → <b>client approval</b> → launch → weekly optimisation → monthly report</dd></div>
+        <div><dt>Tools · Deliverables</dt><dd>Meta Ads Manager, Google Ads, Analytics/GTM · live campaigns, creatives, monthly report</dd></div>
+        <div><dt>Measured · Model</dt><dd>CPC, CTR, cost-per-lead, ROAS vs agreed targets · recurring; ad budget paid by client directly to platforms</dd></div>
+      </div>
+    </div>
+  </details>
+
+  <details><summary>C · Digital Marketing / Social <span class="badge b-live">AVAILABLE</span> <span class="ar">▼</span></summary>
+    <div class="db">
+      <ul class="t"><li><b>Management</b> — we own the calendar on IG/FB</li><li><b>Strategy + monthly content calendar</b></li><li><b>Creative production</b> — statics, carousels, reels, captions</li><li><b>Community management + presence hygiene</b> (Google Business Profile)</li></ul>
+      <div class="kv">
+        <div><dt>Client provides</dt><dd>Brand assets, photos/videos, approval contact, account invites</dd></div>
+        <div><dt>Execution</dt><dd>Audit → strategy → calendar → produce → <b>approval</b> → schedule → engage → monthly review</dd></div>
+        <div><dt>Tools · Deliverables</dt><dd>Meta Business Suite, schedulers, design tools · consistent branded posting</dd></div>
+        <div><dt>Measured · Model</dt><dd>Posting consistency, engagement, profile visits, DM enquiries · recurring, volume per plan</dd></div>
+      </div>
+    </div>
+  </details>
+
+  <details><summary>D · Website Development <span class="badge b-live">AVAILABLE</span> <span class="badge b-one">ONE-TIME + care plan</span> <span class="ar">▼</span></summary>
+    <div class="db">
+      <ul class="t"><li><b>Business sites</b> (5–10 pages) · <b>landing pages</b> for campaigns</li><li><b>E-commerce</b> — catalogue, cart, checkout (scoped per project)</li><li><b>Redesign + conversion optimisation + maintenance</b></li></ul>
+      <div class="kv">
+        <div><dt>Client provides</dt><dd>Domain (client-owned), content, page list, references, booking/payment needs</dd></div>
+        <div><dt>Execution</dt><dd>Requirements → sitemap → design → <b>approval</b> → build → content → test → deploy → optional care plan</dd></div>
+        <div><dt>Tools · Deliverables</dt><dd>Hosting/CMS (third-party costs at cost to client) · fast, mobile-first site</dd></div>
+        <div><dt>Measured · Model</dt><dd>On-time/scope, speed, form submissions · one-time; maintenance optional monthly</dd></div>
+      </div>
+      <div class="callout"><b>Rule:</b> domain & hosting always registered in the <b>client's name</b> — we hold access, never ownership.</div>
+    </div>
+  </details>
+
+  <details><summary>E · Lead Generation <span class="badge b-live">AVAILABLE</span> <span class="ar">▼</span></summary>
+    <div class="db">
+      <ul class="t"><li><b>Lead campaigns</b> — lead forms, messages, landing funnels</li><li><b>Capture systems</b> — forms, click-to-chat, call tracking</li><li><b>Qualification</b> — agreed filters so client gets serious enquiries</li><li><b>CRM delivery + follow-up workflows</b> (client team executes the human part)</li></ul>
+      <div class="kv">
+        <div><dt>Client provides</dt><dd>Offer, qualification criteria, lead destination, response capability</dd></div>
+        <div><dt>Execution</dt><dd>Funnel → tracking → <b>approval</b> → launch → monitor flow → monthly quality review</dd></div>
+        <div><dt>Tools · Deliverables</dt><dd>Meta lead forms, landing pages, Sheets/CRM connectors · tracked lead pipeline</dd></div>
+        <div><dt>Measured · Model</dt><dd>Leads, cost-per-lead, lead-to-customer rate · recurring, bundled with ads</dd></div>
+      </div>
+      <div class="callout"><b>Integrity:</b> never promise guaranteed leads or customers. We commit to process, transparency, optimisation.</div>
+    </div>
+  </details>
+
+  <details><summary>F · Sales & Automation <span class="badge b-prop">PROPOSED</span> <span class="ar">▼</span></summary>
+    <div class="db">
+      <ul class="t"><li><b>Engagement systems</b> — what happens on every enquiry</li><li><b>Automated follow-ups</b> + simple lead pipeline (new → contacted → won/lost)</li><li><b>Conversational agents</b> — FAQ + qualify, <b>human handoff built in</b></li><li><b>Workflow automation</b> — forms → CRM → follow-ups → alerts</li></ul>
+      <div class="kv">
+        <div><dt>Client provides</dt><dd>FAQs, automation comfort rules, CRM access (invite), escalation contact</dd></div>
+        <div><dt>Execution</dt><dd>Map journey → design flow → build → team test → live → monthly tuning</dd></div>
+        <div><dt>Tools · Deliverables</dt><dd>CRM, messaging APIs, automation platforms · working pipeline + sequences</dd></div>
+        <div><dt>Measured · Model</dt><dd>Response time, follow-up completion, pipeline movement · setup one-time + monthly</dd></div>
+      </div>
+    </div>
+  </details>
+
+  <details><summary>G · Growth & Strategy <span class="badge b-prop">PROPOSED</span> <span class="ar">▼</span></summary>
+    <div class="db">
+      <ul class="t"><li><b>Marketing audit</b> — scored review + prioritised fix list</li><li><b>Competitor research · strategy · growth roadmap</b></li><li><b>Campaign & conversion analysis</b> — where clicks leak</li></ul>
+      <div class="kv">
+        <div><dt>Client provides</dt><dd>Read-only account access, high-level sales data, goals</dd></div>
+        <div><dt>Execution</dt><dd>Data pull → analysis → written deliverable → presentation → actions enter retainer</dd></div>
+        <div><dt>Measured · Model</dt><dd>Adoption of recommendations; target-metric movement · one-time/quarterly; included at Scale tier</dd></div>
+      </div>
+    </div>
+  </details>
+</section>
+<section id="s3">
+  <h2><span class="n">3</span> Industries</h2>
+  <p class="lede">Same engine, different fuel — process never changes; offer, creative, channels and metrics do.</p>
+  <table>
+    <tr><th>Industry</th><th>Primary channels</th><th>What "good" looks like</th></tr>
+    <tr><td>Restaurants & cafés</td><td>IG Reels, geo ads, Google Maps</td><td>Appetising visuals, offers, strong Map/review presence</td></tr>
+    <tr><td>Gyms & fitness</td><td>FB/IG lead ads, free-trial offers</td><td>Walk-in funnel, transformations, testimonials</td></tr>
+    <tr><td>Salons & beauty</td><td>IG-first, booking CTAs</td><td>Portfolio grid, booking link, seasonal packages</td></tr>
+    <tr><td>Clinics & healthcare</td><td>Google Search, educational content</td><td>Trust-first: reviews, credentials, no exaggerated claims</td></tr>
+    <tr><td>Real estate</td><td>FB/IG lead ads + Search + WhatsApp</td><td>Project pages, filtered leads, fast call-backs</td></tr>
+    <tr><td>Retail stores</td><td>Geo ads, festive campaigns, GBP</td><td>Store-visit campaigns, catalogue posts</td></tr>
+    <tr><td>E-commerce</td><td>Meta + Google Shopping, retargeting</td><td>Purchase tracking, ROAS reporting, feeds</td></tr>
+    <tr><td>Education</td><td>Search during intake, content, open days</td><td>Admission funnels timed to cycles</td></tr>
+    <tr><td>Professional services</td><td>Authority content, Search, case studies</td><td>Consultation booking, proof-led</td></tr>
+    <tr><td>Startups</td><td>Brand kit, one-pager, launch ads</td><td>Fast launch, learn-and-iterate tests</td></tr>
+    <tr><td>Established cos.</td><td>Multi-channel, brand refresh, automation</td><td>Audit → strategy → full-funnel system</td></tr>
+  </table>
+</section>
+
+<section id="s4">
+  <h2><span class="n">4</span> Client Onboarding</h2>
+  <p class="lede">First contact → paying client. Every stage has an owner and an exit condition.</p>
+  <table>
+    <tr><th>#</th><th>Stage</th><th>What happens</th><th>Exit</th></tr>
+    <tr><td>1</td><td>Lead discovered</td><td>Logged with source: referral, outbound, inbound, DM, campaign</td><td>Lead record exists</td></tr>
+    <tr><td>2</td><td>Initial outreach</td><td>Personalised message (reference their business); goal = conversation; 2–3 follow-ups max</td><td>Reply / meeting / closed</td></tr>
+    <tr><td>3</td><td>Discovery call</td><td>30–45 min: goals, current marketing, budget comfort, decision-maker. Listen, don't pitch</td><td>Goal + budget band confirmed</td></tr>
+    <tr><td>4</td><td>Business assessment</td><td>Quick audit: site, socials, GBP, ads → 1-page findings + top 3 opportunities</td><td>Audit shared</td></tr>
+    <tr><td>5</td><td>Requirements</td><td>Structured intake (§5) — immediate items now, rest at onboarding</td><td>Intake returned</td></tr>
+    <tr><td>6</td><td>Proposal</td><td>Services, monthly deliverables, pricing (fee + separate ad budget), labels PROPOSED vs AVAILABLE</td><td>Sent ≤ 3 working days</td></tr>
+    <tr><td>7</td><td>Agreement</td><td>Walkthrough call; adjust scope; deliverables list = Scope of Work</td><td>Scope agreed</td></tr>
+    <tr><td>8</td><td>Contract</td><td>Signed: duration, renewal, cancellation, ad-budget rule, access responsibilities</td><td>Signature</td></tr>
+    <tr><td>9</td><td>Payment</td><td>First invoice; work starts on receipt; billing anchored to this date</td><td>Payment received</td></tr>
+    <tr><td>10</td><td>Onboarding</td><td>Kickoff → platform invites (never passwords) → remaining intake → shared channel + POC</td><td>Access + kickoff done</td></tr>
+    <tr><td>11</td><td>Execution</td><td>First sprint: strategy → deliverables → approval gate → publish/launch; cadence set</td><td>First deliverables in approval</td></tr>
+  </table>
+  <div class="callout"><b>Lost-lead loop:</b> every "not now" gets a reason + follow-up date (30/60/90 days); pipeline reviewed weekly.</div>
+</section>
+<section id="s5">
+  <h2><span class="n">5</span> Client Information Collection</h2>
+  <p class="lede">Columns: <b>M/O</b> = mandatory/optional · <b>When</b>: P proposal · O onboarding · L later · <b>Used by</b>: S strategy · A ads · D design · W web · F finance.</p>
+  <div class="callout"><b>Security:</b> never request passwords or card details. Platform access via authorised invites (BM partner access, Google manager link, CRM agency invite). Payments by invoice only.</div>
+
+  <h3>A · Business</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Legal name / brand name</td><td>M</td><td>P</td><td>Contracts & invoicing / all creative</td><td>F · S</td></tr>
+    <tr><td>Industry, description</td><td>M</td><td>P</td><td>Selects playbook; grounds all copy</td><td>S</td></tr>
+    <tr><td>Address & service locations</td><td>M</td><td>P</td><td>Geo-targeting, GBP, invoices</td><td>A · F</td></tr>
+    <tr><td>Website, social links</td><td>O</td><td>P</td><td>Audit baseline (absence = opportunity)</td><td>S · W</td></tr>
+    <tr><td>Registration details (where required)</td><td>O</td><td>L</td><td>Restricted ad categories, billing</td><td>F · A</td></tr>
+  </table>
+
+  <h3>B · Contacts</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Primary contact + designation</td><td>M</td><td>P</td><td>Coordination; knows approval authority</td><td>All</td></tr>
+    <tr><td>Email + phone</td><td>M</td><td>P</td><td>Proposals, reports, urgent pauses</td><td>All</td></tr>
+    <tr><td>Preferred channel</td><td>M</td><td>O</td><td>Meet them where they are</td><td>All</td></tr>
+    <tr><td>Authorised decision-maker</td><td>M</td><td>P</td><td>Prevents stalled approvals; signatory</td><td>F · S</td></tr>
+  </table>
+
+  <h3>C · Brand</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Logo files, colours, guidelines</td><td>O</td><td>O</td><td>Consistency; absence = branding service</td><td>D</td></tr>
+    <tr><td>Brand voice + positioning</td><td>M</td><td>O</td><td>Copy must sound like them</td><td>S · D</td></tr>
+    <tr><td>Existing material, references</td><td>O</td><td>O</td><td>Quality bar; taste alignment</td><td>S · D</td></tr>
+    <tr><td>Competitors (3–5)</td><td>M</td><td>P</td><td>Research, differentiation, benchmarks</td><td>S · A</td></tr>
+  </table>
+
+  <h3>D · Objectives</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Goals (90d / 1y) + challenges</td><td>M</td><td>P</td><td>Strategy + metrics flow from these</td><td>S</td></tr>
+    <tr><td>Target audience + demographics</td><td>M</td><td>P</td><td>Targeting + creative tone</td><td>S · A</td></tr>
+    <tr><td>Geographic market</td><td>M</td><td>P</td><td>Geo-targeting, language</td><td>A</td></tr>
+    <tr><td>Products/services, avg. transaction</td><td>M</td><td>P</td><td>What we promote; economics check</td><td>S · A</td></tr>
+    <tr><td>Current acquisition channels</td><td>O</td><td>P</td><td>Protect / fix / add</td><td>S</td></tr>
+    <tr><td>Desired outcomes</td><td>M</td><td>P</td><td>Defines reported success; prevents mismatch</td><td>S · A</td></tr>
+  </table>
+
+  <h3>E · Advertising</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Meta BM, FB Page, IG (invites)</td><td>M</td><td>O</td><td>Required to advertise & publish; create in client's name if absent</td><td>A · D</td></tr>
+    <tr><td>Google Ads / Analytics / GTM</td><td>O</td><td>O/L</td><td>Search campaigns; clean tracking</td><td>A · W</td></tr>
+    <tr><td>Previous campaigns + historical spend</td><td>O</td><td>P</td><td>Avoid repeats; calibrate budgets</td><td>A · S</td></tr>
+    <tr><td>Existing creatives</td><td>O</td><td>O</td><td>Faster launch, lower cost</td><td>D</td></tr>
+    <tr><td>Target locations</td><td>M</td><td>P</td><td>Every campaign's geo</td><td>A</td></tr>
+    <tr><td>Monthly ad budget</td><td>M</td><td>P</td><td>Separate from fee; defines scale</td><td>A · F</td></tr>
+  </table>
+
+  <h3>F · Website</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Domain ownership/registrar, hosting</td><td>M</td><td>O</td><td>Client must own; we need DNS access</td><td>W</td></tr>
+    <tr><td>Existing site access (redesigns)</td><td>O</td><td>O</td><td>Content migration</td><td>W</td></tr>
+    <tr><td>Required pages + references</td><td>M</td><td>O</td><td>Sitemap + scope; taste alignment</td><td>W · S</td></tr>
+    <tr><td>Product/service info</td><td>M</td><td>O</td><td>Real content, no placeholders</td><td>W · D</td></tr>
+    <tr><td>Booking/payment, forms, integrations</td><td>O</td><td>O/L</td><td>Integration scope; enquiry destinations (client gateway — never raw card data)</td><td>W</td></tr>
+  </table>
+
+  <h3>G · Content</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Photos (premises/products/team)</td><td>M</td><td>O</td><td>Real visuals beat stock; first posts</td><td>D</td></tr>
+    <tr><td>Videos, product images</td><td>O</td><td>O/L</td><td>Reels, feeds; phone clips suffice</td><td>D · A</td></tr>
+    <tr><td>Testimonials, past posts</td><td>O</td><td>O/L</td><td>Social proof; learn what performs</td><td>D · S</td></tr>
+    <tr><td>Content do/don'ts + approver</td><td>M</td><td>O</td><td>Prevents rejected work; keeps schedule</td><td>D</td></tr>
+  </table>
+
+  <h3>H · Financial & Contract</h3>
+  <table>
+    <tr><th>Field</th><th>M/O</th><th>When</th><th>Why</th><th>Who</th></tr>
+    <tr><td>Selected services + tier fee</td><td>M</td><td>P</td><td>Scope of Work + invoice</td><td>F</td></tr>
+    <tr><td>Separate ad budget</td><td>M</td><td>P</td><td>Client pays platforms directly</td><td>A · F</td></tr>
+    <tr><td>Payment frequency, billing contact, GST</td><td>M/O</td><td>P</td><td>Billing schedule; compliant invoicing</td><td>F</td></tr>
+    <tr><td>Duration + renewal terms</td><td>M</td><td>P</td><td>Auto-renew + notice period up front</td><td>F</td></tr>
+  </table>
+
+  <div class="grid g2">
+    <div class="card hi"><h4><span class="ic">⚡</span> Needed immediately (before proposal)</h4><ul class="t"><li>Brand name, industry, location, goals, challenges</li><li>Budget band + decision-maker</li><li>Competitors, website/socials, audience, geography</li></ul></div>
+    <div class="card"><h4><span class="ic">🗓</span> Collect at onboarding / later</h4><ul class="t"><li>Platform invites, photo/video library, testimonials</li><li>Analytics/GTM, integrations, GST, registration</li></ul></div>
+  </div>
+</section>
+<section id="s6">
+  <h2><span class="n">6</span> How SEAI Delivers</h2>
+  <p class="lede"><span class="badge b-tool">dashed = automated</span> <span class="badge b-one">plain = human work</span> <span class="badge b-prop">solid = approval gate</span> — nothing ships without the gates.</p>
+
+  <div class="grid g2">
+    <div class="card"><h4>📣 Advertising</h4>
+      <div class="flow"><span class="fs p">Onboarding</span><span class="fs">Audit</span><span class="fs a">Audience research</span><span class="fs">Strategy</span><span class="fs a">Build</span><span class="fs p">Approval</span><span class="fs">Launch</span><span class="fs a">Monitor</span><span class="fs">Optimise</span><span class="fs p">Report</span></div>
+      <p class="note">Auto: pacing alerts, anomaly flags, data pulls. Human: strategy, creative judgement, optimisation, client comms.</p></div>
+    <div class="card"><h4>📱 Social media</h4>
+      <div class="flow"><span class="fs">Brand audit</span><span class="fs">Strategy</span><span class="fs p">Calendar</span><span class="fs">Produce</span><span class="fs p">Approval</span><span class="fs a">Schedule</span><span class="fs a">Community</span><span class="fs p">Review</span></div>
+      <p class="note">Auto: scheduling, engagement alerts. Human: creative, voice, real replies, same-day escalation.</p></div>
+    <div class="card"><h4>🌐 Website</h4>
+      <div class="flow"><span class="fs">Requirements</span><span class="fs">Sitemap</span><span class="fs">Design</span><span class="fs p">Design OK</span><span class="fs">Build</span><span class="fs">Content</span><span class="fs a">Test</span><span class="fs p">Sign-off</span><span class="fs">Deploy</span></div>
+      <p class="note">Auto: build checks, uptime. Human: design, architecture, QA judgement.</p></div>
+    <div class="card"><h4>🧲 Lead generation</h4>
+      <div class="flow"><span class="fs">Offer design</span><span class="fs">Funnel build</span><span class="fs a">Tracking</span><span class="fs p">Approval</span><span class="fs">Launch</span><span class="fs a">Capture/route</span><span class="fs">Quality check</span><span class="fs p">Review</span></div>
+      <p class="note">Auto: capture, routing, dedupe. Human: offer craft, quality sampling, follow-up coaching.</p></div>
+    <div class="card"><h4>⚙️ Sales & automation</h4>
+      <div class="flow"><span class="fs">Journey map</span><span class="fs">Flow design</span><span class="fs a">Build</span><span class="fs p">Team test</span><span class="fs">Go live</span><span class="fs a">Monitor</span><span class="fs p">Tune</span></div>
+      <p class="note">Human handoff mandatory in every conversational flow. Automation routes; humans sell.</p></div>
+    <div class="card"><h4>🎨 Branding</h4>
+      <div class="flow"><span class="fs">Discovery</span><span class="fs a">Research</span><span class="fs">Concepts</span><span class="fs p">Route pick</span><span class="fs">Refine ×2</span><span class="fs p">Final OK</span><span class="fs">File pack</span></div>
+      <p class="note">AI assists exploration internally; shipped marks are human-crafted (formal trademark clearance advised).</p></div>
+  </div>
+
+  <h3>Automation honesty</h3>
+  <table>
+    <tr><th>Activity</th><th>Mode</th><th>Note</th></tr>
+    <tr><td>Report data aggregation, scheduling, pacing alerts, lead routing</td><td>Automated</td><td>Assist only — humans write narrative & decide actions</td></tr>
+    <tr><td>Strategy, creative, copy, optimisation decisions</td><td>Human</td><td>Never auto-shipped</td></tr>
+    <tr><td>Creative, budget & scope approvals</td><td>Gate</td><td>No launch without sign-off</td></tr>
+    <tr><td>Selling conversations / follow-up calls</td><td>Human</td><td>Client's team; we provide templates + coaching</td></tr>
+  </table>
+</section>
+
+<section id="s7">
+  <h2><span class="n">7</span> Monthly Retainer Model</h2>
+  <p class="lede">SEAI is built for recurring revenue: predictable for the client, plannable for us, compounding results month over month.</p>
+
+  <div class="grid g3">
+    <div class="card"><h4>Starter <span class="badge b-prop">PROPOSED</span></h4>
+      <div class="price">₹7,999 <small>/mo</small></div><p class="note">Small · single location</p>
+      <ul class="t"><li>8 posts/mo (IG+FB)</li><li>1 ad campaign managed</li><li>Basic monthly report</li><li>GBP hygiene</li></ul></div>
+    <div class="card hi"><h4>Growth <span class="badge b-prop">PROPOSED</span></h4>
+      <div class="price">₹14,999 <small>/mo</small></div><p class="note">Growing businesses</p>
+      <ul class="t"><li>12–16 posts/mo</li><li>2 campaigns + optimisation</li><li>1 landing page / quarter</li><li>Lead capture → CRM/sheet</li><li>Detailed report + strategy call</li></ul></div>
+    <div class="card"><h4>Scale <span class="badge b-prop">PROPOSED</span></h4>
+      <div class="price">₹29,999 <small>/mo</small></div><p class="note">Established · full-funnel</p>
+      <ul class="t"><li>20+ posts, content engine</li><li>Meta + Google, weekly optimisation</li><li>Quarterly strategy review</li><li>Automation + lead management</li><li>Priority support</li></ul></div>
+  </div>
+  <div class="callout"><b>Disclaimer:</b> prices are <b>proposed structures, not final</b> — validate costing before client-facing use. Ad budgets are always separate & client-funded. One-time projects (web, branding) quoted per scope. <b>No guaranteed leads, ever.</b></div>
+
+  <table>
+    <tr><th>Aspect</th><th>How it works</th></tr>
+    <tr><td>Monthly payment</td><td>Service fee per tier + ad budget paid directly to platforms; third-party costs at cost with approval</td></tr>
+    <tr><td>Scoping & deliverables</td><td>Fixed counts per plan (posts, campaigns, pages, reports); signed Scope of Work = single source of truth</td></tr>
+    <tr><td>Extra work</td><td>Outside scope = written change request; small = add-on, large = separate project. Never silently absorbed</td></tr>
+    <tr><td>Ad spend vs fee</td><td>Hard separation; no markup on spend unless a managed-budget model is signed separately</td></tr>
+    <tr><td>Billing</td><td>Invoice on the 1st (or anniversary); due in 7 days; GST where applicable</td></tr>
+    <tr><td>Renewal / cancellation</td><td>Auto-renews monthly; 15-day written notice; work completes through paid period; assets handed over; no refunds for delivered work</td></tr>
+    <tr><td>Scope creep</td><td>Deliverable counts + change-request process + monthly "delivered vs scope" section in every report</td></tr>
+    <tr><td>Profitability</td><td>Fee − delivery hours − tools = margin per client; below floor 2 months → scope/pricing review at renewal</td></tr>
+  </table>
+
+  <div class="callout"><b>North star:</b> MRR with churn < 5%/mo. Secondary: ≥ 60% gross margin per client; deliverables shipped on schedule.</div>
+</section>
+</main>
+
+<footer>
+  <div class="logo" style="justify-content:center;display:flex">
+    <span class="tile" style="width:38px;height:38px">
+      <svg width="26" height="26" viewBox="0 0 120 120"><g fill="#fff"><path d="M100 16 L46 16 Q18 16 18 36 Q18 56 46 56 L58 56 L64 62 L70 56 L100 56 Z"/><path d="M20 104 L74 104 Q102 104 102 84 Q102 64 74 64 L58 64 L52 58 L46 64 L20 64 Z"/></g></svg>
+    </span>&nbsp;<b style="font-size:18px;letter-spacing:4px">SEAI</b>
+  </div>
+  <p style="margin-top:8px">“Get Exposed. But in a Good Way.”</p>
+  <p style="margin-top:6px">SEAI Business Blueprint · v1.0 · Oct 2026 · Internal · proposed pricing · no guaranteed results</p>
+</footer>
+
+<button class="top" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+<input id="q" type="search" placeholder="Search blueprint… (Esc clears)">
+
+<script>
+const links=[...document.querySelectorAll('#nav a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+// scroll-spy
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('on'));const i=secs.indexOf(e.target);if(i>-1)links[i].classList.add('on');}})},{rootMargin:'-40% 0px -55% 0px'});
+secs.forEach(s=>io.observe(s));
+
+const q=document.getElementById('q');
+q.addEventListener('input',()=>{
+  const v=q.value.toLowerCase();
+  document.querySelectorAll('details').forEach(d=>{
+    const hit=v&&d.textContent.toLowerCase().includes(v);
+    if(hit){d.open=true;d.style.outline='1px solid #fff';}else{d.style.outline='';}
+  });
+  document.querySelectorAll('.card,tr,.fs').forEach(el=>{
+    if(!v){el.style.display='';return;}
+    el.style.display=el.textContent.toLowerCase().includes(v)?'':'none';
+  });
+});
+q.addEventListener('keydown',e=>{if(e.key==='Escape'){q.value='';q.dispatchEvent(new Event('input'));q.blur();}});
+if(location.hash){const s=document.querySelector(location.hash);if(s){const d=s.querySelector('details');if(d)d.open=true;}}
+</script>
+</body>
+</html>
+
+

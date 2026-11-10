@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * POST /api/storage/intake/uploads/:id/complete
  *

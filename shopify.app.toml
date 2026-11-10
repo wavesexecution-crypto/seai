@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "60755f0a9ca2782bc89ad891c4a2011c"
+client_id = "4334bf97fe2e5452f4eda29102766a16"
 name = "Seai"
 application_url = "https://gateway.seai.store/embed"
 embedded = true
@@ -10,10 +10,11 @@ embedded = true
 # Scopes requested at install — the 14 core scopes from inspection + the 2 highest-value
 # optionals the initial embedded experience requires (full order visibility + overview).
 # Reference: implementation plan §19.
-scopes = "read_products,write_products,read_orders,read_customers,read_inventory,write_inventory,read_locations,read_discounts,write_discounts,read_content,write_content,read_themes,read_files,write_files,read_all_orders,read_analytics"
+scopes = "read_products,write_products,read_orders,read_customers,read_inventory,write_inventory,read_locations,read_discounts,write_discounts,read_content,write_content,read_themes,read_files,write_files,read_analytics"
 # Scopes NOT requested at install — requested at runtime, per feature, when the matching
 # SEAI tool is first enabled (no app reinstall required). Grouped by SEAI capability.
 optional_scopes = [
+  
   # — Order lifecycle / autonomy loop —
   "write_orders",
   # — Fulfillment —

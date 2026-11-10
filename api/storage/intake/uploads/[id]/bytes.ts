@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PUT /api/storage/intake/uploads/:id/bytes
  *

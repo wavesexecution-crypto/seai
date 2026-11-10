@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16
+    container_name: seai-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: seai_payments_test
+    ports:
+      - "5432:5432"
+    volumes:
+      - seai-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d seai_payments_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    cpus: "1.0"
+    mem_limit: 1g
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: seai-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env.local
+    ports:
+      - "3002:3000"
+    environment:
+      - DATABASE_URL
+      - OLLAMA_API_KEY_1
+      - OLLAMA_API_KEY_2
+      - OLLAMA_API_KEY_3
+      - OLLAMA_API_KEY_4
+      - OLLAMA_API_KEY_5
+      - OLLAMA_API_KEY_6
+      - SHOPIFY_API_KEY
+      - SHOPIFY_API_SECRET
+      - SHOPIFY_APP_URL
+      - SHOPIFY_API_VERSION
+      - OPERATOR_NAME
+      - AI_PRIMARY_MODEL
+      - EXPLABS_API_KEY
+      - EXPLABS_BASE_URL
+      - DATABASE_URL
+      - SEAI_ENCRYPTION_KEY
+      - AUTONOMY_LEVEL
+      - AGENT_MAX_ITERATIONS
+      - SEAI_SCHEDULER
+      - SEAI_DATA_DIR
+      - PORT
+      - MAIL_FROM
+      - MAIL_FROM_NAME
+      - MAIL_SMTP_HOST
+      - MAIL_SMTP_PORT
+      - MAIL_SMTP_SECURE
+      - MAIL_SMTP_USER
+      - MAIL_SMTP_PASS
+      - APP_URL
+      - PUBLIC_URL
+      - SEAI_MAIL_LOGO_URL
+      - SEAI_SUPPORT_EMAIL
+      - SEAI_MAIL_EVENTS_ENABLED
+      - SEAI_MAIL_QA_RECIPIENT
+      - SEAI_MAIL_ALLOW_DEV_URLS
+      - SEAI_EVENTS_SHARED_SECRET
+      - SEAI_STAFF_API_KEY
+      - CRON_SECRET
+      - SEAI_GATEWAY_SECRET
+      - STORAGE_SERVICE_URL
+      - STORAGE_SERVICE_KEY
+      - STORAGE_JWT_SECRET
+      - STORAGE_TOKEN_TTL_SEC
+      - STORAGE_PROXY_MAX_BYTES
+    cpus: "1.0"
+    mem_limit: 1g
+
+volumes:
+  seai-pgdata:

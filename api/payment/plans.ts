@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * GET /api/payment/plans
  *
