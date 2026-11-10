@@ -109,6 +109,59 @@ html { scroll-padding-top: 88px; }
     background: var(--line);
     margin: 26px 0 6px;
   }
+  .mobile-nav .github-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--sub);
+    padding: 8px 12px;
+    border-radius: var(--r-s);
+    border: 1px solid var(--line);
+    margin: 8px 0;
+    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
+  }
+  .mobile-nav .github-stars:hover { color: var(--ink); border-color: var(--ink); background: var(--fill); }
+  .mobile-nav .theme-toggle {
+    margin-top: 8px;
+  }
+  .mobile-nav .dropdown-trigger {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 14px 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    border-radius: var(--r);
+    background: var(--fill);
+    border: 1px solid var(--line);
+  }
+  .mobile-nav .dropdown-trigger:hover { background: var(--fill-hover); }
+  .mobile-nav .dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    padding: 8px 0 0;
+    min-width: auto;
+  }
+  .mobile-nav .dropdown-item {
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: var(--r);
+  }
+  .mobile-nav .dropdown-item:hover { background: var(--fill); }
+
+  .m-sep {
+    display: block;
+    height: 1px;
+    background: var(--line);
+    margin: 26px 0 6px;
+  }
   .mobile-nav a.btn {
     margin-top: 18px;
     justify-content: center;

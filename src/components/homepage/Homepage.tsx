@@ -1,594 +1,227 @@
-import { useEffect, useMemo, useState } from "react";
-import SocialCards from "@/components/ui/card-fan-carousel";
-import {
-  RestaurantMark,
-  CafeMark,
-  GymMark,
-  SalonMark,
-  ClinicMark,
-  RealEstateMark,
-  BusinessMark,
-} from "@/components/ui/example-icons";
+import SiteChrome from "@/components/site/SiteChrome";
 
-// Minimal index: exact category names only — no brand names, no descriptions.
-// The card is the index; the linked demo website provides all detail.
-const EXAMPLES = [
-  { type: "Restaurant", url: "/examples/restaurant.html", icon: <RestaurantMark /> },
-  { type: "Cafe", url: "/examples/cafe.html", icon: <CafeMark /> },
-  { type: "Gym", url: "/examples/gym.html", icon: <GymMark /> },
-  { type: "Salon", url: "/examples/salon.html", icon: <SalonMark /> },
-  { type: "Clinic", url: "/examples/clinic.html", icon: <ClinicMark /> },
-  { type: "Real Estate", url: "/examples/real-estate.html", icon: <RealEstateMark /> },
-  { type: "Business", url: "/examples/business.html", icon: <BusinessMark /> },
+const SERVICE_CARDS = [
+  { key: "branding", name: "Branding & Identity", desc: "Positioning, logos, guidelines and creative direction that make you unmistakable.", href: "/services.html#branding" },
+  { key: "advertising", name: "Advertising", desc: "Meta, Facebook, Instagram, Google & YouTube — planned, built, approved, launched, optimised.", href: "/services.html#advertising" },
+  { key: "social", name: "Digital Marketing", desc: "Social management, content strategy, calendars, creative production and community.", href: "/services.html#social" },
+  { key: "website", name: "Website Development", desc: "Business sites, landing pages, e-commerce, redesigns and conversion optimisation.", href: "/services.html#website" },
+  { key: "lead-generation", name: "Lead Generation", desc: "Funnels, lead capture, qualification and CRM hand-off — enquiry to opportunity.", href: "/services.html#lead-generation" },
+  { key: "sales-automation", name: "Sales & Automation", desc: "Follow-ups, workflow automation and engagement systems — humans still close.", href: "/services.html#sales-automation" },
+  { key: "growth-strategy", name: "Growth Strategy", desc: "Marketing audits, competitor research, strategy and conversion optimisation.", href: "/services.html#growth-strategy" },
 ];
 
-const NUMBER_WORDS = [
-  "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
-  "Nine", "Ten", "Eleven", "Twelve",
+const INDUSTRIES = [
+  "Restaurants & Cafés", "Gyms & Fitness", "Salons & Beauty", "Clinics & Healthcare", "Real Estate",
+  "Retail Stores", "E-commerce", "Education", "Professional Services", "Startups",
 ];
 
-const HOW_STEPS = [
-  { num: "01", name: "Tell us about your business", copy: "Answer a short intake form — name, type, what you do, location, contact info, style preferences, and goals. Takes about 5 minutes." },
-  { num: "02", name: "SEAI builds your website", copy: "SEAI generates a complete, professional website — design, copy, responsive layout, SEO fundamentals, and integrations — tailored to your business." },
-  { num: "03", name: "You review and request changes", copy: "See the full site before it goes live. Request revisions on design, copy, or structure. SEAI iterates until you approve." },
-  { num: "04", name: "We put it live", copy: "Connect your domain (or buy one through us). SEAI handles deployment, SSL, and goes live. Ongoing revision support included." },
+const DEMOS = [
+  { name: "Restaurant", url: "/examples/restaurant.html" },
+  { name: "Cafe", url: "/examples/cafe.html" },
+  { name: "Gym", url: "/examples/gym.html" },
+  { name: "Salon", url: "/examples/salon.html" },
+  { name: "Clinic", url: "/examples/clinic.html" },
+  { name: "Real Estate", url: "/examples/real-estate.html" },
+  { name: "Business", url: "/examples/business.html" },
 ];
 
-const DELIVERABLES = [
-  { name: "Responsive design", desc: "Flawless on mobile, tablet, and desktop. Mobile-first, not mobile-last.", icon: "✦" },
-  { name: "Professional copy", desc: "Headlines, descriptions, and calls-to-action written for your business — not placeholder text.", icon: "✦" },
-  { name: "Mobile optimization", desc: "Touch-friendly navigation, fast loading, thumb-zone CTAs. More than half your visitors use phones.", icon: "✦" },
-  { name: "WhatsApp & contact CTAs", desc: "Click-to-call, click-to-WhatsApp, contact forms — built-in and styled for your brand.", icon: "✦" },
-  { name: "SEO fundamentals", desc: "Semantic HTML, meta tags, Open Graph, sitemap, robots.txt, structured data — done correctly.", icon: "✦" },
-  { name: "Domain connection", desc: "Use your existing domain or buy one through us. DNS configuration handled.", icon: "✦" },
-  { name: "Deployment & SSL", desc: "Global CDN, automatic HTTPS, edge caching. Your site is fast everywhere.", icon: "✦" },
-  { name: "Revision support", desc: "Request changes after launch. We don't disappear once the site is live.", icon: "✦" },
-];
-
-const PRICING = [
-  { tier: "STARTER", price: "₹2,999", per: "one-time", desc: "One-page business website", features: ["Single-page layout", "Responsive design", "Professional copy", "WhatsApp / contact CTA", "SEO fundamentals", "Domain connection", "Deployment & SSL", "2 rounds of revisions"], cta: "Start your website", plan: "starter", featured: false },
-  { tier: "BUSINESS", price: "₹4,999", per: "one-time", desc: "Multi-section premium website", features: ["Multi-section layout (5+ sections)", "Responsive design", "Professional copy", "WhatsApp / contact CTA", "SEO fundamentals", "Domain connection", "Deployment & SSL", "4 rounds of revisions", "Blog / news section", "Google Maps integration"], cta: "Start your website", plan: "business", featured: true },
-  { tier: "COMPLETE", price: "₹7,999", per: "one-time", desc: "Premium website + copy + SEO + integrations", features: ["Everything in BUSINESS", "Custom copywriting (all pages)", "Full SEO setup & submission", "Integrations (WhatsApp, forms, analytics)", "Domain purchase & setup included", "Priority deployment", "Unlimited revisions (30 days)", "Analytics dashboard setup", "3 months revision support"], cta: "Start your website", plan: "complete", featured: false },
-];
-
-const BUSINESS_TYPES = [
-  { name: "Restaurants", desc: "Menu, reservations, location, hours", url: "/examples/restaurant.html" },
-  { name: "Gyms & Studios", desc: "Schedules, trainers, memberships", url: "/examples/gym.html" },
-  { name: "Salons & Spas", desc: "Services, booking, gallery, team", url: "/examples/salon.html" },
-  { name: "Clinics", desc: "Services, providers, patient portal, insurance", url: "/examples/clinic.html" },
-  { name: "Consultants", desc: "Case studies, insights, contact, authority", url: "/examples/business.html" },
-  { name: "Agencies", desc: "Portfolio, team, services, inquiry", url: "/examples/business.html" },
-  { name: "Real Estate", desc: "Listings, agents, calculator, areas", url: "/examples/real-estate.html" },
-  { name: "Local Services", desc: "Emergency CTA, areas, reviews, call now", url: "/examples/clinic.html" },
-];
-
-const FAQS = [
-  { q: "How long does it take?", a: "Most websites are delivered within 5–7 business days after the intake form is submitted. Complex projects may take up to 14 days. You'll see a preview before anything goes live." },
-  { q: "Can I request changes?", a: "Yes. Every plan includes revision rounds (2 for STARTER, 4 for BUSINESS, unlimited for 30 days on COMPLETE). You review the full site before launch and request changes on design, copy, or structure." },
-  { q: "Can I use my own domain?", a: "Absolutely. Connect an existing domain (we guide you through DNS) or purchase one through us with the COMPLETE plan. SSL and deployment are handled automatically." },
-  { q: "Do you provide the copy?", a: "Yes. Professional copy is included in every tier — headlines, descriptions, service text, and CTAs written for your business. COMPLETE adds custom copywriting for all pages." },
-  { q: "Will it work on mobile?", a: "Mobile-first is our default. Every SEAI website is fully responsive, touch-friendly, and optimized for thumb-zone navigation. More than half your visitors use phones — we design for them first." },
-  { q: "Can I connect WhatsApp?", a: "Yes. Click-to-WhatsApp, click-to-call, and contact forms are built into every site. They're styled to match your brand and placed for maximum conversion." },
-  { q: "What happens after I pay?", a: "You'll receive a confirmation and your project enters our build queue. We'll send the first preview within the delivery window. You review, request changes if needed, approve, and we deploy. Simple." },
-  { q: "Is there a monthly fee?", a: "No. SEAI is a one-time payment. No subscriptions, no recurring charges. Revision support periods are included as noted per tier (30 days for STARTER/BUSINESS, 90 days for COMPLETE)." },
-  { q: "What if I need changes later?", a: "Revision support is included. After the included period, you can request changes at a per-update rate. We don't disappear once the site is live — your business evolves, your website should too." },
-];
-
-// ---- demo-return restoration ----
-// Opening a demo saves { y, center, ts } under RETURN_KEY (capture phase,
-// navigation itself untouched). On the next homepage mount in the same tab,
-// returnCtx restores the Examples viewport instantly with entrance
-// animations suppressed; the flag is consumed so a later genuine visit
-// behaves normally. Fresh tabs have empty sessionStorage — unaffected.
-const RETURN_KEY = "seai:return";
-const CENTER_KEY = "seai:center";
-
-interface ReturnCtx {
-  y?: number;
-  center?: number;
-  ts: number;
-  stored: boolean;
-}
-
-function readReturnCtx(): ReturnCtx | null {
-  const w = window as unknown as { __SEAI_RETURN?: ReturnCtx };
-  // Set pre-paint by the inline bootstrap in index.html (freshness-checked).
-  if (w.__SEAI_RETURN) return w.__SEAI_RETURN;
-  // Hash-only fallback (e.g. demo opened in a new tab, where sessionStorage
-  // is empty): only a return when the referrer is a demo page, otherwise an
-  // ordinary deep link keeps its normal animated behaviour.
-  if (window.location.hash === "#examples" && /\/examples\//.test(document.referrer || "")) {
-    return { ts: Date.now(), stored: false };
-  }
-  return null;
-}
-
-function Homepage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [faqOpen, setFaqOpen] = useState<Set<number>>(new Set());
-  const [returnCtx] = useState<ReturnCtx | null>(() => readReturnCtx());
-  const isReturn = returnCtx !== null;
-
-  // Gate reveal styles on JS availability (matches legacy main.js behaviour)
-  useEffect(() => {
-    document.documentElement.classList.add("js");
-  }, []);
-
-  // Demo-return restoration: land back at the Examples carousel instantly —
-  // no hero, no smooth glide, no entrance replay. Runs once on mount.
-  useEffect(() => {
-    if (!returnCtx) return;
-    const root = document.documentElement;
-    root.style.scrollBehavior = "auto"; // inline bootstrap already set this pre-paint; belt and braces
-    const examples = document.getElementById("examples");
-    const fallback = examples
-      ? examples.getBoundingClientRect().top + window.scrollY - 80
-      : 0;
-    const y = typeof returnCtx.y === "number" && Number.isFinite(returnCtx.y)
-      ? Math.max(0, returnCtx.y)
-      : Math.max(0, fallback);
-    window.scrollTo(0, y);
-    // Pre-reveal everything at/above the restored viewport so returning never
-    // replays entrance animations; below-fold sections still reveal on scroll.
-    const line = window.innerHeight + 80;
-    document.querySelectorAll(".reveal").forEach((el) => {
-      if (el.getBoundingClientRect().top <= line) el.classList.add("in");
-    });
-    if (returnCtx.stored) {
-      try {
-        sessionStorage.removeItem(RETURN_KEY);
-        sessionStorage.removeItem(CENTER_KEY);
-      } catch { /* storage unavailable: nothing to consume */ }
-    }
-    const raf = requestAnimationFrame(() => {
-      root.classList.remove("returning");
-      root.style.removeProperty("scroll-behavior");
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [returnCtx]);
-
-  // Keep the legacy `body.menu-open` contract so responsive.css shows the mobile nav,
-  // lock scroll while open, and close on Escape / desktop resize.
-  //
-  // The lock pins the body with `position: fixed` at the current offset rather
-  // than toggling `overflow: hidden` on <html>. Chromium clamps the scroll offset
-  // when the root goes overflow:hidden (1200 -> 766) and resets it to 0 on
-  // release, which both moves the page under the user and loses their place.
-  useEffect(() => {
-    const { documentElement, body } = document;
-    body.classList.toggle("menu-open", mobileMenuOpen);
-    if (!mobileMenuOpen) return;
-
-    const lockedY = window.scrollY;
-    // The pinned body removes the scrollbar; pad it back so nothing reflows.
-    const scrollbarGap = window.innerWidth - documentElement.clientWidth;
-    body.dataset.menuLock = String(lockedY);
-    body.style.position = "fixed";
-    body.style.top = `-${lockedY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    if (scrollbarGap > 0) body.style.paddingRight = `${scrollbarGap}px`;
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileMenuOpen(false);
-    };
-    const onResize = () => {
-      if (window.innerWidth > 980) setMobileMenuOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    window.addEventListener("resize", onResize);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      window.removeEventListener("resize", onResize);
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.paddingRight = "";
-      delete body.dataset.menuLock;
-      window.scrollTo(0, lockedY);
-    };
-  }, [mobileMenuOpen]);
-
-  // Header scrolled state
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Reveal on scroll via IntersectionObserver (adds `.in`, like legacy main.js)
-  useEffect(() => {
-    const els = Array.from(document.querySelectorAll(".reveal"));
-    if (!("IntersectionObserver" in window)) {
-      els.forEach((el) => el.classList.add("in"));
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in");
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { rootMargin: "80px 0px" }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
-  // Smooth scroll for anchor links
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLAnchorElement;
-      if (target.tagName === "A" && target.getAttribute("href")?.startsWith("#")) {
-        const href = target.getAttribute("href");
-        if (href && href !== "#") {
-          const targetEl = document.querySelector(href);
-          if (targetEl) {
-            e.preventDefault();
-            const headerOffset = 80;
-            const elementPosition = targetEl.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - headerOffset;
-            window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-          }
-        }
-      }
-    };
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, []);
-
-  // Persist demo-return context before leaving for a demo (capture phase;
-  // never preventDefault — history and navigation stay untouched).
-  useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      const t = e.target as Element | null;
-      const a = t && typeof t.closest === "function" ? t.closest('a[href^="/examples/"]') : null;
-      if (!a) return;
-      try {
-        const centerRaw = sessionStorage.getItem(CENTER_KEY);
-        const center = centerRaw !== null ? parseInt(centerRaw, 10) : NaN;
-        sessionStorage.setItem(RETURN_KEY, JSON.stringify({
-          y: window.scrollY,
-          center: Number.isInteger(center) ? center : undefined,
-          url: a.getAttribute("href"),
-          ts: Date.now(),
-        }));
-      } catch { /* storage unavailable: normal navigation proceeds */ }
-    };
-    document.addEventListener("click", onClick, true);
-    return () => document.removeEventListener("click", onClick, true);
-  }, []);
-
-  // Restore an incoming deep link, e.g. /index.html#pricing from the intake
-  // page navbar. The browser only honours a hash during initial HTML parsing,
-  // but this page is client-rendered, so the target section does not exist yet
-  // and the browser silently stays at the top. Re-apply it once mounted.
-  // Skipped in demo-return mode: the restore effect above owns the scroll.
-  useEffect(() => {
-    if ((window as unknown as { __SEAI_RETURN?: unknown }).__SEAI_RETURN) return;
-    const hash = window.location.hash;
-    if (!hash || hash === "#") return;
-
-    const jump = () => {
-      const targetEl = document.querySelector(hash);
-      if (!targetEl) return;
-      const headerOffset = 80;
-      const top = targetEl.getBoundingClientRect().top + window.scrollY - headerOffset;
-      // base.css sets `scroll-behavior: smooth`; a load-time jump across the
-      // whole page should be instant, not a long animation.
-      const root = document.documentElement;
-      const prev = root.style.scrollBehavior;
-      root.style.scrollBehavior = "auto";
-      window.scrollTo({ top, behavior: "auto" });
-      root.style.scrollBehavior = prev;
-    };
-
-    jump();
-    // The example fan carousel settles its layout after mount; retry once so
-    // late layout shifts do not leave the scroll position short of the target.
-    const t = window.setTimeout(jump, 350);
-    window.addEventListener("load", jump, { once: true });
-    return () => {
-      window.clearTimeout(t);
-      window.removeEventListener("load", jump);
-    };
-  }, []);
-
-  // Footer year
-  useEffect(() => {
-    document.querySelectorAll(".year").forEach((el) => {
-      el.textContent = String(new Date().getFullYear());
-    });
-  }, []);
-
-  // Example cards for the index grid — exact category names, real demo routes.
-  // Memoized so the grid's identity is stable across parent re-renders
-  // (scroll state, FAQ toggles, menu).
-  const exampleCards = useMemo(
-    () =>
-      EXAMPLES.map((ex) => ({
-        imgUrl: "",
-        title: ex.type,
-        alt: `${ex.type} website example`,
-        linkUrl: ex.url,
-        icon: ex.icon,
-      })),
-    []
-  );
-
-  // Restored fan position for a demo return (otherwise the default center).
-  const initialCenter = (() => {
-    const c = returnCtx?.center;
-    return typeof c === "number" && Number.isInteger(c)
-      ? Math.max(0, Math.min(EXAMPLES.length - 1, c))
-      : undefined;
-  })();
-
+export default function Homepage() {
   return (
-    <>
-      <a className="skip" href="#main">Skip to content</a>
-
-      <header className={`site-header ${scrolled ? "scrolled" : ""}`}>
-        <div className="header-in">
-          <a className="brand" href="/" aria-label="SEAI — home">
-            <img src="/logo.svg" width="26" height="26" alt="" />
-            <span>SEAI</span>
-          </a>
-          <nav className="nav" aria-label="Primary">
-            <a href="#how">How it works</a>
-            <a href="#examples">Examples</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#faq">FAQ</a>
-          </nav>
-          <div className="header-actions">
-            <a className="btn btn-dark" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
+    <SiteChrome active="home">
+      {/* HERO */}
+      <section className="g-hero" aria-labelledby="hero-title">
+        <div className="container-wide">
+          <p className="g-kicker">Marketing · Advertising · Growth</p>
+          <h1 id="hero-title" className="g-wordmark">SEAI</h1>
+          <p className="g-tagline">“Get Exposed. But in a Good Way.”</p>
+          <p className="g-sub">We help businesses get noticed, reach the right audience and turn attention into growth — branding, ads, social, websites, lead generation and follow-up systems, delivered as one integrated monthly service.</p>
+          <div className="g-actions">
+            <a className="btn btn-invert btn-lg" href="/contact.html">Let's Grow Your Business <span className="arr" aria-hidden="true">→</span></a>
+            <a className="btn btn-ghost-dark btn-lg" href="/services.html">Explore Our Services</a>
           </div>
-          <button className="menu-btn" type="button" aria-label={mobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-nav" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <span></span><span></span>
-          </button>
+          <p className="g-note">Every business needs exposure — regardless of size. No guaranteed leads, ever; real strategy, real execution, plain reporting.</p>
+          <div className="g-proof" aria-label="How we work">
+            <div><b>Strategy first</b>Audit → plan → execute</div>
+            <div><b>Approved, not assumed</b>Nothing ships without your sign-off</div>
+            <div><b>Plain-language reporting</b>Spend, leads, CPL — in words, not jargon</div>
+            <div><b>Ad budget stays yours</b>Paid to platforms, never marked up</div>
+          </div>
         </div>
-      </header>
+      </section>
 
-      {/* Mobile nav lives OUTSIDE the header on purpose. The header carries
-          `backdrop-filter`, which makes it the containing block for any
-          `position: fixed` descendant — a full-viewport overlay nested inside
-          it collapses to the header's 64px and its links spill over the hero
-          with no background. As a sibling, the overlay is viewport-relative. */}
-      <nav className="mobile-nav" id="mobile-nav" aria-label="Mobile">
-        <a href="#how" onClick={() => setMobileMenuOpen(false)}>How it works</a>
-        <a href="#examples" onClick={() => setMobileMenuOpen(false)}>Examples</a>
-        <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
-        <a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
-        <span className="m-sep" aria-hidden="true"></span>
-        <a className="btn btn-dark m-cta" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
-      </nav>
-
-      <main id="main">
-
-        {/* HERO */}
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="hero-eyebrow">AI-built websites for real businesses</p>
-            <h1 id="hero-title" className="hero-title reveal" data-reveal-id="hero-title">YOUR BUSINESS.<br />A BETTER WEBSITE.</h1>
-            <p className="hero-sub reveal" data-reveal-id="hero-sub">SEAI builds premium business websites from a simple description of what you do.</p>
-            <div className="hero-actions reveal" data-reveal-id="hero-actions">
-              <a className="btn btn-dark btn-lg" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
-              <a className="btn btn-ghost btn-lg" href="#examples">See examples</a>
-            </div>
+      {/* THE PROBLEM */}
+      <section className="g-sec" aria-labelledby="problem-title">
+        <div className="container-wide">
+          <p className="g-num">01 — The problem</p>
+          <h2 id="problem-title" className="sec-title">Good businesses stay invisible.</h2>
+          <p className="sec-lede">You built something worth noticing. But without visibility, the market never finds out — and your competitors with louder (not better) marketing take the demand.</p>
+          <div className="g-grid" style={{ marginTop: 26 }}>
+            {[
+              ["No consistent presence", "Posting whenever you remember means the algorithm forgets you. Consistency is the entry ticket, not a luxury."],
+              ["Ads that “don't work”", "Usually not the ad — no offer, no targeting, no follow-up, no tracking. Campaigns need a funnel, not just a budget."],
+              ["Leads that go cold", "Enquiries sit unanswered for hours; by evening the customer has already booked a competitor."],
+              ["Agencies you can't afford or trust", "Big retainers, black-box reports, long lock-ins — and zero clarity on what the money did."],
+              ["A website that doesn't sell", "Pretty, but no offer, no CTA, no proof, no follow-up. Traffic without conversion is just expense."],
+              ["No plan, just activity", "Random reels, random boosts. Activity without strategy is motion without progress."],
+            ].map(([t, d]) => (
+              <div className="g-card" key={t as string}><h3>{t}</h3><p>{d}</p></div>
+            ))}
           </div>
-          <div className="hero-preview" aria-label="Website examples preview">
-            <div className="preview-grid" id="preview-grid">
-              {EXAMPLES.map((ex) => (
-                <div key={ex.type} className="preview-item">
-                  <div className="preview-thumb"></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        </div>
+      </section>
 
-        {/* EXAMPLES / PROOF - Fan Carousel */}
-        <section className="examples" id="examples" aria-labelledby="examples-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="examples-eyebrow">01 — Proof</p>
-            <h2 id="examples-title" className="sec-title reveal" data-reveal-id="examples-title">Websites people actually pay for.</h2>
-            <p className="sec-lede reveal" data-reveal-id="examples-lede">{`${NUMBER_WORDS[EXAMPLES.length] ?? EXAMPLES.length} business types. Tap any card to open the real demo website.`}</p>
-            <SocialCards cards={exampleCards} instant={isReturn} initialCenter={initialCenter} />
-          </div>
-        </section>
-
-        {/* HOW IT WORKS */}
-        <section className="how" id="how" aria-labelledby="how-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="how-eyebrow">02 — How it works</p>
-            <h2 id="how-title" className="sec-title reveal" data-reveal-id="how-title">From description to live website in four steps.</h2>
-            <p className="sec-lede reveal" data-reveal-id="how-lede">No dashboards to learn. No templates to customize. Four steps and your website is live.</p>
-            <ol className="how-grid">
-              {HOW_STEPS.map((step, i) => (
-                <li key={step.num} className="how-card reveal" data-reveal-id={`how-${step.num}`} style={{ transitionDelay: `${i * 60}ms` }}>
-                  <span className="how-num">{step.num}</span>
-                  <h3 className="how-name">{step.name}</h3>
-                  <p className="how-copy">{step.copy}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* WHAT YOU GET */}
-        <section className="deliverables" id="deliverables" aria-labelledby="deliverables-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="deliverables-eyebrow">03 — What you get</p>
-            <h2 id="deliverables-title" className="sec-title reveal" data-reveal-id="deliverables-title">A complete, professional website — not a template.</h2>
-            <p className="sec-lede reveal" data-reveal-id="deliverables-lede">Every SEAI website includes the fundamentals that make a business look established and trustworthy.</p>
-            <ul className="deliverables-grid">
-              {DELIVERABLES.map((item, i) => (
-                <li key={item.name} className="deliverable reveal" data-reveal-id={`deliverable-${i}`} style={{ transitionDelay: `${i * 40}ms` }}>
-                  <span className="deliverable-icon" aria-hidden="true">{item.icon}</span>
-                  <h3 className="deliverable-name">{item.name}</h3>
-                  <p className="deliverable-desc">{item.desc}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        {/* PRICING */}
-        <section className="pricing" id="pricing" aria-labelledby="pricing-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="pricing-eyebrow">04 — Pricing</p>
-            <h2 id="pricing-title" className="sec-title reveal" data-reveal-id="pricing-title">Simple, transparent pricing.</h2>
-            <p className="sec-lede reveal" data-reveal-id="pricing-lede">One-time payment. No monthly fees. No hidden costs. Choose the tier that fits your business.</p>
-            <div className="price-grid">
-              {PRICING.map((plan, i) => (
-                <article key={plan.tier} className={`price-card reveal ${plan.featured ? "price-feat" : ""}`} data-reveal-id={`price-${plan.tier}`} style={{ transitionDelay: `${i * 60}ms` }}>
-                  {plan.featured && <span className="price-badge">Most popular</span>}
-                  <p className="price-tier">{plan.tier}</p>
-                  <p className="price-tag">{plan.price} <span className="price-per">{plan.per}</span></p>
-                  <p className="price-desc">{plan.desc}</p>
-                  <ul className="price-feats">
-                    {plan.features.map((feat, fi) => (
-                      <li key={fi}>{feat}</li>
-                    ))}
-                  </ul>
-                  <a className={`btn ${plan.featured ? "btn-dark" : "btn-ghost"} price-cta`} href={`/intake.html?plan=${plan.plan}`}>{plan.cta}</a>
-                </article>
-              ))}
-            </div>
-            <p className="price-note">One-time payment. No subscriptions. No monthly fees. Revision periods as noted above.</p>
-          </div>
-        </section>
-
-        {/* BEFORE / AFTER */}
-        <section className="before-after" id="before-after" aria-labelledby="ba-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="ba-eyebrow">05 — Before & After</p>
-            <h2 id="ba-title" className="sec-title reveal" data-reveal-id="ba-title">The difference a professional website makes.</h2>
-            <p className="sec-lede reveal" data-reveal-id="ba-lede">No proper web presence versus a professional SEAI website.</p>
-            <div className="ba-grid">
-              <div className="ba-col reveal" data-reveal-id="ba-before">
-                <p className="ba-label">Before</p>
-                <div className="ba-card ba-before">
-                  <div className="ba-visual">
-                    <svg className="ba-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h4M9 15h2"/></svg>
-                  </div>
-                  <h3 className="ba-name">No website</h3>
-                  <ul className="ba-list">
-                    <li>Customers can't find you</li>
-                    <li>No credibility or trust</li>
-                    <li>Losing to competitors</li>
-                    <li>No way to book or contact</li>
-                    <li>Invisible on Google</li>
-                  </ul>
-                </div>
+      {/* THE APPROACH */}
+      <section className="g-sec g-sec--alt" aria-labelledby="approach-title">
+        <div className="container-wide">
+          <p className="g-num">02 — Our approach</p>
+          <h2 id="approach-title" className="sec-title">One engine, everything it needs.</h2>
+          <p className="sec-lede">SEAI is a marketing, advertising and growth company — not a website vendor, not an ads vendor, not a social media page manager. We run the whole loop: get you seen, get you chosen, get you repeated.</p>
+          <div className="g-steps" style={{ marginTop: 28 }}>
+            {[
+              ["Listen & audit", "Your business, goals, numbers, current presence — plus a quick public audit of site, socials, Google profile and ads."],
+              ["Strategy & offer", "Who we target, what we promise, which channels, with what offer — agreed with you before a rupee is spent."],
+              ["Create & approve", "Brand, content, ads, pages, funnels — built to your market, reviewed by you. Nothing ships without sign-off."],
+              ["Launch & manage", "Campaigns go live, content publishes on schedule, community gets handled, leads get routed."],
+              ["Measure & refine", "Weekly optimisation and a plain-language monthly report: spend, reach, leads, cost per lead — and what we change next."],
+            ].map(([t, d], i) => (
+              <div className="g-step" key={t as string}>
+                <div className="n">{String(i + 1).padStart(2, "0")}</div>
+                <div><h3>{t}</h3><p>{d}</p></div>
               </div>
-              <div className="ba-arrow" aria-hidden="true">→</div>
-              <div className="ba-col reveal" data-reveal-id="ba-after">
-                <p className="ba-label">After</p>
-                <div className="ba-card ba-after">
-                  <div className="ba-visual">
-                    <svg className="ba-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/><path d="M16 5l3 3-3 3"/></svg>
-                  </div>
-                  <h3 className="ba-name">SEAI website</h3>
-                  <ul className="ba-list">
-                    <li>Professional web presence</li>
-                    <li>Builds trust instantly</li>
-                    <li>Stands out from competitors</li>
-                    <li>Clear CTAs: call, WhatsApp, book</li>
-                    <li>Searchable on Google</li>
-                  </ul>
-                </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section className="g-sec" aria-labelledby="services-title">
+        <div className="container-wide">
+          <p className="g-num">03 — What we do</p>
+          <h2 id="services-title" className="sec-title">Every lever of exposure, one team.</h2>
+          <p className="sec-lede">Pick what you need — we'll tell you honestly what you don't.</p>
+          <div className="g-grid" style={{ marginTop: 26 }}>
+            {SERVICE_CARDS.map((s) => (
+              <a key={s.key} href={s.href} className="g-card" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
+                <h3>{s.name}</h3><p>{s.desc}</p>
+                <p style={{ marginTop: 10, color: "#144d5e", fontWeight: 600, fontSize: 13 }}>See how it works →</p>
+              </a>
+            ))}
+          </div>
+          <p className="g-fineprint">Full details, deliverables and "what we need from you" per service: <a href="/services.html">services overview</a>.</p>
+        </div>
+      </section>
+
+      {/* INDUSTRIES */}
+      <section className="g-sec g-sec--alt" aria-labelledby="industries-title">
+        <div className="container-wide">
+          <p className="g-num">04 — Who we serve</p>
+          <h2 id="industries-title" className="sec-title">Same engine, different fuel.</h2>
+          <p className="sec-lede">The process never changes; the offer, creative, channels and metrics do. We work with:</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 22 }}>
+            {INDUSTRIES.map((i) => (
+              <a key={i} href="/industries.html" style={{ border: "1px solid rgba(15,23,42,.16)", background: "#fff", borderRadius: 99, padding: "8px 16px", fontSize: 13.5, color: "#0f172a", textDecoration: "none" }}>{i}</a>
+            ))}
+          </div>
+          <p className="g-fineprint"><a href="/industries.html">Industry-specific plays, demo sites and what “good” looks like →</a></p>
+        </div>
+      </section>
+
+      {/* WORKING PROCESS */}
+      <section className="g-sec" id="how" aria-labelledby="process-title" style={{ scrollMarginTop: "calc(var(--header-h) + 16px)" }}>
+        <div className="container-wide">
+          <p className="g-num">05 — How it works</p>
+          <h2 id="process-title" className="sec-title">From first call to first results.</h2>
+          <div className="g-steps" style={{ marginTop: 26 }}>
+            {[
+              ["Discovery call (30–45 min)", "Goals, current marketing, budget comfort, decision-makers. We listen more than we pitch — fit matters both ways."],
+              ["Business assessment", "Quick audit + a one-page findings note: top 3 opportunities, honestly prioritised."],
+              ["Proposal & scope", "Services, monthly deliverables, fee (ad budget separate and yours to control), timelines. Sent within 3 working days."],
+              ["Agreement & kickoff", "Signed Scope of Work → onboarding: access via official platform invites (never passwords), assets, goals, tracking."],
+              ["Execution & approvals", "Strategy → creative → your approval → launch. Cadence and reporting set from week one."],
+              ["Monthly review & renewal", "Delivered vs scope, metrics, next month's focus. Monthly renewal — we re-earn the engagement every month."],
+            ].map(([t, d], i) => (
+              <div className="g-step" key={t as string}>
+                <div className="n">{String(i + 1).padStart(2, "0")}</div>
+                <div><h3>{t}</h3><p>{d}</p></div>
               </div>
-            </div>
+            ))}
           </div>
-        </section>
-
-        {/* BUSINESS TYPES */}
-        <section className="business-types" id="business-types" aria-labelledby="bt-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="bt-eyebrow">06 — Business types</p>
-            <h2 id="bt-title" className="sec-title reveal" data-reveal-id="bt-title">SEAI works for any local business.</h2>
-            <p className="sec-lede reveal" data-reveal-id="bt-lede">Different industries need different structures. SEAI adapts the layout, copy, and features to your business type.</p>
-            <ul className="bt-grid" id="bt-grid">
-              {BUSINESS_TYPES.map((bt, i) => (
-                <li key={bt.name} className="bt-card reveal" data-reveal-id={`bt-${i}`} style={{ transitionDelay: `${i * 40}ms` }}>
-                  <a href={bt.url} className="bt-link">
-                    <h3 className="bt-name">{bt.name}</h3>
-                    <p className="bt-desc">{bt.desc}</p>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section className="faq" id="faq" aria-labelledby="faq-title">
-          <div className="container">
-            <p className="eyebrow reveal" data-reveal-id="faq-eyebrow">07 — FAQ</p>
-            <h2 id="faq-title" className="sec-title reveal" data-reveal-id="faq-title">Questions, answered directly.</h2>
-            <div className="faq-list" id="faq-list">
-              {FAQS.map((faq, i) => (
-                <article key={i} className={`faq-item reveal ${faqOpen.has(i) ? "open" : ""}`} data-reveal-id={`faq-${i}`} style={{ transitionDelay: `${i * 40}ms` }}>
-                  <h3 className="faq-q">
-                    <button type="button" aria-expanded={faqOpen.has(i)} onClick={() => setFaqOpen(prev => {
-                      const next = new Set(prev);
-                      if (next.has(i)) next.delete(i);
-                      else next.add(i);
-                      return next;
-                    })}>
-                      <span>{faq.q}</span>
-                      <span className="faq-x" aria-hidden="true"></span>
-                    </button>
-                  </h3>
-                  <div className="faq-a"><p>{faq.a}</p></div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FINAL CTA */}
-        <section className="final" aria-labelledby="final-title">
-          <div className="final-bg" aria-hidden="true"></div>
-          <div className="container">
-            <h2 id="final-title" className="final-title reveal" data-reveal-id="final-title">YOUR BUSINESS IS ALREADY REAL.<br />YOUR WEBSITE SHOULD LOOK LIKE IT.</h2>
-            <div className="final-actions reveal" data-reveal-id="final-actions">
-              <a className="btn btn-invert btn-lg" href="/intake.html">Build my website <span className="arr" aria-hidden="true">→</span></a>
-            </div>
-            <p className="final-note reveal" data-reveal-id="final-note">SEAI · AI-built websites for real businesses</p>
-          </div>
-        </section>
-
-      </main>
-
-      <footer className="site-footer">
-        <div className="container">
-          <div className="foot-left">
-            <p className="footer-brand"><img src="/logo.svg" width="22" height="22" alt="" /><span>SEAI</span></p>
-            <p className="footer-tag">Website building, simplified.</p>
-          </div>
-          <nav className="footer-nav" aria-label="Footer">
-            <a href="#examples">Examples</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#faq">FAQ</a>
-            <a href="/terms.html">Terms</a>
-            <a href="/privacy.html">Privacy</a>
-            <a href="mailto:hello@seai.store">Contact</a>
-          </nav>
         </div>
-        <div className="container fit-bottom">
-          <p className="copyright">© <span className="year">2026</span> SEAI. All rights reserved.</p>
+      </section>
+
+      {/* WHY SEAI */}
+      <section className="g-sec g-sec--dark" aria-labelledby="why-title">
+        <div className="container-wide">
+          <p className="g-num">06 — Why businesses choose us</p>
+          <h2 id="why-title" className="sec-title dark-title">Exposure you can actually account for.</h2>
+          <div className="g-grid" style={{ marginTop: 26 }}>
+            {[
+              ["Full funnel, one team", "Brand → ads → social → website → leads → follow-up. No hand-offs to freelancers who never saw the strategy."],
+              ["Accessible monthly plans", "Starter ₹7,999 · Growth ₹14,999 · Scale ₹29,999 — scoped to what moves your metrics, not vanity deliverables."],
+              ["No lock-ins", "Month-to-month after the first cycle. 15-day written notice; work completes through the paid period."],
+              ["Total ad-spend transparency", "You pay platforms directly; we report spend to the rupee. Zero markup, zero markup, zero markup."],
+              ["Approval before everything", "Creatives, campaigns, calendars — approved by you. Nothing ships on our assumption."],
+              ["Honest reporting", "Plain language, real numbers, manual or API-sourced — labelled as such. Never estimates dressed as results."],
+            ].map(([t, d]) => (
+              <div className="dark-card" key={t as string}><h3>{t}</h3><p>{d}</p></div>
+            ))}
+          </div>
         </div>
-      </footer>
-    </>
+      </section>
+
+      {/* PORTFOLIO / DEMONSTRATIONS */}
+      <section className="g-sec" aria-labelledby="portfolio-title">
+        <div className="container-wide">
+          <p className="g-num">07 — Portfolio & demonstrations</p>
+          <h2 id="portfolio-title" className="sec-title">See the standard we hold ourselves to.</h2>
+          <p className="sec-lede">These are demonstration builds we designed to show our bar — not client work, and we don't attach borrowed results to them. For references from businesses like yours, ask in your discovery call.</p>
+          <div className="demo-strip" style={{ marginTop: 22 }}>
+            {DEMOS.map((d) => (
+              <a key={d.name} href={d.url}>{d.name}<small>Demonstration build ↗</small></a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIAL PLACEHOLDER — deliberately omitted */}
+      {/* We publish no testimonials we haven't earned and verified. Ask for references on your discovery call. */}
+
+      {/* FAQ */}
+      <section className="g-sec" id="faq" aria-labelledby="faq-title" style={{ scrollMarginTop: "calc(var(--header-h) + 16px)" }}>
+        <div className="container-wide">
+          <p className="g-num">08 — Frequently asked</p>
+          <h2 id="faq-title" className="sec-title">Fair questions, straight answers.</h2>
+          <div className="g-grid" style={{ marginTop: 26, gridTemplateColumns: "repeat(auto-fit, minmax(min(420px, 100%), 1fr))" }}>
+            {[
+              ["What does SEAI actually cost?", "Monthly retainers from ₹7,999 (Starter), ₹14,999 (Growth) and ₹29,999 (Scale) — see Pricing. Ad budgets are separate and paid by you directly to Meta/Google; we never mark them up. GST extra where applicable."],
+              ["Do you guarantee leads or sales?", "No — and be careful with any agency that does. We guarantee strategy, execution, transparency and weekly optimisation. Your offer, market and follow-up speed decide the rest."],
+              ["What do you need from me?", "A short intake (goals, audience, budgets), platform access via official invites (never passwords), your brand assets, and one approver who can say yes fast. About an hour up front; then ~20 minutes a week."],
+              ["Who owns the ad accounts, domain and data?", "You do — all registered in your name. We hold only the access we need. Leave any time with 15 days' notice and keep everything we've built."],
+              ["How fast do we start and see results?", "Discovery → proposal within 3 working days → kickoff the same week. First deliverables land in approval within the first fortnight; ad tests typically start flowing leads within 2–4 weeks depending on budget and offer."],
+              ["What if I'm not sure SEAI is right for me?", "Say so on the discovery call. If we're not the right fit — wrong stage, wrong budget, or a problem we can't solve — we'll tell you plainly instead of taking the retainer."],
+            ].map(([q, a]) => (
+              <details key={q as string} style={{ background: "#fff" }}>
+                <summary>{q}</summary>
+                <div className="db"><p style={{ margin: 0 }}>{a}</p></div>
+              </details>
+            ))}
+          </div>
+          <p className="g-fineprint">Still unsure? <a href="/contact.html">Ask us directly →</a></p>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="g-sec g-sec--dark" aria-labelledby="final-title">
+        <div className="container-wide" style={{ textAlign: "center", maxWidth: 900 }}>
+          <p className="g-num">Ready when you are</p>
+          <h2 id="final-title" className="sec-title dark-title" style={{ marginInline: "auto" }}>Let's get you noticed —<br />then chosen.</h2>
+          <p className="sec-lede" style={{ marginInline: "auto" }}>One honest call is all it takes to know whether SEAI is right for your business. We'll tell you if it isn't.</p>
+          <div className="g-actions" style={{ justifyContent: "center" }}>
+            <a className="btn btn-invert btn-lg" href="/contact.html">Let's Grow Your Business <span className="arr" aria-hidden="true">→</span></a>
+            <a className="btn btn-ghost-dark btn-lg" href="/pricing.html">See pricing</a>
+          </div>
+        </div>
+      </section>
+    </SiteChrome>
   );
 }
-
-export default Homepage;
