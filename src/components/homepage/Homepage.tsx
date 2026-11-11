@@ -118,9 +118,9 @@ export default function Homepage() {
           <p className="g-num">04 — Who we serve</p>
           <h2 id="industries-title" className="sec-title">Same engine, different fuel.</h2>
           <p className="sec-lede">The process never changes; the offer, creative, channels and metrics do. We work with:</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 22 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 22, alignItems: "stretch", maxWidth: "100%", boxSizing: "border-box" }}>
             {INDUSTRIES.map((i) => (
-              <a key={i} href="/industries.html" style={{ border: "1px solid rgba(15,23,42,.16)", background: "#fff", borderRadius: 99, padding: "8px 16px", fontSize: 13.5, color: "#0f172a", textDecoration: "none" }}>{i}</a>
+              <a key={i} href="/industries.html" style={{ border: "1px solid rgba(15,23,42,.16)", background: "#fff", borderRadius: 99, padding: "8px 16px", fontSize: 13.5, color: "#0f172a", textDecoration: "none", minHeight: 38, display: "inline-flex", alignItems: "center", boxSizing: "border-box", maxWidth: "100%", whiteSpace: "normal", wordBreak: "break-word" }}>{i}</a>
             ))}
           </div>
           <p className="g-fineprint"><a href="/industries.html">Industry-specific plays, demo sites and what “good” looks like →</a></p>

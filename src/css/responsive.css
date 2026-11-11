@@ -35,15 +35,16 @@ html { scroll-padding-top: 88px; }
     display: inline-flex;
     flex-direction: column;
     justify-content: center;
-    align-items:center;
-    gap: 6px;
-    width: 44px;
-    height: 44px;
+    align-items: center;
+    gap: 5px;
+    width: 56px;
+    height: 34px;
     background: #fff;
     border: 1px solid var(--line-soft);
     border-radius: 999px;
     cursor: pointer;
     padding: 0;
+    transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
   }
   .menu-btn span {
     display: block;
@@ -53,8 +54,8 @@ html { scroll-padding-top: 88px; }
     border-radius: 2px;
     transition: transform var(--t-med) var(--ease), opacity var(--t-fast);
   }
-  body.menu-open .menu-btn span:first-child { transform: translateY(3.8px) rotate(45deg); }
-  body.menu-open .menu-btn span:last-child { transform: translateY(-3.8px) rotate(-45deg); }
+  body.menu-open .menu-btn span:first-child { transform: translateY(3.2px) rotate(45deg); }
+  body.menu-open .menu-btn span:last-child { transform: translateY(-3.2px) rotate(-45deg); }
 
   /* Overlay is a SIBLING of the sticky header, so `position: fixed` resolves
      against the viewport. It is layered just under the header and starts below
@@ -206,6 +207,11 @@ html { scroll-padding-top: 88px; }
 
 /* ============ <= 640px ============ */
 @media (max-width: 640px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+  .foot-left { min-width: 0; }
+  .footer-col { min-width: 0; }
+  .footer-links a { word-break: break-word; }
+  .fit-bottom { flex-direction: column; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
   :root { --section-y: clamp(72px, 13vw, 104px); }
   .hero { padding-top: clamp(80px, 10vw, 120px); }
   .hero-title { font-size: clamp(32px, 8vw, 44px); }
