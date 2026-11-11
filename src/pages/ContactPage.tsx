@@ -135,7 +135,7 @@ export default function ContactPage() {
               <div className={inputCls}><label htmlFor="website">Website <small>(if any)</small></label><input id="website" name="website" type="text" maxLength={300} placeholder="https://" inputMode="url" /></div>
             </div>
 
-            <fieldset style={{ border: 0, padding: 0, margin: "4px 0 12px" }}>
+            <fieldset style={{ border: 0, padding: 0, margin: "4px 0 16px" }}>
               <legend style={{ fontSize: 12, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Services you need *</legend>
               <div className="g-checks">
                 {SERVICE_OPTIONS.map((s) => (
