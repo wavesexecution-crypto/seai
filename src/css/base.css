@@ -357,13 +357,16 @@
     content: "";
     position: absolute;
     left: 0;
-    right: 100%;
     bottom: -2px;
+    width: 100%;
     height: 1px;
     background: var(--ink);
-    transition: right var(--t-med) var(--ease);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 250ms var(--ease);
+    pointer-events: none;
   }
-  .nav a:hover::after { right: 0; }
+  .nav a:hover::after { transform: scaleX(1); transform-origin: left center; }
   .nav a:hover { color: var(--ink); }
   .dark .nav a { color: var(--dark-sub); }
   .dark .nav a:hover { color: var(--dark-ink); }
