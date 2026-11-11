@@ -60,120 +60,54 @@ html { scroll-padding-top: 88px; }
   /* Overlay is a SIBLING of the sticky header, so `position: fixed` resolves
      against the viewport. It is layered just under the header and starts below
      it, so the live brand + close button stay on top with no z-index tricks. */
+  body.menu-open .site-header { background: var(--surface); }
   .mobile-nav {
     position: fixed;
-    top: 64px;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     z-index: 90;
-    background: var(--surface);
+    background: #fff;
     overflow-y: auto;
     overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
-    padding: 8px clamp(28px, 6vw, 64px) 40px;
+    justify-content: center;
+    padding: 80px clamp(28px, 8vw, 48px) 40px;
+    padding-top: max(80px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(clamp(28px, 8vw, 48px), env(safe-area-inset-left, 0px));
+    padding-right: max(clamp(28px, 8vw, 48px), env(safe-area-inset-right, 0px));
     visibility: hidden;
     opacity: 0;
-    transform: translateY(6px);
-    transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s var(--t-med);
+    transform: translateX(100%);
+    transition: transform 320ms var(--ease), opacity 240ms var(--ease), visibility 0s 320ms;
   }
-  body.menu-open .site-header { background: var(--surface); }
   body.menu-open .mobile-nav {
     visibility: visible;
     opacity: 1;
     transform: none;
-    transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s;
+    transition: transform 320ms var(--ease), opacity 240ms var(--ease), visibility 0s;
   }
   .mobile-nav a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 19px;
-    font-weight: 500;
+    display: block;
+    font-size: clamp(28px, 7vw, 40px);
+    font-weight: 300;
+    letter-spacing: -0.01em;
     color: var(--ink);
-    padding: 15px 4px;
+    padding: 14px 0;
     border-bottom: 1px solid var(--line-soft);
-    transition: color var(--t-fast), padding var(--t-med) var(--ease);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 320ms var(--ease), transform 320ms var(--ease), color var(--t-fast);
+    transition-delay: calc(var(--i, 0) * 60ms + 80ms);
   }
-  .mobile-nav a:hover { color: var(--ink); padding-left: 8px; }
-  .mobile-nav a::after {
-    content: "→";
-    font-family: var(--mono);
-    color: var(--faint);
-    margin-left: auto;
-    font-size:14px;
-  }
-  .m-sep {
-    display: block;
-    height: 1px;
-    background: var(--line);
-    margin: 26px 0 6px;
-  }
-  .mobile-nav .github-stars {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--sub);
-    padding: 8px 12px;
-    border-radius: var(--r-s);
-    border: 1px solid var(--line);
-    margin: 8px 0;
-    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
-  }
-  .mobile-nav .github-stars:hover { color: var(--ink); border-color: var(--ink); background: var(--fill); }
-  .mobile-nav .theme-toggle {
-    margin-top: 8px;
-  }
-  .mobile-nav .dropdown-trigger {
-    width: 100%;
-    justify-content: flex-start;
-    padding: 14px 12px;
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--ink);
-    border-radius: var(--r);
-    background: var(--fill);
-    border: 1px solid var(--line);
-  }
-  .mobile-nav .dropdown-trigger:hover { background: var(--fill-hover); }
-  .mobile-nav .dropdown-menu {
-    position: static;
+  body.menu-open .mobile-nav a {
     opacity: 1;
-    visibility: visible;
     transform: none;
-    box-shadow: none;
-    border: none;
-    background: transparent;
-    padding: 8px 0 0;
-    min-width: auto;
   }
-  .mobile-nav .dropdown-item {
-    padding: 12px 16px;
-    font-size: 15px;
-    border-radius: var(--r);
-  }
-  .mobile-nav .dropdown-item:hover { background: var(--fill); }
-
-  .m-sep {
-    display: block;
-    height: 1px;
-    background: var(--line);
-    margin: 26px 0 6px;
-  }
-  .mobile-nav a.btn {
-    margin-top: 18px;
-    justify-content: center;
-    /* `.mobile-nav a` sets ink on every link and outranks `.btn-dark`, which
-       left this CTA as dark-on-dark. Restate the inverted pairing here so the
-       pill keeps its own hierarchy. */
-    color: #fff;
-    border-color: var(--ink);
-  }
-  .mobile-nav a.btn:hover { color: #fff; padding-left: 26px; }
-  .mobile-nav a.btn::after { content: none; }
+  .mobile-nav a:hover { color: var(--sub); }
+  .mobile-nav a::after { content: none; }
+  .mobile-nav a:last-child { border-bottom: none; }
 
   .hero-title {
     max-width: none;

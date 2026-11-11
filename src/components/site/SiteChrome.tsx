@@ -19,9 +19,16 @@ export default function SiteChrome({ active, children }: { active?: string; chil
 
   useEffect(() => {
     document.body.classList.toggle("menu-open", menuOpen);
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    document.documentElement.style.overflow = menuOpen ? "hidden" : "";
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
     document.addEventListener("keydown", onKey);
-    return () => { document.body.classList.remove("menu-open"); document.removeEventListener("keydown", onKey); };
+    return () => {
+      document.body.classList.remove("menu-open");
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      document.removeEventListener("keydown", onKey);
+    };
   }, [menuOpen]);
 
   useEffect(() => {
@@ -59,10 +66,9 @@ export default function SiteChrome({ active, children }: { active?: string; chil
       </header>
 
       <nav className="mobile-nav" id="mobile-nav" aria-label="Mobile">
-        {nav.map((n) => (
-          <a key={n.id} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</a>
+        {nav.map((n, i) => (
+          <a key={n.id} href={n.href} onClick={() => setMenuOpen(false)} style={{ ["--i" as any]: i }}>{n.label}</a>
         ))}
-        <a className="btn-primary m-cta" href="/contact.html" onClick={() => setMenuOpen(false)}>Let's Grow Your Business <span className="arr" aria-hidden="true">→</span></a>
       </nav>
 
       {booked && (
