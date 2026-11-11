@@ -109,7 +109,9 @@
 .g-fineprint { color: #555555; font-size: 13px; line-height: 1.7; margin-top: 12px; }
 
 /* ---------- industries ---------- */
-.g-ind { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.g-ind { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 980px) { .g-ind { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .g-ind { grid-template-columns: 1fr; } }
 .g-ind-card { background: #fff; border: 1px solid rgba(0,0,0,.12); border-radius: 16px; padding: 26px; display: flex; flex-direction: column; gap: 10px; }
 .g-ind-card h3 { margin: 0; font-size: 20px; font-weight: 600; color: var(--tx1); }
 .g-ind-card .who { color: var(--tx2); font-size: 15px; line-height: 1.7; }
