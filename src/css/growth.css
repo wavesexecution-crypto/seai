@@ -54,8 +54,8 @@
 .g-sec--dark { background: #000000; color: var(--tx2); }
 .g-sec--dark .sec-title { color: #F5F5F5; }
 .g-sec--dark .sec-lede { color: var(--tx2); }
-.g-sec--dark a { color: #E5E5E5; }
-.g-sec--dark a:hover { color: #FFFFFF; }
+.g-sec--dark a:not(.btn) { color: #E5E5E5; }
+.g-sec--dark a:not(.btn):hover { color: #FFFFFF; }
 .g-sec--dark .g-tag { background: rgba(255,255,255,.08); color: #F5F5F5; }
 .g-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 .g-card { background: #fff; border: 1px solid rgba(0,0,0,.12); border-radius: 16px; padding: 28px; box-shadow: var(--shadow-s); }
