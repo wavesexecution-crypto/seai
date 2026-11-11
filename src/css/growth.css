@@ -27,7 +27,7 @@
   --tx3: #555555; /* secondary */
   --tx4: #333333; /* labels + numbered indicators */
 }
-.g-hero, .g-sec--dark, .site-header, .g-svc-nav, .mobile-nav, .g-sec--dark .g-tag {
+.g-hero, .g-sec--dark, .g-svc-nav, .mobile-nav, .g-sec--dark .g-tag {
   --tx1: #FFFFFF; /* headings */
   --tx2: #D0D0D0; /* body */
   --tx3: #A6A6A6; /* secondary */
@@ -175,37 +175,37 @@
 }
 @media print { .site-header, .mobile-nav { display: none; } }
 
-/* ---------- navbar: pure black & white ---------- */
+/* ---------- navbar: white, high-contrast ---------- */
 .site-header {
-  background: #000;
-  border-bottom: 1px solid #000;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E5E5;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 .site-header.scrolled,
 .dark .site-header.scrolled {
-  background: #000;
-  border-bottom-color: #262626;
+  background: #FFFFFF;
+  border-bottom-color: #E5E5E5;
 }
-.site-header .brand span { color: #FFFFFF; }
-.site-header .nav a { color: #E5E5E5; }
-.site-header .nav a::after { background: #FFFFFF; }
-.site-header .nav a:hover { color: #FFFFFF; }
+.site-header .brand span { color: #1A1A1A; }
+.site-header .nav a { color: #222222; font-weight: 500; }
+.site-header .nav a::after { background: #000000; }
+.site-header .nav a:hover { color: #000000; }
 .nav-cta {
   height: 46px;
   padding: 0 24px;
   font-size: 14px;
-  background: #000;
-  border: 1px solid rgba(255,255,255,.45);
+  background: #000000;
+  border: 1px solid #000000;
   color: #FFFFFF;
 }
 .nav-cta:hover {
-  background: #FFFFFF;
-  color: #000000;
-  border-color: #FFFFFF;
+  background: #222222;
+  color: #FFFFFF;
+  border-color: #222222;
 }
-body.menu-open .site-header { background: #000; }
-.mobile-nav { background: #000; }
+body.menu-open .site-header { background: #FFFFFF; }
+.mobile-nav { background: #000000; }
 .mobile-nav a { color: #E5E5E5; border-color: #262626; }
 .mobile-nav a:hover { color: #FFFFFF; padding-left: 8px; }
 .mobile-nav .m-cta { background: #FFFFFF; color: #000000; border-color: #FFFFFF; }

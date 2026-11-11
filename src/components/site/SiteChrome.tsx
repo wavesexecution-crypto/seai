@@ -44,7 +44,7 @@ export default function SiteChrome({ active, children }: { active?: string; chil
           </a>
           <nav className="nav" aria-label="Primary">
             {nav.map((n) => (
-              <a key={n.id} href={n.href} aria-current={active === n.id ? "page" : undefined} style={active === n.id ? { color: "#fff", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 6 } : undefined}>{n.label}</a>
+              <a key={n.id} href={n.href} aria-current={active === n.id ? "page" : undefined} style={active === n.id ? { color: "#1A1A1A", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 6 } : undefined}>{n.label}</a>
             ))}
           </nav>
           <div className="header-actions">

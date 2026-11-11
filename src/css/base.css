@@ -338,7 +338,7 @@
   .nav a {
     font-size: 14px;
     font-weight: 500;
-    color: var(--sub);
+    color: #222222;
     padding: 6px 0;
     position: relative;
     transition: color var(--t-fast);
@@ -355,6 +355,12 @@
   }
   .nav a:hover::after { right: 0; }
   .nav a:hover { color: var(--ink); }
+  .dark .nav a { color: var(--dark-sub); }
+  .dark .nav a:hover { color: var(--dark-ink); }
+  @media (prefers-color-scheme: dark) {
+    .nav a { color: var(--dark-sub); }
+    .nav a:hover { color: var(--dark-ink); }
+  }
   .header-actions { display: flex; align-items: center; gap: 16px; }
   .btn-text {
     font-size: 14px;
