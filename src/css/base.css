@@ -366,6 +366,8 @@
     transition: transform 250ms var(--ease);
     pointer-events: none;
   }
+  .nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left center; }
+  .nav:has(a:hover) a[aria-current="page"]::after { transform: scaleX(0); transform-origin: left center; }
   .nav a:hover::after { transform: scaleX(1); transform-origin: left center; }
   .nav a:hover { color: var(--ink); }
   .dark .nav a { color: var(--dark-sub); }
@@ -615,7 +617,7 @@
   .select-wrapper::after {
     content: "";
     position: absolute;
-    right: 14px;
+    right: 24px;
     top: 50%;
     transform: translateY(-50%);
     width: 16px;
