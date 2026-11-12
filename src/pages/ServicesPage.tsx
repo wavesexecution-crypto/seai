@@ -1,29 +1,55 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import SiteChrome from "@/components/site/SiteChrome";
 import { SERVICES, SERVICE_NAV } from "../services-data";
 
 const BADGE: Record<string, string> = { available: "Available", proposed: "Proposed — on enquiry", one_time: "One-time + care plan" };
 
 export default function ServicesPage() {
+  const navRef = useRef<HTMLElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
+  const currentIdRef = useRef<string>("");
+  const lastSwitchRef = useRef<number>(0);
+
   useEffect(() => {
-    const links = Array.from(document.querySelectorAll<HTMLAnchorElement>(".g-svc-nav a"));
+    const nav = navRef.current;
+    const links = nav ? Array.from(nav.querySelectorAll<HTMLAnchorElement>("a")) : [];
     const sections = links
       .map((a) => document.getElementById(a.getAttribute("href")?.slice(1) ?? ""))
       .filter(Boolean) as HTMLElement[];
-    if (!sections.length) return;
+    if (!sections.length || !nav) return;
 
-    const headerOffset = 72; // navbar height
-    const tabbarOffset = 64; // sticky service nav height
+    const headerOffset = 72;
+    const tabbarOffset = 56;
     const topThreshold = headerOffset + tabbarOffset;
+    const HYSTERESIS_MS = 180;
 
-    const setActive = (id: string) => {
-      links.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === `#${id}`));
-      // Keep active tab visible horizontally on mobile
-      const activeLink = links.find((a) => a.getAttribute("href") === `#${id}`);
-      activeLink?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    const updateIndicator = () => {
+      const ind = indicatorRef.current;
+      if (!ind) return;
+      const active = nav.querySelector<HTMLAnchorElement>("a.is-active");
+      if (!active) { ind.style.opacity = "0"; return; }
+      const navRect = nav.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      const x = aRect.left - navRect.left + nav.scrollLeft;
+      ind.style.transform = `translate3d(${x}px, 0, 0)`;
+      ind.style.width = `${aRect.width}px`;
+      ind.style.opacity = "1";
     };
 
-    // Smooth scroll on tab click
+    const rafUpdate = () => requestAnimationFrame(updateIndicator);
+
+    const setActive = (id: string) => {
+      if (id === currentIdRef.current) return;
+      const now = performance.now();
+      if (now - lastSwitchRef.current < HYSTERESIS_MS) return;
+      lastSwitchRef.current = now;
+      currentIdRef.current = id;
+      links.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === `#${id}`));
+      const activeLink = links.find((a) => a.getAttribute("href") === `#${id}`);
+      activeLink?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      rafUpdate();
+    };
+
     const onClick = (e: MouseEvent) => {
       const a = (e.target as HTMLElement).closest("a");
       if (!a) return;
@@ -34,52 +60,54 @@ export default function ServicesPage() {
       if (!target) return;
       const y = target.getBoundingClientRect().top + window.scrollY - (topThreshold + 8);
       window.scrollTo({ top: y, behavior: "smooth" });
+      // force switch (bypass hysteresis) on click
+      lastSwitchRef.current = 0;
       setActive(href.slice(1));
     };
-    const nav = document.querySelector<HTMLElement>(".g-svc-nav");
-    nav?.addEventListener("click", onClick);
+    nav.addEventListener("click", onClick);
 
-    // IntersectionObserver scroll-spy
-    let currentId = sections[0].id;
-    const visible = new Map<string, number>();
+    const visible = new Set<string>();
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (e.isIntersecting) visible.set(e.target.id, e.intersectionRatio);
+          if (e.isIntersecting) visible.add(e.target.id);
           else visible.delete(e.target.id);
         }
-        // Pick the topmost visible section
         let best: string | null = null;
         let bestTop = Infinity;
-        for (const id of visible.keys()) {
+        for (const id of visible) {
           const el = document.getElementById(id);
           if (!el) continue;
           const top = el.getBoundingClientRect().top;
           if (top < bestTop) { bestTop = top; best = id; }
         }
-        if (best && best !== currentId) { currentId = best; setActive(best); }
-        // Fallback: if nothing visible, use closest section above threshold
-        if (!best) {
-          let closest: string | null = null;
-          let closestDist = Infinity;
-          for (const s of sections) {
-            const top = s.getBoundingClientRect().top - topThreshold;
-            const dist = Math.abs(top);
-            if (dist < closestDist) { closestDist = dist; closest = s.id; }
-          }
-          if (closest && closest !== currentId) { currentId = closest; setActive(closest); }
+        if (best) { setActive(best); return; }
+        // nothing visible: closest section
+        let closest: string | null = null;
+        let closestDist = Infinity;
+        for (const s of sections) {
+          const dist = Math.abs(s.getBoundingClientRect().top - topThreshold);
+          if (dist < closestDist) { closestDist = dist; closest = s.id; }
         }
+        if (closest) setActive(closest);
       },
-      { rootMargin: `-${topThreshold}px 0px -40% 0px`, threshold: [0, 0.25, 0.5] },
+      { rootMargin: `-${topThreshold}px 0px -45% 0px`, threshold: [0, 0.1, 0.25] },
     );
     sections.forEach((s) => io.observe(s));
 
-    // Initial active
+    // initial
+    currentIdRef.current = "";
+    lastSwitchRef.current = 0;
     setActive(sections[0].id);
+    rafUpdate();
+
+    const onResize = () => rafUpdate();
+    window.addEventListener("resize", onResize);
 
     return () => {
       io.disconnect();
-      nav?.removeEventListener("click", onClick);
+      nav.removeEventListener("click", onClick);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
@@ -95,7 +123,8 @@ export default function ServicesPage() {
       </section>
 
       <div className="container-wide">
-        <nav className="g-svc-nav" aria-label="Jump to a service">
+        <nav className="g-svc-nav" aria-label="Jump to a service" ref={navRef}>
+          <div className="g-svc-indicator" ref={indicatorRef} aria-hidden="true" />
           {SERVICE_NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{n.label}</a>)}
         </nav>
 
