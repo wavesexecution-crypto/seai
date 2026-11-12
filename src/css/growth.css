@@ -260,6 +260,14 @@ body.menu-open .site-header { background: #FFFFFF; }
 .mobile-nav a:hover { color: #FFFFFF; padding-left: 8px; }
 .mobile-nav .m-cta { background: #FFFFFF; color: #000000; border-color: #FFFFFF; }
 
+/* ---------- industry pills (homepage) ---------- */
+.g-industry-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: stretch; max-width: 100%; box-sizing: border-box; }
+.g-industry-pill { border: 1px solid rgba(15,23,42,.16); background: #fff; border-radius: 99px; padding: 8px 16px; font-size: 13.5px; color: #0f172a; text-decoration: none; min-height: 38px; display: inline-flex; align-items: center; box-sizing: border-box; max-width: 100%; white-space: normal; word-break: break-word; }
+@media (max-width: 640px) {
+  .g-industry-pills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .g-industry-pill { width: 100%; justify-content: center; text-align: center; min-height: 44px; padding: 8px 10px; }
+}
+
 /* ---------- misc ---------- */
 .tick { color: #000000; font-weight: 700; }
 .cross { color: #555555; }
