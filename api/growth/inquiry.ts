@@ -1,18 +1,8 @@
 // @ts-nocheck
-/**
- * POST /api/growth/inquiry
- *
- * Public inquiry intake for the SEAI contact form (seai.public).
- * Validates, rate-limits, persists to the growth_inquiries table, and
- * attempts the internal notification email (best-effort).
- */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
 import { createHash } from 'node:crypto';
 
-import { readJsonBody, bodyErrorResponse } from '../../server/payments-core.js';
-
-// Compiled modules produced by `npm run build` (tsc server).
 import { db } from '../../dist/db/db.js';
 import { createInquiry } from '../../dist/growth/service.js';
 
@@ -64,40 +54,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(405).send(JSON.stringify({ ok: false, error: 'Method not allowed' }));
+    return res.status(405).json({ ok: false, error: 'Method not allowed' });
   }
   await ensureBoot();
-  const ip = String(req.headers['x-forwarded-for'] ?? (req as any).socket?.remoteAddress ?? '').split(',')[0].trim();
+  const ip = String((req.headers['x-forwarded-for'] as string) ?? (req as any).socket?.remoteAddress ?? '').split(',')[0].trim();
   if (!rateLimit(ip)) {
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(429).send(JSON.stringify({ ok: false, error: 'Too many submissions — please try again later.' }));
+    return res.status(429).json({ ok: false, error: 'Too many submissions — please try again later.' });
   }
-  let bodyResult: { ok: boolean; value?: any; error?: string };
+  // Access req.body inside try; Vercel's lazy getter can throw on malformed body.
+  let body: any = {};
   try {
-    bodyResult = await readJsonBody(req);
-  } catch (err: any) {
-    console.error('[growth-inquiry] readJsonBody threw', err);
-    // Fall back to reading the raw stream.
-    try {
-      const chunks: Buffer[] = [];
-      for await (const chunk of req as any) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-      const text = Buffer.concat(chunks).toString('utf8');
-      bodyResult = text ? (() => { try { return { ok: true, value: JSON.parse(text) }; } catch { return { ok: false, error: 'invalid_json' }; } })() : { ok: false, error: 'empty_body' };
-    } catch (e: any) {
-      console.error('[growth-inquiry] stream read failed', e);
-      bodyResult = { ok: false, error: 'body_read_failed' };
-    }
+    body = req.body ?? {};
+    if (typeof body === 'string') body = JSON.parse(body);
+  } catch (e: any) {
+    console.error('[growth-inquiry] body parse failed', e?.message);
+    return res.status(400).json({ ok: false, error: 'Request body must be valid JSON' });
   }
-  if (!bodyResult.ok) {
-    const { status, message } = bodyErrorResponse(bodyResult.error as any);
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(status).send(JSON.stringify({ ok: false, error: message }));
-  }
-  const parsed = inquirySchema.safeParse(bodyResult.value ?? {});
+  const parsed = inquirySchema.safeParse(body);
   if (!parsed.success) {
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(400).send(JSON.stringify({ ok: false, error: parsed.error?.errors?.[0]?.message ?? 'Invalid submission' }));
+    return res.status(400).json({ ok: false, error: parsed.error?.errors?.[0]?.message ?? 'Invalid submission' });
   }
   const { _gotcha, ...input } = parsed.data;
   if (_gotcha) {
@@ -109,12 +84,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true, id: result.id, message: 'Thanks — we will reach out within one working day.' });
   } catch (err: any) {
     console.error('[growth-inquiry] createInquiry failed', err);
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(500).send(JSON.stringify({ ok: false, error: 'Submission failed — please try again.' }));
+    return res.status(500).json({ ok: false, error: 'Submission failed — please try again.' });
   }
   } catch (err: any) {
-    console.error('[growth-inquiry] unhandled', err);
-    try { res.setHeader('Content-Type', 'application/json'); } catch {}
-    if (!res.headersSent) res.status(500).send(JSON.stringify({ ok: false, error: 'Submission failed — please try again.' }));
+    console.error('[growth-inquiry] unhandled', err?.message, err?.stack);
+    if (!res.headersSent) res.status(500).json({ ok: false, error: 'Submission failed — please try again.' });
   }
 }
