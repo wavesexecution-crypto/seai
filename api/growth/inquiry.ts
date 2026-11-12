@@ -62,6 +62,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(405).send(JSON.stringify({ ok: false, error: 'Method not allowed' }));
   }
+  // Read body FIRST (before any await that may let the stream be consumed).
+  let raw = '';
+  const chunks: Buffer[] = [];
+  for await (const chunk of req as any) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  raw = Buffer.concat(chunks).toString('utf8');
+
   await ensureBoot();
   const ip = String(req.headers['x-forwarded-for'] ?? (req as any).socket?.remoteAddress ?? '').split(',')[0].trim();
   if (!rateLimit(ip)) {
@@ -69,13 +77,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(429).send(JSON.stringify({ ok: false, error: 'Too many submissions — please try again later.' }));
   }
 
-  // Read body from stream (bodyParser disabled).
-  let raw = '';
-  const chunks: Buffer[] = [];
-  for await (const chunk of req as any) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-  raw = Buffer.concat(chunks).toString('utf8');
   let body: any = {};
   if (raw) {
     try { body = JSON.parse(raw); } catch {
