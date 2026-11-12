@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import SiteChrome from "@/components/site/SiteChrome";
-import CalComScheduler from "@/components/ui/calcom";
 import CustomSelect from "@/components/ui/select";
 
 const isLocal = /(^|\.)localhost$|^127\.0\.0\.1$/.test(window.location.hostname);
@@ -164,17 +163,6 @@ export default function ContactPage() {
             </button>
             <p className="g-fineprint">No spam, no cold calls from random lists — your details go to the SEAI team and nowhere else. We reply within one working day.</p>
           </form>
-        </div>
-      </section>
-
-      <section className="g-sec" aria-labelledby="book-title">
-        <div className="container-wide" style={{ maxWidth: 900 }}>
-          <p className="g-num">Book a meeting</p>
-          <h2 id="book-title" className="sec-title" style={{ fontSize: "clamp(28px, 4vw, 48px)" }}>Pick a time that works for you.</h2>
-          <p className="sec-lede">Choose an available slot below — Cal.com will send the invite and a confirmation.</p>
-          <div style={{ marginTop: 24 }}>
-            <CalComScheduler />
-          </div>
         </div>
       </section>
     </SiteChrome>

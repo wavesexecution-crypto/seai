@@ -1,5 +1,4 @@
 import SiteChrome from "@/components/site/SiteChrome";
-import { openCalPopup } from "@/components/ui/calcom";
 
 const SERVICE_CARDS = [
   { key: "branding", name: "Branding & Identity", desc: "Positioning, logos, guidelines and creative direction that make you unmistakable.", href: "/services.html#branding" },
@@ -37,7 +36,7 @@ export default function Homepage() {
           <p className="g-tagline">“Get Exposed. But in a Good Way.”</p>
           <p className="g-sub">We help businesses get noticed, reach the right audience and turn attention into growth — branding, ads, social, websites, lead generation and follow-up systems, delivered as one integrated monthly service.</p>
           <div className="g-actions">
-            <a className="btn btn-invert btn-lg" href="/contact.html" onClick={(e) => { e.preventDefault(); openCalPopup(); }}>Let's Grow Your Business <span className="arr" aria-hidden="true">→</span></a>
+            <a className="btn btn-invert btn-lg" href="/contact.html">Let's Grow Your Business <span className="arr" aria-hidden="true">→</span></a>
             <a className="btn btn-ghost-dark btn-lg" href="/services.html">Explore Our Services</a>
           </div>
           <p className="g-note">Every business needs exposure — regardless of size. No guaranteed leads, ever; real strategy, real execution, plain reporting.</p>
@@ -218,7 +217,7 @@ export default function Homepage() {
           <h2 id="final-title" className="sec-title dark-title" style={{ marginInline: "auto" }}>Let's get you noticed —<br />then chosen.</h2>
           <p className="sec-lede" style={{ marginInline: "auto" }}>One honest call is all it takes to know whether SEAI is right for your business. We'll tell you if it isn't.</p>
           <div className="g-actions" style={{ justifyContent: "center" }}>
-            <a className="btn btn-invert btn-lg" href="/contact.html" onClick={(e) => { e.preventDefault(); openCalPopup(); }}>Let's Grow Your Business <span className="arr" aria-hidden="true">→</span></a>
+            <a className="btn btn-invert btn-lg" href="/contact.html">Let's Grow Your Business <span className="arr" aria-hidden="true">→</span></a>
             <a className="btn btn-ghost-dark btn-lg" href="/pricing.html">See pricing</a>
           </div>
         </div>
