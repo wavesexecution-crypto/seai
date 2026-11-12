@@ -56,22 +56,36 @@ function setCors(res: VercelResponse, origin: string | undefined) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
   const origin = req.headers.origin as string | undefined;
   setCors(res, origin);
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ ok: false, error: 'Method not allowed' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(405).send(JSON.stringify({ ok: false, error: 'Method not allowed' }));
   }
   await ensureBoot();
-  const ip = String(req.headers['x-forwarded-for'] ?? req.socket?.remoteAddress ?? '').split(',')[0].trim();
+  const ip = String(req.headers['x-forwarded-for'] ?? (req as any).socket?.remoteAddress ?? '').split(',')[0].trim();
   if (!rateLimit(ip)) {
-    return res.status(429).json({ ok: false, error: 'Too many submissions — please try again later.' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(429).send(JSON.stringify({ ok: false, error: 'Too many submissions — please try again later.' }));
   }
-  const body = (req.body ?? {}) as any;
-  const parsed = inquirySchema.safeParse(body);
+  let body: any = req.body ?? {};
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { body = {}; }
+  }
+  let parsed: any;
+  try {
+    parsed = inquirySchema.safeParse(body);
+  } catch (err: any) {
+    console.error('[growth-inquiry] schema error', err);
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(400).send(JSON.stringify({ ok: false, error: 'Invalid submission' }));
+  }
   if (!parsed.success) {
-    return res.status(400).json({ ok: false, error: parsed.error.errors[0]?.message ?? 'Invalid submission' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(400).send(JSON.stringify({ ok: false, error: parsed.error?.errors?.[0]?.message ?? 'Invalid submission' }));
   }
   const { _gotcha, ...input } = parsed.data;
   if (_gotcha) {
@@ -83,6 +97,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true, id: result.id, message: 'Thanks — we will reach out within one working day.' });
   } catch (err: any) {
     console.error('[growth-inquiry] createInquiry failed', err);
-    return res.status(500).json({ ok: false, error: 'Submission failed — please try again.' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(500).send(JSON.stringify({ ok: false, error: 'Submission failed — please try again.' }));
+  }
+  } catch (err: any) {
+    console.error('[growth-inquiry] unhandled', err);
+    try { res.setHeader('Content-Type', 'application/json'); } catch {}
+    if (!res.headersSent) res.status(500).send(JSON.stringify({ ok: false, error: 'Submission failed — please try again.' }));
   }
 }
