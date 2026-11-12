@@ -122,12 +122,12 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <nav className="g-svc-nav" aria-label="Jump to a service" ref={navRef}>
-        <div className="g-svc-indicator" ref={indicatorRef} aria-hidden="true" />
-        {SERVICE_NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{n.label}</a>)}
-      </nav>
-
       <div className="container-wide">
+        <nav className="g-svc-nav" aria-label="Jump to a service" ref={navRef}>
+          <div className="g-svc-indicator" ref={indicatorRef} aria-hidden="true" />
+          {SERVICE_NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{n.label}</a>)}
+        </nav>
+
         {SERVICES.map((s) => (
           <article className="g-service" id={s.id} key={s.id}>
             <div className="g-svc-head">

@@ -82,7 +82,7 @@
 .g-svc-nav {
   display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
   position: sticky; top: var(--header-h); z-index: 5;
-  margin: 0; padding: 12px max(var(--pad-x), calc(50vw - var(--container-w) / 2));
+  margin: 0 calc(50% - 50vw); padding: 12px max(var(--pad-x), calc(50vw - var(--container-w) / 2));
   background: #000;
   border-bottom: 1px solid #262626;
 }

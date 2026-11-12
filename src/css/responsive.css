@@ -29,7 +29,6 @@ html { scroll-padding-top: 88px; }
 /* ============ <= 980px ============ */
 @media (max-width: 980px) {
   .header-in { display: flex; justify-content: space-between; align-items: center; height:64px; }
-  .g-svc-nav { top: 64px; }
   .nav,
   .header-actions { display: none; }
   .menu-btn {
