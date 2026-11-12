@@ -5,23 +5,82 @@ import { SERVICES, SERVICE_NAV } from "../services-data";
 const BADGE: Record<string, string> = { available: "Available", proposed: "Proposed — on enquiry", one_time: "One-time + care plan" };
 
 export default function ServicesPage() {
-  // Scroll-spy: highlight the category pill whose section is in view.
   useEffect(() => {
     const links = Array.from(document.querySelectorAll<HTMLAnchorElement>(".g-svc-nav a"));
     const sections = links
       .map((a) => document.getElementById(a.getAttribute("href")?.slice(1) ?? ""))
       .filter(Boolean) as HTMLElement[];
-    if (!sections.length || !("IntersectionObserver" in window)) return;
-    const setActive = (id: string) =>
+    if (!sections.length) return;
+
+    const headerOffset = 72; // navbar height
+    const tabbarOffset = 64; // sticky service nav height
+    const topThreshold = headerOffset + tabbarOffset;
+
+    const setActive = (id: string) => {
       links.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === `#${id}`));
+      // Keep active tab visible horizontally on mobile
+      const activeLink = links.find((a) => a.getAttribute("href") === `#${id}`);
+      activeLink?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    };
+
+    // Smooth scroll on tab click
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest("a");
+      if (!a) return;
+      const href = a.getAttribute("href");
+      if (!href || !href.startsWith("#")) return;
+      e.preventDefault();
+      const target = document.getElementById(href.slice(1));
+      if (!target) return;
+      const y = target.getBoundingClientRect().top + window.scrollY - (topThreshold + 8);
+      window.scrollTo({ top: y, behavior: "smooth" });
+      setActive(href.slice(1));
+    };
+    const nav = document.querySelector<HTMLElement>(".g-svc-nav");
+    nav?.addEventListener("click", onClick);
+
+    // IntersectionObserver scroll-spy
+    let currentId = sections[0].id;
+    const visible = new Map<string, number>();
     const io = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
+        for (const e of entries) {
+          if (e.isIntersecting) visible.set(e.target.id, e.intersectionRatio);
+          else visible.delete(e.target.id);
+        }
+        // Pick the topmost visible section
+        let best: string | null = null;
+        let bestTop = Infinity;
+        for (const id of visible.keys()) {
+          const el = document.getElementById(id);
+          if (!el) continue;
+          const top = el.getBoundingClientRect().top;
+          if (top < bestTop) { bestTop = top; best = id; }
+        }
+        if (best && best !== currentId) { currentId = best; setActive(best); }
+        // Fallback: if nothing visible, use closest section above threshold
+        if (!best) {
+          let closest: string | null = null;
+          let closestDist = Infinity;
+          for (const s of sections) {
+            const top = s.getBoundingClientRect().top - topThreshold;
+            const dist = Math.abs(top);
+            if (dist < closestDist) { closestDist = dist; closest = s.id; }
+          }
+          if (closest && closest !== currentId) { currentId = closest; setActive(closest); }
+        }
       },
-      { rootMargin: "-30% 0px -60% 0px" },
+      { rootMargin: `-${topThreshold}px 0px -40% 0px`, threshold: [0, 0.25, 0.5] },
     );
     sections.forEach((s) => io.observe(s));
-    return () => io.disconnect();
+
+    // Initial active
+    setActive(sections[0].id);
+
+    return () => {
+      io.disconnect();
+      nav?.removeEventListener("click", onClick);
+    };
   }, []);
 
   return (
