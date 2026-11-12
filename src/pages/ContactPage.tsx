@@ -164,9 +164,11 @@ export default function ContactPage() {
             </div>
 
             <div className={inputCls}><label htmlFor="objective">Main business objective</label>
-              <select id="objective" name="objective" defaultValue="">
-                <option value="">Select…</option>{OBJECTIVES.map((o) => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <div className="select-wrapper">
+                <select id="objective" name="objective" defaultValue="">
+                  <option value="">Select…</option>{OBJECTIVES.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
             </div>
             <div className={inputCls}><label htmlFor="details">Anything else we should know? <small>(current situation, timeline, past attempts…)</small></label>
               <textarea id="details" name="details" rows={4} maxLength={4000} placeholder="e.g. We're a 6-month-old dental clinic in Adyar. Boosted posts brought walk-ins but no tracking…" />
