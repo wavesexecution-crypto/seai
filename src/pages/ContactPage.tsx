@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import SiteChrome from "@/components/site/SiteChrome";
 import CalComScheduler from "@/components/ui/calcom";
+import CustomSelect from "@/components/ui/select";
 
 const isLocal = /(^|\.)localhost$|^127\.0\.0\.1$/.test(window.location.hostname);
 const API = isLocal ? "http://localhost:3000/api/growth/inquiry" : "https://dash.seai.store/api/growth/inquiry";
@@ -127,12 +128,7 @@ export default function ContactPage() {
             </div>
             <div className="row2">
               <div className={inputCls}><label htmlFor="industry">Industry</label>
-                <div className="select-wrapper">
-                  <select id="industry" name="industry" defaultValue={presetIndustry}>
-                    <option value="">Select…</option>
-                    {INDUSTRIES.map((i) => <option key={i} value={i}>{i}</option>)}
-                  </select>
-                </div>
+                <CustomSelect id="industry" name="industry" defaultValue={presetIndustry} options={INDUSTRIES.map((i) => ({ value: i, label: i }))} />
               </div>
               <div className={inputCls}><label htmlFor="website">Website <small>(if any)</small></label><input id="website" name="website" type="text" maxLength={300} placeholder="https://" inputMode="url" /></div>
             </div>
@@ -148,27 +144,15 @@ export default function ContactPage() {
 
             <div className="row2">
               <div className={inputCls}><label htmlFor="monthlyMarketingBudget">Approx. monthly marketing budget</label>
-                <div className="select-wrapper">
-                  <select id="monthlyMarketingBudget" name="monthlyMarketingBudget" defaultValue="">
-                    <option value="">Select…</option>{BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </div>
+                <CustomSelect id="monthlyMarketingBudget" name="monthlyMarketingBudget" defaultValue="" options={BUDGETS.map((b) => ({ value: b, label: b }))} />
               </div>
               <div className={inputCls}><label htmlFor="advertisingBudget">Approx. advertising budget <small>(paid to platforms)</small></label>
-                <div className="select-wrapper">
-                  <select id="advertisingBudget" name="advertisingBudget" defaultValue="">
-                    <option value="">Select…</option>{AD_BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </div>
+                <CustomSelect id="advertisingBudget" name="advertisingBudget" defaultValue="" options={AD_BUDGETS.map((b) => ({ value: b, label: b }))} />
               </div>
             </div>
 
             <div className={inputCls}><label htmlFor="objective">Main business objective</label>
-              <div className="select-wrapper">
-                <select id="objective" name="objective" defaultValue="">
-                  <option value="">Select…</option>{OBJECTIVES.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
+              <CustomSelect id="objective" name="objective" defaultValue="" options={OBJECTIVES.map((o) => ({ value: o, label: o }))} />
             </div>
             <div className={inputCls}><label htmlFor="details">Anything else we should know? <small>(current situation, timeline, past attempts…)</small></label>
               <textarea id="details" name="details" rows={4} maxLength={4000} placeholder="e.g. We're a 6-month-old dental clinic in Adyar. Boosted posts brought walk-ins but no tracking…" />
