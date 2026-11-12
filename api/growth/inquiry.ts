@@ -8,7 +8,9 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
+
+import { readJsonBody, bodyErrorResponse } from '../../server/payments-core.js';
 
 // Compiled modules produced by `npm run build` (tsc server).
 import { db } from '../../dist/db/db.js';
@@ -71,18 +73,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(429).send(JSON.stringify({ ok: false, error: 'Too many submissions — please try again later.' }));
   }
-  let body: any = req.body ?? {};
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { body = {}; }
-  }
-  let parsed: any;
-  try {
-    parsed = inquirySchema.safeParse(body);
-  } catch (err: any) {
-    console.error('[growth-inquiry] schema error', err);
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    const { status, message } = bodyErrorResponse(bodyResult.error);
     res.setHeader('Content-Type', 'application/json');
-    return res.status(400).send(JSON.stringify({ ok: false, error: 'Invalid submission' }));
+    return res.status(status).send(JSON.stringify({ ok: false, error: message }));
   }
+  const parsed = inquirySchema.safeParse(bodyResult.value ?? {});
   if (!parsed.success) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(400).send(JSON.stringify({ ok: false, error: parsed.error?.errors?.[0]?.message ?? 'Invalid submission' }));
