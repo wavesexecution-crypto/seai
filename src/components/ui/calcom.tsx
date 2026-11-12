@@ -24,7 +24,7 @@ export function openCalPopup(url?: string): void {
   const w = window as any;
   const run = () => {
     try {
-      w.Cal("init", { origin: "https://cal.com" });
+      w.Cal("init", "https://app.cal.com");
       w.Cal("modal", { calLink });
     } catch { /* noop */ }
   };
@@ -72,7 +72,7 @@ export default function CalComScheduler({ url, height = 700 }: CalComSchedulerPr
     const w = window as any;
     const init = () => {
       try {
-        w.Cal("init", { origin: "https://cal.com" });
+        w.Cal("init", "https://app.cal.com");
         w.Cal("inline", { elementOrSelector: `#${calId}`, calLink });
         w.Cal("on", {
           action: "bookingSuccessful",
@@ -163,10 +163,10 @@ export function useCalBooking() {
       const s = document.createElement("script");
       s.src = CAL_EMBED;
       s.async = true;
-      s.onload = () => { try { w.Cal("init", { origin: "https://cal.com" }); register(); } catch { /* noop */ } };
+      s.onload = () => { try { w.Cal("init", "https://app.cal.com"); register(); } catch { /* noop */ } };
       document.body.appendChild(s);
     } else {
-      try { w.Cal("init", { origin: "https://cal.com" }); } catch { /* noop */ }
+      try { w.Cal("init", "https://app.cal.com"); } catch { /* noop */ }
       register();
     }
     return () => { /* noop */ };
