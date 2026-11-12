@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useCalendlyBooking } from "@/components/ui/calendly";
+import { useCalBooking } from "@/components/ui/calcom";
 
 /**
  * Shared site chrome for the repositioned SEAI marketing pages.
@@ -8,7 +8,7 @@ import { useCalendlyBooking } from "@/components/ui/calendly";
 export default function SiteChrome({ active, children }: { active?: string; children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { booked, eventTime } = useCalendlyBooking();
+  const { booked, eventTime } = useCalBooking();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);

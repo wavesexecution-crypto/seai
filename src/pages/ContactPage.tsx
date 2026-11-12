@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import SiteChrome from "@/components/site/SiteChrome";
-import CalendlyScheduler from "@/components/ui/calendly";
+import CalComScheduler from "@/components/ui/calcom";
 
 const isLocal = /(^|\.)localhost$|^127\.0\.0\.1$/.test(window.location.hostname);
 const API = isLocal ? "http://localhost:3000/api/growth/inquiry" : "https://dash.seai.store/api/growth/inquiry";
@@ -127,10 +127,12 @@ export default function ContactPage() {
             </div>
             <div className="row2">
               <div className={inputCls}><label htmlFor="industry">Industry</label>
-                <select id="industry" name="industry" defaultValue={presetIndustry}>
-                  <option value="">Select…</option>
-                  {INDUSTRIES.map((i) => <option key={i} value={i}>{i}</option>)}
-                </select>
+                <div className="select-wrapper">
+                  <select id="industry" name="industry" defaultValue={presetIndustry}>
+                    <option value="">Select…</option>
+                    {INDUSTRIES.map((i) => <option key={i} value={i}>{i}</option>)}
+                  </select>
+                </div>
               </div>
               <div className={inputCls}><label htmlFor="website">Website <small>(if any)</small></label><input id="website" name="website" type="text" maxLength={300} placeholder="https://" inputMode="url" /></div>
             </div>
@@ -146,14 +148,18 @@ export default function ContactPage() {
 
             <div className="row2">
               <div className={inputCls}><label htmlFor="monthlyMarketingBudget">Approx. monthly marketing budget</label>
-                <select id="monthlyMarketingBudget" name="monthlyMarketingBudget" defaultValue="">
-                  <option value="">Select…</option>{BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
-                </select>
+                <div className="select-wrapper">
+                  <select id="monthlyMarketingBudget" name="monthlyMarketingBudget" defaultValue="">
+                    <option value="">Select…</option>{BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
               </div>
               <div className={inputCls}><label htmlFor="advertisingBudget">Approx. advertising budget <small>(paid to platforms)</small></label>
-                <select id="advertisingBudget" name="advertisingBudget" defaultValue="">
-                  <option value="">Select…</option>{AD_BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
-                </select>
+                <div className="select-wrapper">
+                  <select id="advertisingBudget" name="advertisingBudget" defaultValue="">
+                    <option value="">Select…</option>{AD_BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -181,7 +187,7 @@ export default function ContactPage() {
           <h2 id="book-title" className="sec-title" style={{ fontSize: "clamp(28px, 4vw, 48px)" }}>Pick a time that works for you.</h2>
           <p className="sec-lede">Choose an available slot below — Calendly will send the invite and a confirmation.</p>
           <div style={{ marginTop: 24 }}>
-            <CalendlyScheduler />
+            <CalComScheduler />
           </div>
         </div>
       </section>
