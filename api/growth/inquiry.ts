@@ -111,11 +111,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-// rate limit helper (moved after to avoid hoisting issues)
-function rateLimit(ip: string): boolean {
-  const nowMs = Date.now();
-  const b = buckets.get(ip);
-  if (!b || nowMs > b.reset) { buckets.set(ip, { count: 1, reset: nowMs + WINDOW_MS }); return true; }
-  b.count += 1;
-  return b.count <= MAX_PER_WINDOW;
-}
