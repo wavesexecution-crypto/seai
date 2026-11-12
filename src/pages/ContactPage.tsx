@@ -171,7 +171,7 @@ export default function ContactPage() {
         <div className="container-wide" style={{ maxWidth: 900 }}>
           <p className="g-num">Book a meeting</p>
           <h2 id="book-title" className="sec-title" style={{ fontSize: "clamp(28px, 4vw, 48px)" }}>Pick a time that works for you.</h2>
-          <p className="sec-lede">Choose an available slot below — Calendly will send the invite and a confirmation.</p>
+          <p className="sec-lede">Choose an available slot below — Cal.com will send the invite and a confirmation.</p>
           <div style={{ marginTop: 24 }}>
             <CalComScheduler />
           </div>
