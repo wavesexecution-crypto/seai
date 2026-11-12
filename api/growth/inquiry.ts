@@ -1,10 +1,15 @@
 // @ts-nocheck
+/**
+ * POST /api/growth/inquiry
+ */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
 import { createHash } from 'node:crypto';
 
 import { db } from '../../dist/db/db.js';
 import { createInquiry } from '../../dist/growth/service.js';
+
+export const config = { api: { bodyParser: false } };
 
 const WINDOW_MS = 60 * 60 * 1000;
 const MAX_PER_WINDOW = 10;
@@ -48,50 +53,69 @@ function setCors(res: VercelResponse, origin: string | undefined) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  try {
   const origin = req.headers.origin as string | undefined;
   setCors(res, origin);
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ ok: false, error: 'Method not allowed' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(405).send(JSON.stringify({ ok: false, error: 'Method not allowed' }));
   }
   await ensureBoot();
-  const ip = String((req.headers['x-forwarded-for'] as string) ?? (req as any).socket?.remoteAddress ?? '').split(',')[0].trim();
+  const ip = String(req.headers['x-forwarded-for'] ?? (req as any).socket?.remoteAddress ?? '').split(',')[0].trim();
+  const nowMs = Date.now();
+  // simple rate limit
+  // (buckets in-memory per instance)
   if (!rateLimit(ip)) {
-    return res.status(429).json({ ok: false, error: 'Too many submissions — please try again later.' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(429).send(JSON.stringify({ ok: false, error: 'Too many submissions — please try again later.' }));
   }
-  // Read body from the stream (Vercel's req.body getter is unreliable here).
-  let body: any = {};
+
+  // Read raw body from stream (bodyParser disabled).
+  let raw = '';
   try {
     const chunks: Buffer[] = [];
     for await (const chunk of req as any) {
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
-    const text = Buffer.concat(chunks).toString('utf8');
-    if (text) body = JSON.parse(text);
+    raw = Buffer.concat(chunks).toString('utf8');
   } catch (e: any) {
-    console.error('[growth-inquiry] body read/parse failed', e?.message);
-    return res.status(400).json({ ok: false, error: 'Request body must be valid JSON' });
+    console.error('[growth-inquiry] stream read failed', e?.message);
+  }
+  let body: any = {};
+  if (raw) {
+    try { body = JSON.parse(raw); } catch {
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(400).send(JSON.stringify({ ok: false, error: 'Request body must be valid JSON' }));
+    }
   }
   const parsed = inquirySchema.safeParse(body);
   if (!parsed.success) {
-    return res.status(400).json({ ok: false, error: parsed.error?.errors?.[0]?.message ?? 'Invalid submission' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(400).send(JSON.stringify({ ok: false, error: parsed.error?.errors?.[0]?.message ?? 'Invalid submission' }));
   }
   const { _gotcha, ...input } = parsed.data;
   if (_gotcha) {
-    return res.status(200).json({ ok: true, message: 'Thanks — we will be in touch shortly.' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify({ ok: true, message: 'Thanks — we will be in touch shortly.' }));
   }
   const ipHash = createHash('sha256').update(ip || 'unknown').digest('hex').slice(0, 16);
   try {
     const result = await createInquiry(input as any, ipHash);
-    return res.status(200).json({ ok: true, id: result.id, message: 'Thanks — we will reach out within one working day.' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify({ ok: true, id: result.id, message: 'Thanks — we will reach out within one working day.' }));
   } catch (err: any) {
     console.error('[growth-inquiry] createInquiry failed', err);
-    return res.status(500).json({ ok: false, error: 'Submission failed — please try again.' });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(500).send(JSON.stringify({ ok: false, error: 'Submission failed — please try again.' }));
   }
-  } catch (err: any) {
-    console.error('[growth-inquiry] unhandled', err?.message, err?.stack);
-    if (!res.headersSent) res.status(500).json({ ok: false, error: 'Submission failed — please try again.' });
-  }
+}
+
+// rate limit helper (moved after to avoid hoisting issues)
+function rateLimit(ip: string): boolean {
+  const nowMs = Date.now();
+  const b = buckets.get(ip);
+  if (!b || nowMs > b.reset) { buckets.set(ip, { count: 1, reset: nowMs + WINDOW_MS }); return true; }
+  b.count += 1;
+  return b.count <= MAX_PER_WINDOW;
 }
