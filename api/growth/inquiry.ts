@@ -61,13 +61,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!rateLimit(ip)) {
     return res.status(429).json({ ok: false, error: 'Too many submissions — please try again later.' });
   }
-  // Access req.body inside try; Vercel's lazy getter can throw on malformed body.
+  // Read body from the stream (Vercel's req.body getter is unreliable here).
   let body: any = {};
   try {
-    body = req.body ?? {};
-    if (typeof body === 'string') body = JSON.parse(body);
+    const chunks: Buffer[] = [];
+    for await (const chunk of req as any) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const text = Buffer.concat(chunks).toString('utf8');
+    if (text) body = JSON.parse(text);
   } catch (e: any) {
-    console.error('[growth-inquiry] body parse failed', e?.message);
+    console.error('[growth-inquiry] body read/parse failed', e?.message);
     return res.status(400).json({ ok: false, error: 'Request body must be valid JSON' });
   }
   const parsed = inquirySchema.safeParse(body);
