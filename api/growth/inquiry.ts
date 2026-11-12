@@ -73,9 +73,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Content-Type', 'application/json');
     return res.status(429).send(JSON.stringify({ ok: false, error: 'Too many submissions — please try again later.' }));
   }
-  const bodyResult = await readJsonBody(req);
+  let bodyResult: { ok: boolean; value?: any; error?: string };
+  try {
+    bodyResult = await readJsonBody(req);
+  } catch (err: any) {
+    console.error('[growth-inquiry] readJsonBody threw', err);
+    // Fall back to reading the raw stream.
+    try {
+      const chunks: Buffer[] = [];
+      for await (const chunk of req as any) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      const text = Buffer.concat(chunks).toString('utf8');
+      bodyResult = text ? (() => { try { return { ok: true, value: JSON.parse(text) }; } catch { return { ok: false, error: 'invalid_json' }; } })() : { ok: false, error: 'empty_body' };
+    } catch (e: any) {
+      console.error('[growth-inquiry] stream read failed', e);
+      bodyResult = { ok: false, error: 'body_read_failed' };
+    }
+  }
   if (!bodyResult.ok) {
-    const { status, message } = bodyErrorResponse(bodyResult.error);
+    const { status, message } = bodyErrorResponse(bodyResult.error as any);
     res.setHeader('Content-Type', 'application/json');
     return res.status(status).send(JSON.stringify({ ok: false, error: message }));
   }
