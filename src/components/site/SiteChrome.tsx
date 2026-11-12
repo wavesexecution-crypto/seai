@@ -1,5 +1,4 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useCalBooking } from "@/components/ui/calcom";
 
 /**
  * Shared site chrome for the repositioned SEAI marketing pages.
@@ -8,7 +7,6 @@ import { useCalBooking } from "@/components/ui/calcom";
 export default function SiteChrome({ active, children }: { active?: string; children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { booked, eventTime } = useCalBooking();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -71,14 +69,6 @@ export default function SiteChrome({ active, children }: { active?: string; chil
         ))}
       </nav>
 
-      {booked && (
-        <div className="container-wide" style={{ marginTop: 16 }}>
-          <div className="g-form g-success" role="status" aria-live="polite" style={{ padding: 20 }}>
-            <h3 style={{ fontSize: 20, margin: 0 }}>Your meeting has been booked.</h3>
-            {eventTime && <p className="g-fineprint" style={{ marginTop: 6 }}>Confirmed for {eventTime}.</p>}
-          </div>
-        </div>
-      )}
       <main id="main">{children}</main>
 
       <footer className="site-footer">

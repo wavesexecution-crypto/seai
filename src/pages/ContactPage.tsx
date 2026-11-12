@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import SiteChrome from "@/components/site/SiteChrome";
 import CustomSelect from "@/components/ui/select";
-import { openCalPopup } from "@/components/ui/calcom";
 
 const isLocal = /(^|\.)localhost$|^127\.0\.0\.1$/.test(window.location.hostname);
 const API = isLocal ? "http://localhost:3000/api/growth/inquiry" : "https://dash.seai.store/api/growth/inquiry";
@@ -115,11 +114,7 @@ export default function ContactPage() {
               <li>Prefer email? <a href="mailto:workwithseai@gmail.com">workwithseai@gmail.com</a></li>
             </ul>
             <div style={{ marginTop: 22 }}>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => {
-                const name = (document.getElementById("name") as HTMLInputElement | null)?.value?.trim();
-                const email = (document.getElementById("email") as HTMLInputElement | null)?.value?.trim();
-                openCalPopup(undefined, { name: name || undefined, email: email || undefined });
-              }}>Book a discovery call →</button>
+              <a className="btn btn-secondary btn-sm" href="https://cal.com/buildwithseai/30min" target="_self" rel="noopener noreferrer">Book a discovery call →</a>
             </div>
           </aside>
 
