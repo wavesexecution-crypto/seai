@@ -47,8 +47,11 @@ let healthBaseUrl: string;
 beforeAll(async () => {
   const { db } = await import('../src/db/db.js');
   await db.init();
-  const { createUser } = await import('../src/auth/service.js');
+  const { createUser, findUserByEmail } = await import('../src/auth/service.js');
   try { await createUser('Demo Operator', 'demo@example.com', 'Test-Password-123'); } catch { /* exists */ }
+  // Sign-in is restricted to owner accounts only; make the test user an owner.
+  const user = await findUserByEmail('demo@example.com');
+  if (user) await db.update('users', user.id, { role: 'owner' });
 
   healthServer = createServer(makeSecurityHeadersApp());
   await new Promise<void>((resolve) => healthServer.listen(0, resolve));
