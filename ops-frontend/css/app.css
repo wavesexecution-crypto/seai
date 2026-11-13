@@ -130,6 +130,8 @@ th { background: var(--panel); font-size: 11px; text-transform: uppercase; lette
 .badge-onboarding { background: #3a3a5a; color: #c5c5ff }
 .badge-paused { background: #4a3a1a; color: #e6d4ad }
 .badge-cancelled { background: #4a1a1a; color: #e6adad }
+.ok { color: #1a4a2d; font-size: 13px; margin: 8px 0 }
+.err { color: #4a1a1a; font-size: 13px; margin: 8px 0 }
 .badge-open { background: #3a3a5a; color: #c5c5ff }
 .badge-in_progress { background: #3a5a3a; color: #b8e986 }
 .badge-resolved { background: #1a4a2d; color: #8ee6ad }

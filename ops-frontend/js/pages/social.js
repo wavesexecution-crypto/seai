@@ -7,6 +7,19 @@ export const subtitle = 'Connect Meta, WhatsApp, Google, and other platform acco
 let integrations = [];
 
 export async function render(container) {
+  // Show transient result from OAuth callback redirect
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('google') === 'connected') {
+    params.delete('google');
+    window.history.replaceState({}, '', window.location.pathname);
+    showMessage('Google account connected successfully.', 'ok');
+  } else if (params.get('error')) {
+    const error = params.get('error');
+    params.delete('error');
+    window.history.replaceState({}, '', window.location.pathname);
+    showMessage('Google connection failed: ' + escapeHtml(error), 'err');
+  }
+
   container.innerHTML = `
     <div class="panel mt-16">
       <div style="overflow-x:auto">
@@ -15,15 +28,39 @@ export async function render(container) {
             <tr><th>Platform</th><th>Account</th><th>Account ID</th><th>Health</th><th>Active</th><th>Workspace</th><th style="text-align:right">Actions</th></tr>
           </thead>
           <tbody id="integrations-table-body"></tbody>
-        </table>
+        </div>
       </div>
     </div>
     <div class="mt-16">
       <p class="muted">Tokens are encrypted at rest. Connect accounts via the settings console or OAuth flow.</p>
+      <button class="btn btn-primary" id="connect-google">Connect Google Account</button>
     </div>
+    <div id="oauth-message" class="mt-8"></div>
   `;
 
+  document.getElementById('connect-google').addEventListener('click', connectGoogle);
+
   await loadIntegrations();
+}
+
+function showMessage(text, kind) {
+  const el = document.getElementById('oauth-message');
+  if (!el) return;
+  el.innerHTML = `<p class="${kind === 'ok' ? 'ok' : 'err'}">${text}</p>`;
+  setTimeout(() => { el.innerHTML = ''; }, 5000);
+}
+
+async function connectGoogle() {
+  try {
+    const data = await api.get('/api/ops/social/oauth/google/url');
+    if (data.auth_url) {
+      window.location.href = data.auth_url;
+    } else {
+      throw new Error(data.error || 'No auth URL returned');
+    }
+  } catch (err) {
+    alert('Failed to start Google connection: ' + err.message);
+  }
 }
 
 async function loadIntegrations() {

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { randomUUID, randomBytes, scryptSync, createCipheriv } from 'node:crypto';
 import { db } from '../db/db.js';
 import { now } from '../growth/service.js';
+import { requireAuth } from '../auth/middleware.js';
 
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LEN = 32;
@@ -52,6 +53,9 @@ setInterval(() => {
 }, STATE_TTL_MS);
 
 export const socialOAuthRouter = Router();
+
+// All social-oauth routes require an authenticated staff session.
+socialOAuthRouter.use(requireAuth);
 
 const META_SCOPE = 'instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_read_engagement,pages_manage_posts,pages_manage_ads,pages_show_ads,ads_read,ads_management,business_management,pages_show_lead_forms,whatsapp_business_messaging';
 const GOOGLE_SCOPE = 'https://www.googleapis.com/auth/adwords https://www.googleapis.com/auth/analytics.readonly';
@@ -258,24 +262,19 @@ socialOAuthRouter.get('/google/url', async (_req: Request, res: Response) => {
   res.json({ ok: true, auth_url: authUrl });
 });
 
-socialOAuthRouter.post('/google/callback', async (req: Request, res: Response) => {
-  const parsed = metaOAuthSchema.safeParse(req.body);
-  if (!parsed.success) { res.status(400).json({ ok: false, error: parsed.error.errors[0]?.message ?? 'Invalid request' }); return; }
-  const { code, redirect_uri, state } = parsed.data;
-
-  // CSRF: validate state nonce
-  const stateEntry = consumeState(state);
-  if (!stateEntry || stateEntry.redirect_uri !== redirect_uri) {
-    res.status(400).json({ ok: false, error: 'Invalid or expired OAuth state' });
-    return;
-  }
-
+// Shared Google OAuth callback logic: exchange authorization code for tokens
+// and store them encrypted in the database. Used by both GET (browser redirect)
+// and POST (programmatic) callback handlers.
+async function handleGoogleCallback(
+  code: string,
+  redirect_uri: string,
+  userId: string
+): Promise<{ ok: true; id: string; account_id: string; account_name: string } | { ok: false; error: string }> {
   const clientId = process.env.GOOGLE_CLIENT_ID || '';
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
 
   if (!clientId || !clientSecret) {
-    res.status(500).json({ ok: false, error: 'Google OAuth credentials not configured' });
-    return;
+    return { ok: false, error: 'Google OAuth credentials not configured' };
   }
 
   try {
@@ -283,8 +282,7 @@ socialOAuthRouter.post('/google/callback', async (req: Request, res: Response) =
     const tokenData = await tokenResp.json();
 
     if (!tokenResp.ok || !tokenData.access_token) {
-      res.status(400).json({ ok: false, error: tokenData.error?.description || 'Failed to exchange code for token' });
-      return;
+      return { ok: false, error: tokenData.error?.description || 'Failed to exchange code for token' };
     }
 
     const accessToken = tokenData.access_token;
@@ -308,14 +306,54 @@ socialOAuthRouter.post('/google/callback', async (req: Request, res: Response) =
       last_synced_at: now(),
       workspace_type: 'seai',
       workspace_id: null,
-      created_by: req.user!.id,
+      created_by: userId,
       created_at: now(),
       updated_at: now(),
     });
 
-    res.json({ ok: true, id, account_id: 'google_user', account_name: 'Google Ads Account' });
+    return { ok: true, id, account_id: 'google_user', account_name: 'Google Ads Account' };
   } catch (err: any) {
-    res.status(500).json({ ok: false, error: String(err?.message ?? err).slice(0, 300) });
+    return { ok: false, error: String(err?.message ?? err).slice(0, 300) };
+  }
+}
+
+socialOAuthRouter.get('/google/callback', async (req: Request, res: Response) => {
+  const { code, state } = req.query;
+  if (!code || !state) {
+    res.redirect('/social?error=missing_params');
+    return;
+  }
+
+  const stateEntry = consumeState(String(state));
+  if (!stateEntry) {
+    res.redirect('/social?error=invalid_state');
+    return;
+  }
+
+  const result = await handleGoogleCallback(String(code), stateEntry.redirect_uri, req.user!.id);
+  if (result.ok) {
+    res.redirect('/social?google=connected');
+  } else {
+    res.redirect('/social?error=' + encodeURIComponent(result.error));
+  }
+});
+
+socialOAuthRouter.post('/google/callback', async (req: Request, res: Response) => {
+  const parsed = metaOAuthSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ ok: false, error: parsed.error.errors[0]?.message ?? 'Invalid request' }); return; }
+  const { code, redirect_uri, state } = parsed.data;
+
+  const stateEntry = consumeState(state);
+  if (!stateEntry || stateEntry.redirect_uri !== redirect_uri) {
+    res.status(400).json({ ok: false, error: 'Invalid or expired OAuth state' });
+    return;
+  }
+
+  const result = await handleGoogleCallback(code, redirect_uri, req.user!.id);
+  if (result.ok) {
+    res.json({ ok: true, id: result.id, account_id: result.account_id, account_name: result.account_name });
+  } else {
+    res.status(400).json({ ok: false, error: result.error });
   }
 });
 
