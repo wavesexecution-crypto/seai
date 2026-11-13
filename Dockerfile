@@ -19,7 +19,7 @@ WORKDIR /app
 COPY . .
 ENV DATABASE_URL=dummy_during_build
 ENV SEAI_ENCRYPTION_KEY=dummy_during_build
-RUN npx tsc -p tsconfig.json
+RUN npx tsc -p tsconfig.server.json
 RUN node scripts/copy-static.cjs
 
 # --- Run ---
