@@ -537,8 +537,14 @@ app.use('/api/ops', opsRouter);
 // Serve the ops frontend static assets (ops.seai.store SPA).
 app.use('/css', express.static(join(here, '..', 'ops-frontend', 'css')));
 app.use('/js', express.static(join(here, '..', 'ops-frontend', 'js')));
-app.use('/logo.svg', (_req, res) => res.sendFile(join(here, '..', 'public', 'logo.svg')));
-app.use('/favicon.svg', (_req, res) => res.sendFile(join(here, '..', 'public', 'favicon.svg')));
+function publicAsset(filename: string): string {
+  for (const p of [join(here, 'public', filename), join(here, '..', 'public', filename)]) {
+    try { accessSync(p, constants.R_OK); return p; } catch { /* try next */ }
+  }
+  return join(here, '..', 'public', filename);
+}
+app.use('/logo.svg', (_req, res) => res.sendFile(publicAsset('logo.svg')));
+app.use('/favicon.svg', (_req, res) => res.sendFile(publicAsset('favicon.svg')));
 
 // Ops SPA — client-side routing; all non-API paths serve index.html.
 app.get('/ops', async (_req, res) => {
@@ -571,6 +577,7 @@ for (const p of ['/privacy', '/terms']) {
 // Customer dashboard root goes through the same auth gate as /overview.
 // Registered before static so "/" never serves the shell unauthenticated.
 app.get('/', requireAuthRedirect, (_req, res) => { res.redirect('/overview'); });
+app.use(express.static(join(here, 'public')));
 app.use(express.static(join(here, '..', 'public')));
 
 // VX page routes — every route serves the app shell; the client router renders the view.
