@@ -29,6 +29,38 @@ function resetDedupeHash(token: string): string {
   return createHash('sha256').update(token).digest('hex').slice(0, 32);
 }
 
+// Simple in-memory rate limiter for auth endpoints (5 attempts per 15 minutes per IP+email)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+function rateLimitKey(ip: string, identifier: string): string {
+  return `${ip}:${identifier}`;
+}
+
+function checkRateLimit(ip: string, identifier: string): { allowed: boolean; retryAfter?: number } {
+  const key = rateLimitKey(ip, identifier);
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+  entry.count++;
+  return { allowed: true };
+}
+
+function cleanupRateLimitMap(): void {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap.entries()) {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  }
+}
+setInterval(cleanupRateLimitMap, 60 * 60 * 1000);
+
 export const authRouter = Router();
 
 const SESSION_COOKIE = 'seai_session';
@@ -83,6 +115,7 @@ function publicUser(user: User) {
 }
 
 // POST /api/auth/sign-in
+// Private control centre — only the authorised owner account may sign in.
 authRouter.post('/sign-in', async (req: Request, res: Response) => {
   const parsed = signInSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -90,9 +123,20 @@ authRouter.post('/sign-in', async (req: Request, res: Response) => {
     return;
   }
   const { email, password } = parsed.data;
+  const ip = String(req.ip ?? req.socket?.remoteAddress ?? 'unknown');
+  const result = checkRateLimit(ip, `signin:${email}`);
+  if (!result.allowed) {
+    res.status(429).json({ ok: false, error: 'Too many sign-in attempts. Try again later.', retry_after: result.retryAfter });
+    return;
+  }
   const user = await validateCredentials(email, password);
   if (!user) {
     res.status(401).json({ ok: false, error: 'Invalid email or password' });
+    return;
+  }
+  // Only the owner account can access the private control centre.
+  if (user.role !== 'owner') {
+    res.status(403).json({ ok: false, error: 'Access restricted to the authorised owner account.' });
     return;
   }
   const token = await createSession(user.id);
@@ -127,7 +171,13 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
     res.status(400).json({ ok: false, error: parsed.error.errors[0].message });
     return;
   }
+  const ip = String(req.ip ?? req.socket?.remoteAddress ?? 'unknown');
   const { email } = parsed.data;
+  const rateResult = checkRateLimit(ip, `forgot:${email}`);
+  if (!rateResult.allowed) {
+    res.status(429).json({ ok: false, error: 'Too many reset requests. Try again later.', retry_after: rateResult.retryAfter });
+    return;
+  }
   const user = await findUserByEmail(email);
   // Generic response in every branch: never reveal whether the account exists.
   // The reset token is only ever delivered inside the email to the owner.
@@ -159,6 +209,13 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
 
 // POST /api/auth/reset-password
 authRouter.post('/reset-password', async (req: Request, res: Response) => {
+  const ip = String(req.ip ?? req.socket?.remoteAddress ?? 'unknown');
+  const resetToken = String(req.body?.token ?? '');
+  const rateResult = checkRateLimit(ip, `reset:${resetToken}`);
+  if (!rateResult.allowed) {
+    res.status(429).json({ ok: false, error: 'Too many reset attempts. Try again later.', retry_after: rateResult.retryAfter });
+    return;
+  }
   const parsed = z.object({
     token: z.string().min(1),
     password: z.string().min(8, 'Password must be at least 8 characters'),

@@ -5,9 +5,10 @@ import cookieParser from 'cookie-parser';
 import { join, dirname } from 'node:path';
 import { accessSync, constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHmac, timingSafeEqual } from 'node:crypto';
 import { config, configuredKeyCount } from './config.js';
 import { db } from './db/db.js';
+import { now } from './growth/service.js';
 import { authRouter } from './auth/routes.js';
 import { requireAuthRedirect, requireAuth, requireStaffOrCron, staffOnly, requireStaffRedirect } from './auth/middleware.js';
 import { purgeDeadPasswordResets } from './auth/service.js';
@@ -32,6 +33,7 @@ import { getBlueprint } from './blueprint/compiler.js';
 import { bootstrapVault, vaultInfo } from './brain/bootstrap.js';
 import { listNotes, readNote } from './brain/vault.js';
 import { validateImport, type SourcedRow } from './sourcing/providers.js';
+import { verifyWebhookSignature } from './payments/razorpay.js';
 import { executeTool } from './agent/executor.js';
 import { assertNoSecretsInResponse } from './security/validate.js';
 import { embedRouter } from './routes/embed.js';
@@ -41,6 +43,7 @@ import { staffRouter } from './growth/staff.js';
 import { storageRouter } from './storage/router.js';
 import { intakeRouter } from './intake/routes.js';
 import { mailEventsRouter } from './mail/events.js';
+import { opsRouter } from './ops/index.js';
 import { drainPendingMail } from './mail/pending.js';
 import { reapStaleSends, describeReapResult } from './mail/reaper.js';
 
@@ -63,6 +66,231 @@ function ensureBoot(): Promise<void> {
   return boot;
 }
 app.use((_req, _res, next) => { ensureBoot().then(() => next()).catch(next); });
+
+// POST /webhooks/razorpay — Razorpay webhook with HMAC verification and idempotency
+// Updates invoice status to 'paid' only on verified payment.captured events.
+// Mounted before /webhooks/:topic to avoid being captured by the Shopify route.
+app.post('/webhooks/razorpay', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
+  const signature = String(req.header('X-Razorpay-Signature') ?? '');
+  const rawBodyBuf = req.body as Buffer | undefined;
+  if (!signature || !rawBodyBuf) {
+    res.status(400).json({ ok: false, error: 'Missing signature or body' });
+    return;
+  }
+  const rawBody = rawBodyBuf.toString('utf8');
+  if (!verifyWebhookSignature(rawBody, signature)) {
+    res.status(401).json({ ok: false, error: 'Invalid signature' });
+    return;
+  }
+  let event: any = null;
+  try { event = JSON.parse(rawBody); } catch { res.status(400).json({ ok: false, error: 'Invalid JSON' }); return; }
+  const eventId = String(event?.id ?? '');
+  if (!eventId) { res.status(400).json({ ok: false, error: 'Missing event id' }); return; }
+
+  // Idempotency: skip already-processed events
+  const existing = await db.list('razorpay_webhook_events', { event_id: eventId }, 1);
+  if (existing[0]) {
+    res.json({ ok: true, eventId, duplicate: true });
+    return;
+  }
+
+  const webhookEventId = randomUUID();
+
+  await db.insert('razorpay_webhook_events', {
+    id: webhookEventId,
+    event_id: eventId,
+    event_type: String(event?.event ?? ''),
+    payload: rawBody,
+    processed: false,
+    created_at: now(),
+  });
+
+  try {
+    const entity = event?.payload?.payment?.entity ?? {};
+    const paymentId = String(entity?.id ?? '');
+    const orderId = String(entity?.order_id ?? '');
+    const eventType = String(event?.event ?? '');
+
+    if (eventType === 'payment.captured' && paymentId && orderId) {
+      const invoice = (await db.list('invoices', { razorpay_order_id: orderId }, 1))[0];
+      if (invoice) {
+        if (invoice.status !== 'paid') {
+          await db.update('invoices', invoice.id, {
+            status: 'paid',
+            paid_at: now(),
+            razorpay_payment_id: paymentId,
+          });
+        }
+        await db.update('razorpay_webhook_events', webhookEventId, {
+          processed: true,
+          processed_at: now(),
+        });
+        res.json({ ok: true, eventId, invoice_id: invoice.id, status: 'paid' });
+        return;
+      }
+    }
+
+    if (eventType === 'payment.failed' && orderId) {
+      const invoice = (await db.list('invoices', { razorpay_order_id: orderId }, 1))[0];
+      if (invoice && invoice.status !== 'cancelled') {
+        await db.update('invoices', invoice.id, { status: 'cancelled' });
+      }
+      await db.update('razorpay_webhook_events', webhookEventId, {
+        processed: true,
+        processed_at: now(),
+      });
+      res.json({ ok: true, eventId, invoice_id: invoice?.id ?? null, status: 'failed' });
+      return;
+    }
+
+    await db.update('razorpay_webhook_events', webhookEventId, {
+      processed: true,
+      processed_at: now(),
+    });
+    res.json({ ok: true, eventId, event_type: eventType });
+  } catch (err: any) {
+    await db.update('razorpay_webhook_events', webhookEventId, {
+      processed: true,
+      processed_at: now(),
+      error: String(err?.message ?? err).slice(0, 500),
+    });
+    res.status(500).json({ ok: false, error: String(err?.message ?? err).slice(0, 300) });
+  }
+});
+
+// POST /webhooks/whatsapp — WhatsApp inbound webhook with HMAC verification and idempotency
+// Meta WhatsApp signs with X-Hub-Signature-256 using the app secret.
+app.post('/webhooks/whatsapp', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
+  const signature = String(req.header('X-Hub-Signature-256') ?? '');
+  const rawBodyBuf = req.body as Buffer | undefined;
+  if (!signature || !rawBodyBuf) {
+    res.status(400).json({ ok: false, error: 'Missing signature or body' });
+    return;
+  }
+  const rawBody = rawBodyBuf.toString('utf8');
+  const secret = (config.whatsappWebhookSecret ?? '').trim();
+  if (!secret) {
+    res.status(503).json({ ok: false, error: 'WhatsApp webhook secret not configured' });
+    return;
+  }
+  try {
+    const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
+    const a = Buffer.from(expected, 'utf8');
+    const b = Buffer.from(signature.startsWith('sha256=') ? signature.slice(7) : signature, 'utf8');
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      res.status(401).json({ ok: false, error: 'Invalid signature' });
+      return;
+    }
+  } catch {
+    res.status(401).json({ ok: false, error: 'Signature verification failed' });
+    return;
+  }
+  let event: any = null;
+  try { event = JSON.parse(rawBody); } catch { res.status(400).json({ ok: false, error: 'Invalid JSON' }); return; }
+  const eventId = String(event?.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id ?? '');
+  if (!eventId) {
+    res.status(400).json({ ok: false, error: 'Missing event id' });
+    return;
+  }
+
+  // Idempotency: skip already-processed events
+  const existing = await db.list('whatsapp_webhook_events', { event_id: eventId }, 1);
+  if (existing[0]) {
+    res.json({ ok: true, eventId, duplicate: true });
+    return;
+  }
+
+  const webhookEventId = randomUUID();
+
+  await db.insert('whatsapp_webhook_events', {
+    id: webhookEventId,
+    event_id: eventId,
+    event_type: 'messages',
+    payload: rawBody,
+    processed: false,
+    created_at: now(),
+  });
+
+  try {
+    const entry = event?.entry?.[0];
+    const changes = entry?.changes?.[0]?.value ?? {};
+    const messages = changes.messages ?? [];
+    const statuses = changes.statuses ?? [];
+    const phoneNumberId = changes.metadata?.phone_number_id ?? '';
+
+    // Find the WhatsApp integration by phone number id
+    const integration = (await db.list('social_integrations', { platform: 'whatsapp', account_id: phoneNumberId }, 1))[0];
+
+    // Process inbound messages
+    for (const msg of messages) {
+      const waMsgId = String(msg.id ?? '');
+      const from = String(msg.from ?? '');
+      const timestamp = String(msg.timestamp ?? '');
+      let body = '';
+      let type = String(msg.type ?? 'text');
+
+      if (msg.text) body = String(msg.text.body ?? '');
+      if (msg.interactive) {
+        type = 'interactive';
+        body = msg.interactive.button_reply?.payload ?? msg.interactive.list_reply?.payload ?? JSON.stringify(msg.interactive);
+      }
+
+      await db.insert('whatsapp_messages', {
+        id: randomUUID(),
+        integration_id: integration?.id ?? null,
+        wa_message_id: waMsgId,
+        conversation_id: from,
+        direction: 'inbound',
+        type,
+        body,
+        status: 'received',
+        timestamp,
+        raw_payload: JSON.stringify(msg),
+        created_at: now(),
+      });
+    }
+
+    // Process status updates
+    for (const st of statuses) {
+      const waMsgId = String(st.id ?? '');
+      const status = String(st.status ?? '');
+      const recipientId = String(st.recipient_id ?? '');
+      const timestamp = String(st.timestamp ?? '');
+
+      const existingMsg = await db.list('whatsapp_messages', { wa_message_id: waMsgId }, 1);
+      if (existingMsg[0]) {
+        await db.update('whatsapp_messages', existingMsg[0].id, { status });
+      } else {
+        await db.insert('whatsapp_messages', {
+          id: randomUUID(),
+          integration_id: integration?.id ?? null,
+          wa_message_id: waMsgId,
+          conversation_id: recipientId,
+          direction: 'outbound',
+          type: 'text',
+          body: '',
+          status,
+          timestamp,
+          raw_payload: JSON.stringify(st),
+          created_at: now(),
+        });
+      }
+    }
+
+    await db.update('whatsapp_webhook_events', webhookEventId, {
+      processed: true,
+      processed_at: now(),
+    });
+    res.json({ ok: true, eventId, messages: messages.length, statuses: statuses.length });
+  } catch (err: any) {
+    await db.update('whatsapp_webhook_events', webhookEventId, {
+      processed: true,
+      processed_at: now(),
+      error: String(err?.message ?? err).slice(0, 500),
+    });
+    res.status(500).json({ ok: false, error: String(err?.message ?? err).slice(0, 300) });
+  }
+});
 
 // Webhooks need raw body for HMAC — mount before json()
 app.post('/webhooks/:topic', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
@@ -98,7 +326,17 @@ app.post('/webhooks/:topic', express.raw({ type: '*/*', limit: '1mb' }), async (
   res.status(202).json({ ok: true, eventId: id });
 });
 
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowed = (process.env.CORS_ALLOWED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    if (!origin || !allowed.length || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+}));
 app.use(morgan('tiny'));
 // First-party security headers. Inline to avoid a CJS-typings dependency entirely.
 // CSP frame-ancestors replaces X-Frame-Options (which would block Shopify embedding).
@@ -292,6 +530,20 @@ app.use('/api/staff', staffRouter);
 // above; routes re-enforce per-customer scoping. See storage/router.ts and
 // seai.storage docs/INTEGRATION_CONTRACT_FINAL.md.
 app.use('/api/storage', storageRouter);
+
+// Internal business operations (ops.seai.store) — staff-only via per-route guards.
+app.use('/api/ops', opsRouter);
+
+// Serve the ops frontend static assets (ops.seai.store SPA).
+app.use('/css', express.static(join(here, '..', 'ops-frontend', 'css')));
+app.use('/js', express.static(join(here, '..', 'ops-frontend', 'js')));
+app.use('/logo.svg', (_req, res) => res.sendFile(join(here, '..', 'public', 'logo.svg')));
+app.use('/favicon.svg', (_req, res) => res.sendFile(join(here, '..', 'public', 'favicon.svg')));
+
+// Ops SPA — client-side routing; all non-API paths serve index.html.
+app.get('/ops', async (_req, res) => {
+  res.sendFile(join(here, '..', 'ops-frontend', 'index.html'));
+});
 
 // Staff command center — staff-only page (customers are redirected to /overview).
 app.get('/staff', requireStaffRedirect, (_req, res) => {

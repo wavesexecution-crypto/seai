@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SEAI Business Ops</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+<div id="app">
+  <!-- Auth gate -->
+  <div id="auth-gate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <img src="/logo.svg" alt="SEAI" width="32" height="32" />
+        <div>
+          <div style="font-weight:700;letter-spacing:.14em">SEAI</div>
+          <div style="font-size:11px;color:#666;letter-spacing:.06em;text-transform:uppercase">Business Operations</div>
+        </div>
+      </div>
+      <h2 style="font-size:16px;margin:24px 0 8px">Sign in</h2>
+      <form id="sign-in-form" style="display:grid;gap:12px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#666">Email</label>
+        <input type="email" name="email" required placeholder="you@seai.store" style="width:100;padding:10px 12px;border:1px solid #333;border-radius:8px;background:#0a0a0a;color:#fff;font:inherit;font-size:13px" />
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#666">Password</label>
+        <input type="password" name="password" required placeholder="••••••••" style="width:100;padding:10px 12px;border:1px solid #333;border-radius:8px;background:#0a0a0a;color:#fff;font:inherit;font-size:13px" />
+        <button type="submit" class="btn-primary">Sign in</button>
+        <p id="auth-error" style="color:#ff6b6b;font-size:12px;display:none;margin-top:8px"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- App shell (hidden until authenticated) -->
+  <div id="app-shell" class="app-shell" style="display:none">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/logo.svg" alt="SEAI" width="28" height="28" />
+        <div>
+          <div style="font-weight:700;letter-spacing:.14em;font-size:14px">SEAI</div>
+          <div style="font-size:10px;color:#666;letter-spacing:.06em;text-transform:uppercase">Business Ops</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item" data-page="overview">Overview</button>
+        <button class="nav-item" data-page="crm">CRM &amp; Leads</button>
+        <button class="nav-item" data-page="social">Social Media</button>
+        <button class="nav-item" data-page="advertising">Advertising</button>
+        <button class="nav-item" data-page="content">Content</button>
+        <button class="nav-item" data-page="communications">Communications</button>
+        <button class="nav-item" data-page="clients">Clients</button>
+        <button class="nav-item" data-page="projects">Projects</button>
+        <button class="nav-item" data-page="finance">Finance</button>
+        <button class="nav-item" data-page="automations">Automations</button>
+        <button class="nav-item" data-page="reports">Reports</button>
+        <button class="nav-item" data-page="automations">Automations</button>
+        <button class="nav-item" data-page="settings">Settings</button>
+      </nav>
+      <div class="sidefoot">
+        <div id="user-chip" style="font-size:11px;color:#666;margin-bottom:8px"></div>
+        <button id="sign-out-btn" class="ghost-btn">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <h1 id="page-title">Overview</h1>
+        <p id="page-sub" class="crumb"></p>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <span id="role-badge" class="role-badge"></span>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- Page content injected here -->
+        <div id="page-container"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

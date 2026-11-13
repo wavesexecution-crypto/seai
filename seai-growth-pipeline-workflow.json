@@ -1,0 +1,344 @@
+{
+  "meta": {
+    "instanceId": "00000000-0000-0000-0000-000000000000",
+    "frontendVersion": "1.0.0",
+    "production": false,
+    "aliasName": "SEAI - Client Growth Pipeline",
+    "description": "End-to-end client growth pipeline: contact form → lead → proposal → onboarding → invoice → Razorpay subscription"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/seai-inquiry",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "1",
+      "name": "SEAI Inquiry Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "seai-inquiry-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "table": "leads",
+        "columnsMapping": {
+          "email": "={{$json.body.email}}",
+          "name": "={{$json.body.name}}",
+          "company": "={{$json.body.company}}",
+          "website": "={{$json.body.website}}",
+          "service_category": "={{$json.body.service_category}}",
+          "message": "={{$json.body.message}}",
+          "status": "new",
+          "created_at": "={{$now}}",
+          "source": "public_site"
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Create Lead in Neon",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "neon-seai-production",
+          "name": "Neon Postgres Production"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "to": "={{$json.body.email}}",
+        "subject": "SEAI - We received your inquiry",
+        "text": "Hi {{$json.body.name}},\n\nThank you for reaching out to SEAI. We've received your inquiry for {{$json.body.service_category}} services.\n\nOur team will review your submission and get back to you within 24 hours.\n\nBest regards,\nSEAI Team\nGet Exposed. But in a Good Way."
+      },
+      "id": "3",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "smtp": {
+          "id": "seai-smtp",
+          "name": "SEAI SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "table": "inquiries",
+        "columnsMapping": {
+          "lead_id": "={{$json[\"Create Lead in Neon\"].id}}",
+          "inquiry_type": "growth_consultation",
+          "details": "={{JSON.stringify($json.body)}}",
+          "status": "pending",
+          "created_at": "={{$now}}"
+        },
+        "options": {}
+      },
+      "id": "4",
+      "name": "Record Inquiry",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 500],
+      "credentials": {
+        "postgres": {
+          "id": "neon-seai-production",
+          "name": "Neon Postgres Production"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.body.service_category}}",
+              "operation": "equals",
+              "value2": "advertising"
+            },
+            {
+              "value1": "={{$json.body.service_category}}",
+              "operation": "equals",
+              "value2": "social"
+            }
+          ]
+        }
+      },
+      "id": "5",
+      "name": "Route to Advertising/Social",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [680, 500]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.PAYMENTS_API_URL}}/api/v1/subscriptions",
+        "method": "POST",
+        "authentication": "bearer",
+        "options": {
+          "bodyContentType": "json",
+          "queryParameters": []
+        },
+        "bodyParametersJson": "={{{\n  \"planKey\": \"retainer_starter\",\n  \"seaiClientId\": \"={{$json[\"Create Lead in Neon\"].id}}\",\n  \"email\": \"={{$json.body.email}}\",\n  \"name\": \"={{$json.body.name}}\",\n  \"idempotencyKey\": \"inquiry-{{$json[\"Create Lead in Neon\"].id}}\"\n}}}"
+      },
+      "id": "6",
+      "name": "Create Razorpay Subscription",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "payments-service-key",
+          "name": "SEAI Payments Service Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "table": "subscriptions",
+        "columnsMapping": {
+          "client_id": "={{$json[\"Create Lead in Neon\"].id}}",
+          "razorpay_subscription_id": "={{$json.razorpaySubscriptionId}}",
+          "plan_key": "retainer_starter",
+          "status": "pending",
+          "created_at": "={{$now}}"
+        },
+        "options": {}
+      },
+      "id": "7",
+      "name": "Record Subscription",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "postgres": {
+          "id": "neon-seai-production",
+          "name": "Neon Postgres Production"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "to": "workwithseai@gmail.com",
+        "subject": "SEAI - New Lead: {{$json.body.name}}",
+        "text": "New lead received from public site.\n\nName: {{$json.body.name}}\nEmail: {{$json.body.email}}\nCompany: {{$json.body.company}}\nService: {{$json.body.service_category}}\nLead ID: {{$json[\"Create Lead in Neon\"].id}}\n\nReview in dashboard: https://dash.seai.store/leads"
+      },
+      "id": "8",
+      "name": "Notify SEAI Team",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [680, 100],
+      "credentials": {
+        "smtp": {
+          "id": "seai-smtp",
+          "name": "SEAI SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/razorpay-subscription-verify",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "9",
+      "name": "Razorpay Verify Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300],
+      "webhookId": "razorpay-verify-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": "subscriptions",
+        "columnsMapping": {
+          "status": "active",
+          "activated_at": "={{$now}}"
+        },
+        "matchingColumns": [
+          "razorpay_subscription_id"
+        ],
+        "options": {}
+      },
+      "id": "10",
+      "name": "Activate Subscription",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1560, 300],
+      "credentials": {
+        "postgres": {
+          "id": "neon-seai-production",
+          "name": "Neon Postgres Production"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "table": "projects",
+        "columnsMapping": {
+          "client_id": "={{$json[\"Create Lead in Neon\"].id}}",
+          "service_category": "={{$json.body.service_category}}",
+          "status": "active",
+          "workflow_template": "advertising",
+          "created_at": "={{$now}}"
+        },
+        "options": {}
+      },
+      "id": "11",
+      "name": "Create Delivery Project",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1120, 500],
+      "credentials": {
+        "postgres": {
+          "id": "neon-seai-production",
+          "name": "Neon Postgres Production"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "SEAI Inquiry Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create Lead in Neon",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify SEAI Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Lead in Neon": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Record Inquiry",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Route to Advertising/Social",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route to Advertising/Social": {
+      "main": [
+        [
+          {
+            "node": "Create Razorpay Subscription",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Delivery Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Razorpay Subscription": {
+      "main": [
+        [
+          {
+            "node": "Record Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Razorpay Verify Webhook": {
+      "main": [
+        [
+          {
+            "node": "Activate Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionErrorHandling": "default",
+    "executionsDataSaving": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC",
+    "saveDataErrorExecution": "default",
+    "saveDataSuccessExecution": "default",
+    "isArchive": false
+  },
+  "id": "seai-client-growth-pipeline",
+  "active": false,
+  "versionId": "00000000-0000-0000-0000-000000000001",
+  "triggerCount": 0,
+  "updatedAt": "2026-11-10T00:00:00.000Z",
+  "createdAt": "2026-11-10T00:00:00.000Z"
+}

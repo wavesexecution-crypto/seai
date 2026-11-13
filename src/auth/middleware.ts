@@ -4,7 +4,7 @@ import { validateSession } from './service.js';
 import { getSessionToken } from './routes.js';
 import { config } from '../config.js';
 import type { User } from './service.js';
-import { isStaffRole, normalizeRole } from './roles.js';
+import { isStaffRole, isSuperRole, normalizeRole } from './roles.js';
 
 // Extend Express Request to include user
 declare global {
@@ -116,7 +116,7 @@ export function requireStaffRole(...roles: string[]) {
       res.status(403).json({ ok: false, error: 'Staff access required' });
       return;
     }
-    if (allowed.length && !allowed.includes(role) && role !== 'admin') {
+    if (allowed.length && !allowed.includes(role) && !isSuperRole(role)) {
       res.status(403).json({ ok: false, error: 'Insufficient role for this resource' });
       return;
     }

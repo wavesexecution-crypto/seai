@@ -113,6 +113,16 @@ export const config = {
   // the service key authenticates service-to-service calls (Bearer mode).
   paymentsApiUrl: need('PAYMENTS_API_URL', 'http://localhost:4101').replace(/\/$/, ''),
   paymentsServiceKey: need('PAYMENTS_SERVICE_KEY', need('SEAI_SERVICE_KEY', '')),
+  // Razorpay direct integration for ops invoice one-off payments.
+  // Credentials are optional at build time; order creation returns 503 when unset.
+  razorpayKeyId: need('RAZORPAY_KEY_ID', ''),
+  razorpayKeySecret: need('RAZORPAY_KEY_SECRET', ''),
+  razorpayWebhookSecret: need('RAZORPAY_WEBHOOK_SECRET', ''),
+  whatsappWebhookSecret: need('WHATSAPP_WEBHOOK_SECRET', ''),
+  // Google Ads API (server-side only).
+  // Credentials optional at build time; Google Ads operations return 503 when unset.
+  googleAdsDeveloperToken: need('GOOGLE_ADS_DEVELOPER_TOKEN', ''),
+  googleAdsLoginCustomerId: need('GOOGLE_ADS_LOGIN_CUSTOMER_ID', ''),
 };
 
 export function maskKeyId(index: number): string {
