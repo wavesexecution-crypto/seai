@@ -40,6 +40,11 @@ export default function SiteChrome({ active, children }: { active?: string; chil
     { id: "contact", label: "Contact", href: "/contact.html" },
   ];
 
+  const authLinks = [
+    { id: "sign-in", label: "Sign In", href: "/sign-in.html" },
+    { id: "create-account", label: "Create Account", href: "/create-account.html" },
+  ];
+
   return (
     <>
       <a className="skip" href="#main">Skip to content</a>
@@ -52,6 +57,9 @@ export default function SiteChrome({ active, children }: { active?: string; chil
           <nav className="nav" aria-label="Primary">
             {nav.map((n) => (
               <a key={n.id} href={n.href} aria-current={active === n.id ? "page" : undefined} style={active === n.id ? { color: "#1A1A1A", fontWeight: 700 } : undefined}>{n.label}</a>
+            ))}
+            {authLinks.map((n) => (
+              <a key={n.id} href={n.href} className="auth-link" style={{ marginLeft: 8, fontWeight: 600 }}>{n.label}</a>
             ))}
           </nav>
           <div className="header-actions">
@@ -66,6 +74,9 @@ export default function SiteChrome({ active, children }: { active?: string; chil
       <nav className="mobile-nav" id="mobile-nav" aria-label="Mobile">
         {nav.map((n, i) => (
           <a key={n.id} href={n.href} onClick={() => setMenuOpen(false)} style={{ ["--i" as any]: i }}>{n.label}</a>
+        ))}
+        {authLinks.map((n, i) => (
+          <a key={n.id} href={n.href} onClick={() => setMenuOpen(false)} style={{ ["--i" as any]: nav.length + i }}>{n.label}</a>
         ))}
       </nav>
 
