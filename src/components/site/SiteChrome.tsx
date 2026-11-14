@@ -62,10 +62,7 @@ export default function SiteChrome({ active, children }: { active?: string; chil
 
   const authLinks = isAuth
     ? [{ id: "my-account", label: "My Account", href: "https://dash.seai.store/overview" }]
-    : [
-        { id: "sign-in", label: "Sign In", href: "/sign-in.html" },
-        { id: "create-account", label: "Create Account", href: "/create-account.html" },
-      ];
+    : [{ id: "client-login", label: "Client Login", href: "/sign-in.html" }];
 
   return (
     <>
