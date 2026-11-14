@@ -31,7 +31,13 @@ export default defineConfig({
         cafe: resolve(__dirname, "examples/cafe.html"),
         clinic: resolve(__dirname, "examples/clinic.html"),
         realestate: resolve(__dirname, "examples/real-estate.html"),
-        business: resolve(__dirname, "examples/business.html")
+        business: resolve(__dirname, "examples/business.html"),
+        "sign-in": resolve(__dirname, "sign-in.html"),
+        "create-account": resolve(__dirname, "create-account.html"),
+        "forgot-password": resolve(__dirname, "forgot-password.html"),
+        "reset-password": resolve(__dirname, "reset-password.html"),
+        "verify-email": resolve(__dirname, "verify-email.html"),
+        "resend-verification": resolve(__dirname, "resend-verification.html"),
       }
     }
   }
