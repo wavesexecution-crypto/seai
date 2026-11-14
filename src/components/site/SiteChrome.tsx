@@ -7,6 +7,7 @@ import { useEffect, useState, type ReactNode } from "react";
 export default function SiteChrome({ active, children }: { active?: string; children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -33,6 +34,25 @@ export default function SiteChrome({ active, children }: { active?: string; chil
     document.querySelectorAll(".year").forEach((el) => { el.textContent = String(new Date().getFullYear()); });
   }, []);
 
+  // Check authentication status on mount — shared session cookie across *.seai.store
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("https://ops.seai.store/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!cancelled) setIsAuthenticated(r.ok);
+      } catch {
+        if (!cancelled) setIsAuthenticated(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const isAuth = isAuthenticated === true;
+
   const nav = [
     { id: "services", label: "Services", href: "/services.html" },
     { id: "industries", label: "Industries", href: "/industries.html" },
@@ -40,10 +60,12 @@ export default function SiteChrome({ active, children }: { active?: string; chil
     { id: "contact", label: "Contact", href: "/contact.html" },
   ];
 
-  const authLinks = [
-    { id: "sign-in", label: "Sign In", href: "/sign-in.html" },
-    { id: "create-account", label: "Create Account", href: "/create-account.html" },
-  ];
+  const authLinks = isAuth
+    ? [{ id: "my-account", label: "My Account", href: "https://dash.seai.store/overview" }]
+    : [
+        { id: "sign-in", label: "Sign In", href: "/sign-in.html" },
+        { id: "create-account", label: "Create Account", href: "/create-account.html" },
+      ];
 
   return (
     <>
