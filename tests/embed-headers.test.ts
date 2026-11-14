@@ -128,7 +128,7 @@ describe('Phase 6 — auth compatibility', () => {
     await new Promise<void>((resolve) => authServer.close(() => resolve()));
   });
 
-  it('normal sign-in works with SameSite=Strict', async () => {
+  it('normal sign-in works with SameSite=Lax (cross-domain SSO)', async () => {
     const res = await fetch(`${authBaseUrl}/api/auth/sign-in`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -141,8 +141,9 @@ describe('Phase 6 — auth compatibility', () => {
     const cookies = res.headers.getSetCookie();
     const sc = cookies.find((c: string) => c.startsWith('seai_session='));
     expect(sc).toBeDefined();
-    expect(sc).toContain('SameSite=Strict');
+    expect(sc).toContain('SameSite=Lax');
     expect(sc).not.toContain('SameSite=None');
+    expect(sc).toContain('HttpOnly');
   });
 
   it('/api/auth/me works with session cookie', async () => {

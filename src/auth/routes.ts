@@ -71,7 +71,8 @@ function setSessionCookie(res: Response, token: string): void {
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: isProd,
-    sameSite: 'strict',
+    sameSite: 'lax',
+    domain: isProd ? '.seai.store' : undefined,
     maxAge: COOKIE_MAX_AGE,
     path: '/',
   });
@@ -115,7 +116,8 @@ function publicUser(user: User) {
 }
 
 // POST /api/auth/sign-in
-// Private control centre — only the authorised owner account may sign in.
+// Unified sign-in for both staff and customer accounts.
+// Staff roles access the ops control centre; customer roles access the client dashboard.
 authRouter.post('/sign-in', async (req: Request, res: Response) => {
   const parsed = signInSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -132,11 +134,6 @@ authRouter.post('/sign-in', async (req: Request, res: Response) => {
   const user = await validateCredentials(email, password);
   if (!user) {
     res.status(401).json({ ok: false, error: 'Invalid email or password' });
-    return;
-  }
-  // Only the owner account can access the private control centre.
-  if (user.role !== 'owner') {
-    res.status(403).json({ ok: false, error: 'Access restricted to the authorised owner account.' });
     return;
   }
   const token = await createSession(user.id);

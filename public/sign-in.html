@@ -19,7 +19,7 @@
     </a>
 
     <h1 class="title">Sign in</h1>
-    <p class="subtitle">Access your SEAI operator dashboard.</p>
+    <p class="subtitle">Access your SEAI account.</p>
 
     <div id="state" class="state-msg" style="display:none"></div>
 
@@ -83,11 +83,17 @@
     if (!validate()) return;
     setLoading(submit, true);
     try {
-      await api('/sign-in', {
+      const data = await api('/sign-in', {
         email: document.getElementById('email').value.trim(),
         password: document.getElementById('password').value,
       });
-      go('/overview');
+      const role = data.user?.role || 'customer';
+      const isStaff = ['owner', 'administrator', 'admin', 'sales', 'account_manager', 'project_manager', 'marketing', 'designer', 'developer', 'finance', 'support'].includes(role);
+      if (isStaff) {
+        go('https://ops.seai.store/overview');
+      } else {
+        go('https://dash.seai.store/overview');
+      }
     } catch (err) {
       showState('state', 'error', err.message);
       setLoading(submit, false);
